@@ -1,0 +1,34 @@
+export type ThreadCondition = "full" | "partial";
+
+export type ThreadType = {
+  id: string;
+  manufacturer: string;
+  productLine: string;
+  displayName: string;
+  isActive: boolean;
+};
+
+export type ReferenceColor = {
+  id: string;
+  threadTypeId: string;
+  colorCode: string;
+  colorName: string;
+  colorFamily: string;
+  hexRgb: string;
+  isVariegated: boolean;
+  upc?: string | null;
+};
+
+export type InventoryItem = {
+  id: string;
+  referenceColor: ReferenceColor;
+  quantity: number;
+  condition: ThreadCondition;
+  notes?: string | null;
+};
+
+export type OcrCandidate = {
+  rawText: string;
+  colorCode: string;
+  confidence: "high" | "medium" | "low";
+};

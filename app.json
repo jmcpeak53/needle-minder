@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Needle Minder",
+    "slug": "needle-minder",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "needleminder",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.needleminder.app"
+    },
+    "android": {
+      "package": "com.needleminder.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#f8f1e7"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Needle Minder to scan a thread label."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
