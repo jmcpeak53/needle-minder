@@ -1,0 +1,7 @@
+colorCode,colorName,colorFamily,hexRgb,isVariegated,upc
+310,Black,Black and Gray,#000000,false,
+321,Red,Red,#C72B3B,false,077540051106
+666,Bright Red,Red,#E31D42,false,
+699,Green,Green,#056517,false,
+B5200,Snow White,White,#FFFFFF,false,
+115,Garnet,Red,#8F011B,true,

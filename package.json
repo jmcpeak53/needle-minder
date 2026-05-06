@@ -1,0 +1,47 @@
+{
+  "name": "needle-minder",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "validate:catalog": "tsx scripts/validateCatalog.ts data/reference/dmc-six-strand.csv"
+  },
+  "dependencies": {
+    "@expo/vector-icons": "^15.1.1",
+    "@react-native-ml-kit/text-recognition": "^2.0.0",
+    "drizzle-orm": "^0.44.0",
+    "expo": "~55.0.23",
+    "expo-camera": "~55.0.18",
+    "expo-router": "~55.0.14",
+    "expo-sqlite": "~55.0.15",
+    "expo-status-bar": "~55.0.6",
+    "react": "19.2.5",
+    "react-native": "0.83.0"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^13.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.1.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-typescript": "^7.28.0",
+    "babel-jest": "^30.0.0",
+    "babel-preset-expo": "~55.0.21",
+    "drizzle-kit": "^0.31.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~55.0.0",
+    "jest": "^30.0.0",
+    "jest-expo": "~55.0.17",
+    "react-test-renderer": "19.2.5",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.0"
+  }
+}

@@ -1,1 +1,12 @@
 needle-minder-kickoff.md
+node_modules/
+.expo/
+dist/
+build/
+coverage/
+*.log
+android/
+ios/
+AGENTS.md
+CLAUDE.md
+dev-worktree/
