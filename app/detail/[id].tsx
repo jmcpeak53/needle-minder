@@ -1,0 +1,338 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useMemo } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { SkeinBall } from "../../src/ui/SkeinBall";
+import { colors, font, radius, spacing } from "../../src/ui/theme";
+
+export default function DetailScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { inventory, decrementInventory, updateInventory, removeInventory } = useNeedleMinder();
+
+  const item = useMemo(() => inventory.find((i) => i.id === id) ?? null, [inventory, id]);
+
+  const handleDecrement = useCallback(async () => {
+    if (!item) return;
+    if (item.quantity <= 1) {
+      Alert.alert("Remove skein?", `This is your last ${item.referenceColor.colorName}.`, [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Remove",
+          style: "destructive",
+          onPress: async () => {
+            await removeInventory(item.id);
+            router.back();
+          }
+        }
+      ]);
+      return;
+    }
+    await decrementInventory(item.id);
+  }, [item, decrementInventory, removeInventory, router]);
+
+  const handleIncrement = useCallback(async () => {
+    if (!item) return;
+    await updateInventory({ ...item, quantity: item.quantity + 1 });
+  }, [item, updateInventory]);
+
+  if (!item) {
+    return (
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <View style={styles.appbar}>
+          <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+            <Ionicons name="chevron-back" size={18} color={colors.ink2} />
+          </Pressable>
+          <Text style={styles.appbarTitle}>Not found</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      {/* App bar */}
+      <View style={styles.appbar}>
+        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+          <Ionicons name="chevron-back" size={18} color={colors.ink2} />
+        </Pressable>
+        <View style={styles.appbarCenter}>
+          <Text style={styles.appbarCode}>{item.referenceColor.colorCode}</Text>
+          <Text style={styles.appbarName}>{item.referenceColor.colorName}</Text>
+        </View>
+        <Pressable style={styles.iconBtn}>
+          <Ionicons name="create-outline" size={18} color={colors.ink2} />
+        </Pressable>
+        <Pressable
+          style={styles.iconBtn}
+          onPress={() =>
+            Alert.alert("Remove from stash?", `${item.referenceColor.colorName} will be deleted.`, [
+              { text: "Cancel", style: "cancel" },
+              { text: "Remove", style: "destructive", onPress: async () => { await removeInventory(item.id); router.back(); } }
+            ])
+          }
+        >
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.ink2} />
+        </Pressable>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero */}
+        <View style={styles.hero}>
+          <SkeinBall color={item.referenceColor.hexRgb} size={80} />
+          <View>
+            <Text style={styles.heroType}>6-strand cotton</Text>
+            <Text style={styles.heroMeta}>
+              Added {formatDate(item.updatedAt)} · {item.referenceColor.colorFamily}
+            </Text>
+            <View style={styles.heroCode}>
+              <Text style={styles.heroCodeText}>{item.referenceColor.colorCode}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Count card */}
+        <View style={styles.countCard}>
+          <Text style={styles.countValue}>
+            <Text style={styles.countX}>×</Text>
+            {item.quantity}
+          </Text>
+          <View style={styles.countCtrls}>
+            <Pressable style={[styles.countBtn, styles.countBtnPrimary]} onPress={handleDecrement}>
+              <Ionicons name="remove" size={20} color={colors.card} />
+            </Pressable>
+            <Pressable style={styles.countBtn} onPress={handleIncrement}>
+              <Ionicons name="add" size={20} color={colors.ink} />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* History section */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>History</Text>
+          <Text style={styles.sectionAction}>All activity</Text>
+        </View>
+
+        <View style={styles.histRow}>
+          <View style={[styles.histPip, styles.histPipPlus]}>
+            <Text style={[styles.histPipText, styles.histPipTextPlus]}>+{item.quantity}</Text>
+          </View>
+          <View style={styles.histMeta}>
+            <Text style={styles.histTitle}>Added to stash</Text>
+            <Text style={styles.histSub}>{item.condition === "full" ? "Full skeins" : "Partial"}</Text>
+          </View>
+          <Text style={styles.histDate}>{formatDate(item.updatedAt)}</Text>
+        </View>
+
+        {item.notes ? (
+          <View style={[styles.histRow, { borderBottomWidth: 0 }]}>
+            <View style={styles.histPip}>
+              <Ionicons name="document-text-outline" size={12} color={colors.ink3} />
+            </View>
+            <View style={styles.histMeta}>
+              <Text style={styles.histTitle}>Note</Text>
+              <Text style={styles.histSub}>{item.notes}</Text>
+            </View>
+          </View>
+        ) : null}
+      </ScrollView>
+    </View>
+  );
+}
+
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  } catch {
+    return iso;
+  }
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.bg
+  },
+  appbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.md
+  },
+  appbarCenter: {
+    flex: 1
+  },
+  appbarCode: {
+    fontFamily: font.sans,
+    fontSize: 11,
+    color: colors.ink3,
+    letterSpacing: 0.2
+  },
+  appbarName: {
+    fontFamily: font.serif,
+    fontSize: 22,
+    color: colors.ink,
+    lineHeight: 24
+  },
+  appbarTitle: {
+    flex: 1,
+    fontFamily: font.serif,
+    fontSize: 22,
+    color: colors.ink
+  },
+  iconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.md,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  scroll: {
+    paddingHorizontal: spacing.lg
+  },
+  hero: {
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "center",
+    paddingVertical: spacing.md
+  },
+  heroType: {
+    fontFamily: font.serif,
+    fontSize: 22,
+    color: colors.ink,
+    lineHeight: 24
+  },
+  heroMeta: {
+    fontFamily: font.sans,
+    fontSize: 12,
+    color: colors.ink3,
+    marginTop: 3
+  },
+  heroCode: {
+    backgroundColor: colors.card2,
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignSelf: "flex-start",
+    marginTop: 6
+  },
+  heroCodeText: {
+    fontFamily: font.mono,
+    fontSize: 11,
+    color: colors.ink3
+  },
+  countCard: {
+    backgroundColor: colors.card2,
+    borderWidth: 1,
+    borderColor: colors.ruleSoft,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: spacing.md
+  },
+  countValue: {
+    fontFamily: font.serif,
+    fontSize: 48,
+    color: colors.ink,
+    lineHeight: 48
+  },
+  countX: {
+    color: colors.ink4,
+    fontSize: 24,
+    marginRight: 4
+  },
+  countCtrls: {
+    flexDirection: "row",
+    gap: 6
+  },
+  countBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.rule,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  countBtnPrimary: {
+    backgroundColor: colors.accent,
+    borderColor: colors.accent
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    paddingTop: 14,
+    paddingBottom: 8
+  },
+  sectionTitle: {
+    fontFamily: font.serif,
+    fontSize: 18,
+    color: colors.ink
+  },
+  sectionAction: {
+    fontFamily: font.sans,
+    fontSize: 11,
+    color: colors.ink3,
+    letterSpacing: 0.3
+  },
+  histRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ruleSoft
+  },
+  histPip: {
+    width: 24,
+    height: 24,
+    borderRadius: 8,
+    backgroundColor: colors.card2,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  histPipPlus: {
+    backgroundColor: "#e1ebdb"
+  },
+  histPipText: {
+    fontFamily: font.mono,
+    fontSize: 10,
+    fontWeight: "600",
+    color: colors.ink3
+  },
+  histPipTextPlus: {
+    color: colors.ok
+  },
+  histMeta: {
+    flex: 1
+  },
+  histTitle: {
+    fontFamily: font.sans,
+    fontSize: 13,
+    color: colors.ink
+  },
+  histSub: {
+    fontFamily: font.sans,
+    fontSize: 11,
+    color: colors.ink4,
+    marginTop: 1
+  },
+  histDate: {
+    fontFamily: font.mono,
+    fontSize: 11,
+    color: colors.ink4
+  }
+});

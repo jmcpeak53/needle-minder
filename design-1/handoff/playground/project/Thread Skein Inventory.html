@@ -1,0 +1,1472 @@
+<!DOCTYPE html><html lang="en"><head>
+
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thread Skein Inventory — Wireframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&amp;family=Kalam:wght@300;400;700&amp;family=Gloria+Hallelujah&amp;family=Architects+Daughter&amp;family=Shadows+Into+Light&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fdfbf5;
+    --paper-warm: #f7f1e2;
+    --ink: #1f1d1b;
+    --ink-soft: #3a3733;
+    --ink-faint: #8a847b;
+    --rule: #cfc8b8;
+    --rule-soft: #e6dfcd;
+    /* thread accents */
+    --red: #e24b3b;
+    --orange: #ef8b3a;
+    --yellow: #e8c24a;
+    --green: #5ca35c;
+    --teal: #4ba59a;
+    --blue: #3a6fb5;
+    --purple: #8a5aaa;
+    --pink: #d96aa3;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper-warm); color: var(--ink); font-family: 'Kalam', cursive; }
+  body {
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(226,75,59,0.04), transparent 40%),
+      radial-gradient(circle at 85% 80%, rgba(58,111,181,0.04), transparent 45%),
+      linear-gradient(var(--paper-warm), var(--paper-warm));
+  }
+  .page-header {
+    max-width: 1400px; margin: 0 auto; padding: 36px 28px 8px;
+  }
+  .page-header h1 {
+    font-family: 'Caveat', cursive; font-weight: 700;
+    font-size: 52px; margin: 0 0 6px; color: var(--ink);
+    letter-spacing: 0.5px;
+  }
+  .page-header .sub {
+    font-family: 'Kalam', cursive; font-size: 17px; color: var(--ink-soft);
+    max-width: 780px; line-height: 1.5;
+  }
+  .ribbon {
+    display: flex; gap: 6px; margin-top: 14px;
+  }
+  .ribbon .t {
+    height: 6px; flex: 1; border-radius: 3px;
+  }
+
+  /* Tabs */
+  .tabs-wrap {
+    max-width: 1400px; margin: 28px auto 0; padding: 0 28px;
+    position: sticky; top: 0; z-index: 20;
+    background: linear-gradient(var(--paper-warm) 80%, transparent);
+    padding-top: 8px; padding-bottom: 14px;
+  }
+  .tabs {
+    display: flex; flex-wrap: wrap; gap: 10px;
+  }
+  .tab {
+    font-family: 'Caveat', cursive; font-size: 22px;
+    background: var(--paper); color: var(--ink-soft);
+    border: 2px solid var(--ink); border-radius: 22px 6px 22px 6px;
+    padding: 6px 18px 4px; cursor: pointer;
+    transform: rotate(-0.7deg);
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .tab:nth-child(even) { transform: rotate(0.8deg); border-radius: 6px 22px 6px 22px; }
+  .tab:hover { transform: translateY(-1px) rotate(0deg); }
+  .tab.active {
+    background: var(--ink); color: var(--paper);
+    box-shadow: 3px 3px 0 var(--red);
+  }
+
+  /* Canvas */
+  .canvas {
+    max-width: 1400px; margin: 0 auto; padding: 8px 28px 80px;
+  }
+  .section-title {
+    font-family: 'Caveat', cursive; font-size: 36px;
+    margin: 24px 0 4px; color: var(--ink); font-weight: 700;
+  }
+  .section-note {
+    font-family: 'Kalam', cursive; font-size: 16px; color: var(--ink-soft);
+    margin-bottom: 20px; max-width: 820px; line-height: 1.5;
+  }
+
+  /* Row of phones */
+  .phone-row {
+    display: flex; flex-wrap: wrap; gap: 40px 32px;
+    align-items: flex-start; justify-content: flex-start;
+    padding: 12px 0;
+  }
+  .phone-cell {
+    display: flex; flex-direction: column; align-items: center;
+    width: 300px;
+  }
+  .phone-label {
+    font-family: 'Caveat', cursive; font-size: 26px; font-weight: 700;
+    color: var(--ink); margin-bottom: 8px; text-align: center;
+  }
+  .phone-desc {
+    font-family: 'Kalam', cursive; font-size: 14px; color: var(--ink-soft);
+    text-align: center; margin-bottom: 14px; line-height: 1.4;
+    min-height: 40px;
+  }
+
+  /* Sketch phone frame */
+  .phone {
+    width: 300px; height: 620px;
+    background: var(--paper);
+    border: 2.5px solid var(--ink);
+    border-radius: 34px;
+    position: relative;
+    box-shadow: 4px 6px 0 rgba(31,29,27,0.85);
+    overflow: hidden;
+    transform: rotate(-0.3deg);
+  }
+  .phone:nth-child(2n) { transform: rotate(0.4deg); }
+  .phone .notch {
+    position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 14px; border: 2px solid var(--ink); border-radius: 8px;
+    background: var(--paper);
+  }
+  .phone .statusbar {
+    height: 28px; display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 20px 0; font-family: 'Kalam', cursive; font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .phone .statusbar .right { display: flex; gap: 4px; align-items: center; }
+  .phone .screen {
+    position: absolute; top: 28px; bottom: 18px; left: 0; right: 0;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .phone .homebar {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    width: 80px; height: 4px; background: var(--ink); border-radius: 2px; opacity: 0.7;
+  }
+
+  /* Sketch UI elements */
+  .top-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px 6px;
+    border-bottom: 1.5px dashed var(--rule);
+  }
+  .title-h {
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 24px; flex: 1;
+    line-height: 1;
+  }
+  .title-sub {
+    font-family: 'Kalam', cursive; font-size: 12px; color: var(--ink-faint);
+    font-weight: 300;
+  }
+  .icon {
+    width: 26px; height: 26px; border: 1.5px solid var(--ink);
+    border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive; font-size: 16px; background: var(--paper);
+  }
+  .icon.sq { border-radius: 6px; }
+
+  .scroll-area {
+    flex: 1; overflow: hidden; padding: 8px 12px 8px; position: relative;
+  }
+
+  /* Skein ball */
+  .skein {
+    width: 42px; height: 42px; border-radius: 50%;
+    border: 2px solid var(--ink);
+    position: relative;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+  .skein::before, .skein::after {
+    content: ''; position: absolute; inset: 2px; border-radius: 50%;
+    border: 1px solid rgba(31,29,27,0.35);
+    transform: rotate(25deg);
+    pointer-events: none;
+  }
+  .skein::after { transform: rotate(-30deg); }
+  .sk-red    { background: var(--red); }
+  .sk-orange { background: var(--orange); }
+  .sk-yellow { background: var(--yellow); }
+  .sk-green  { background: var(--green); }
+  .sk-teal   { background: var(--teal); }
+  .sk-blue   { background: var(--blue); }
+  .sk-purple { background: var(--purple); }
+  .sk-pink   { background: var(--pink); }
+  .sk-white  { background: #f6f2e6; }
+  .sk-black  { background: #262626; }
+  .sk-brown  { background: #8a5a3b; }
+  .sk-ecru   { background: #e7d9b7; }
+
+  /* List row */
+  .row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 4px;
+    border-bottom: 1px dashed var(--rule-soft);
+  }
+  .row:last-child { border-bottom: 0; }
+  .row .meta { flex: 1; min-width: 0; }
+  .row .name { font-family: 'Kalam', cursive; font-weight: 700; font-size: 14px; line-height: 1.15; }
+  .row .sub { font-family: 'Kalam', cursive; font-size: 11px; color: var(--ink-faint); line-height: 1.2; }
+  .count {
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px;
+    min-width: 22px; text-align: center; line-height: 1;
+  }
+  .minus-btn {
+    width: 30px; height: 30px; border: 2px solid var(--ink);
+    border-radius: 50%; background: var(--paper);
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; padding-bottom: 4px;
+    box-shadow: 1.5px 1.5px 0 var(--ink);
+  }
+
+  /* Search box */
+  .search {
+    display: flex; align-items: center; gap: 6px;
+    border: 1.5px solid var(--ink); border-radius: 18px;
+    padding: 5px 10px; background: var(--paper);
+    font-family: 'Kalam', cursive; font-size: 13px; color: var(--ink-faint);
+    margin: 8px 12px 6px;
+  }
+
+  /* Chips */
+  .chips { display: flex; gap: 5px; flex-wrap: wrap; padding: 0 12px 6px; }
+  .chip {
+    font-family: 'Caveat', cursive; font-size: 15px;
+    border: 1.5px solid var(--ink); border-radius: 12px;
+    padding: 0 8px 1px; background: var(--paper); line-height: 1.3;
+  }
+  .chip.on { background: var(--ink); color: var(--paper); }
+
+  /* FAB */
+  .fab {
+    position: absolute; right: 14px; bottom: 14px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--yellow); border: 2.5px solid var(--ink);
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 30px;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1; padding-bottom: 6px;
+    box-shadow: 2.5px 2.5px 0 var(--ink);
+  }
+
+  /* Bottom nav */
+  .bottom-nav {
+    border-top: 1.5px solid var(--ink);
+    display: flex; justify-content: space-around;
+    padding: 6px 0 4px;
+    background: var(--paper);
+  }
+  .bn-item {
+    display: flex; flex-direction: column; align-items: center;
+    font-family: 'Kalam', cursive; font-size: 11px; color: var(--ink-faint);
+    gap: 2px;
+  }
+  .bn-icon {
+    width: 22px; height: 22px; border: 1.5px solid var(--ink-faint); border-radius: 6px;
+  }
+  .bn-item.on { color: var(--ink); font-weight: 700; }
+  .bn-item.on .bn-icon { border-color: var(--ink); background: var(--yellow); }
+
+  /* Camera viewfinder */
+  .viewfinder {
+    flex: 1; background: #1f1d1b; position: relative; color: #f7f1e2;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .viewfinder::before {
+    content: ''; position: absolute; inset: 0;
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.04) 0 8px, transparent 8px 20px);
+  }
+  .corner {
+    position: absolute; width: 20px; height: 20px;
+    border: 2px solid var(--paper-warm);
+  }
+  .corner.tl { top: 18px; left: 18px; border-right: 0; border-bottom: 0; }
+  .corner.tr { top: 18px; right: 18px; border-left: 0; border-bottom: 0; }
+  .corner.bl { bottom: 18px; left: 18px; border-right: 0; border-top: 0; }
+  .corner.br { bottom: 18px; right: 18px; border-left: 0; border-top: 0; }
+
+  /* Big sketch skein for capture mockup */
+  .skein-big {
+    width: 140px; height: 140px; border-radius: 50%;
+    border: 2.5px solid var(--paper-warm);
+    position: relative;
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+  }
+  .skein-big .band {
+    position: absolute; top: 42%; left: -10%; right: -10%;
+    height: 32%; background: var(--paper-warm); color: var(--ink);
+    transform: rotate(-6deg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 14px;
+    border: 1.5px solid var(--ink);
+    padding: 0 6px;
+    text-align: center;
+  }
+
+  .shutter {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+    width: 58px; height: 58px; border-radius: 50%;
+    border: 3px solid var(--paper-warm);
+    background: transparent;
+  }
+  .shutter::after {
+    content: ''; position: absolute; inset: 5px;
+    border-radius: 50%; background: var(--paper-warm);
+  }
+
+  /* Form rows */
+  .form-row {
+    padding: 8px 12px; border-bottom: 1px dashed var(--rule-soft);
+  }
+  .form-row:last-of-type { border-bottom: 0; }
+  .fr-label {
+    font-family: 'Kalam', cursive; font-size: 11px; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: 0.5px; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .fr-value {
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px;
+    line-height: 1.1;
+    border-bottom: 1.5px solid var(--ink);
+    padding-bottom: 3px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .fr-value .pencil { margin-left: auto; opacity: 0.4; font-size: 14px; font-family: 'Kalam', cursive; }
+  .detected {
+    font-family: 'Kalam', cursive; font-size: 10px;
+    background: var(--yellow); border: 1.5px solid var(--ink); border-radius: 8px;
+    padding: 0 6px; color: var(--ink); font-weight: 700;
+  }
+
+  .cta {
+    margin: 10px 12px;
+    background: var(--ink); color: var(--paper);
+    border: 2.5px solid var(--ink); border-radius: 22px;
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 22px;
+    text-align: center; padding: 8px 0 6px;
+    box-shadow: 2px 2px 0 var(--red);
+  }
+  .cta.alt {
+    background: var(--paper); color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+
+  /* Grid of swatches */
+  .grid-swatch {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+    padding: 4px 4px;
+  }
+  .swatch-cell {
+    aspect-ratio: 1; border: 1.5px solid var(--ink); border-radius: 10px;
+    position: relative; display: flex; align-items: flex-end; justify-content: flex-start;
+    padding: 4px;
+    overflow: hidden;
+  }
+  .swatch-cell .code {
+    font-family: 'Kalam', cursive; font-weight: 700; font-size: 10px;
+    background: rgba(253,251,245,0.85); padding: 0 4px; border-radius: 4px;
+    line-height: 1.3;
+  }
+  .swatch-cell .q {
+    position: absolute; top: 3px; right: 3px;
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 15px;
+    line-height: 1; background: var(--paper); border: 1.5px solid var(--ink);
+    border-radius: 50%; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    padding-bottom: 2px;
+  }
+  .swatch-cell .q.low { background: var(--red); color: var(--paper); }
+
+  /* Grouped rail */
+  .rail-group {
+    padding: 2px 12px 6px;
+  }
+  .rail-group h4 {
+    font-family: 'Caveat', cursive; font-size: 20px; font-weight: 700;
+    margin: 6px 0 4px; display: flex; align-items: center; gap: 6px;
+  }
+  .rail-group h4 .count-pill {
+    font-family: 'Kalam', cursive; font-size: 11px; font-weight: 400;
+    background: var(--ink); color: var(--paper); border-radius: 8px; padding: 0 6px;
+  }
+  .rail-scroll {
+    display: flex; gap: 6px; overflow-x: auto; padding: 4px 0;
+  }
+  .rail-item {
+    flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    width: 48px;
+  }
+  .rail-item .code {
+    font-family: 'Kalam', cursive; font-size: 10px; color: var(--ink-soft);
+  }
+  .rail-item .q {
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 14px; line-height: 1;
+  }
+
+  /* Stats cards */
+  .stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    padding: 6px 12px 10px;
+  }
+  .stat {
+    border: 1.5px solid var(--ink); border-radius: 10px;
+    padding: 6px 10px 8px; background: var(--paper);
+    position: relative;
+  }
+  .stat .n { font-family: 'Caveat', cursive; font-weight: 700; font-size: 30px; line-height: 1; }
+  .stat .l { font-family: 'Kalam', cursive; font-size: 11px; color: var(--ink-soft); line-height: 1.2; margin-top: 2px; }
+  .stat.accent-r { box-shadow: 2px 2px 0 var(--red); }
+  .stat.accent-b { box-shadow: 2px 2px 0 var(--blue); }
+  .stat.accent-g { box-shadow: 2px 2px 0 var(--green); }
+  .stat.accent-p { box-shadow: 2px 2px 0 var(--purple); }
+
+  /* Table variation */
+  .table-head {
+    display: grid; grid-template-columns: 26px 1fr 40px 50px;
+    gap: 6px; padding: 6px 10px;
+    font-family: 'Kalam', cursive; font-size: 11px; color: var(--ink-faint);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .table-row {
+    display: grid; grid-template-columns: 26px 1fr 40px 50px;
+    gap: 6px; padding: 6px 10px; align-items: center;
+    border-bottom: 1px dashed var(--rule-soft);
+    font-family: 'Kalam', cursive; font-size: 13px;
+  }
+  .table-row .sk-small {
+    width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--ink);
+  }
+
+  /* Annotation arrows */
+  .annot {
+    position: absolute;
+    font-family: 'Caveat', cursive; font-weight: 500; font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 200px; line-height: 1.15;
+  }
+  .annot.red { color: var(--red); }
+  .annot.blue { color: var(--blue); }
+  .annot.green { color: var(--green); }
+
+  /* Checkbox */
+  .cb {
+    width: 16px; height: 16px; border: 1.5px solid var(--ink); border-radius: 3px;
+    display: inline-block; flex-shrink: 0;
+  }
+
+  /* Misc */
+  .center-col { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px; }
+  .wire-btn {
+    border: 2px solid var(--ink); border-radius: 14px;
+    font-family: 'Caveat', cursive; font-weight: 700; font-size: 18px;
+    padding: 4px 14px 2px; background: var(--paper);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .wire-btn.accent-r { background: var(--red); color: var(--paper); }
+  .wire-btn.accent-y { background: var(--yellow); }
+
+  .hidden-page { display: none; }
+  .active-page { display: block; }
+
+  /* Legend */
+  .legend {
+    max-width: 1400px; margin: 40px auto 0; padding: 20px 28px;
+    border-top: 1.5px dashed var(--rule);
+    display: flex; flex-wrap: wrap; gap: 24px;
+    font-family: 'Kalam', cursive; font-size: 14px; color: var(--ink-soft);
+  }
+  .legend .item { display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body data-cc-id="cc-1" style="cursor: crosshair; font-family: Verdana;">
+
+<div class="page-header">
+  <h1>Thread Skein Inventory — wireframes</h1>
+  <div class="sub">
+    Low-fi sketches for an Android app that lets serious crafters photograph skein labels, capture brand + color code, browse &amp; filter a stash, quick-deduct as threads get used, and export to CSV. Three variations on each key screen — tap a tab to switch.
+  </div>
+  <div class="ribbon">
+    <div class="t" style="background:var(--red)"></div>
+    <div class="t" style="background:var(--orange)"></div>
+    <div class="t" style="background:var(--yellow)"></div>
+    <div class="t" style="background:var(--green)"></div>
+    <div class="t" style="background:var(--teal)"></div>
+    <div class="t" style="background:var(--blue)"></div>
+    <div class="t" style="background:var(--purple)"></div>
+    <div class="t" style="background:var(--pink)"></div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs">
+    <button class="tab" data-page="overview">① Overview / Home</button>
+    <button class="tab active" data-page="capture">② Capture flow ×3</button>
+    <button class="tab" data-page="inventory">③ Inventory views ×3</button>
+    <button class="tab" data-page="detail">④ Detail · Manual add · Edit</button>
+    <button class="tab" data-page="export">⑤ Export · Deduct in context</button>
+  </div>
+</div>
+
+<div class="canvas">
+
+<!-- ============ PAGE 1: OVERVIEW / HOME ============ -->
+<div class="page hidden-page" data-page="overview">
+  <div class="section-title">Home &amp; information architecture</div>
+  <div class="section-note">
+    Where users land on open. Two home variants (at-a-glance dashboard vs. jump-straight-to-inventory), plus a sitemap showing how the flows connect.
+  </div>
+
+  <div class="phone-row">
+
+    <!-- Home A: dashboard -->
+    <div class="phone-cell">
+      <div class="phone-label">A · Dashboard home</div>
+      <div class="phone-desc">Stats-forward. Shows stash size, low-stock nudges, recent activity.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div style="flex:1">
+              <div class="title-h" style="font-family: 'Times New Roman'">my stash</div>
+              <div class="title-sub">Hi Ana — 437 skeins across 3 brands</div>
+            </div>
+            <div class="icon">⋯</div>
+          </div>
+          <div class="scroll-area">
+            <div class="stat-grid">
+              <div class="stat accent-r">
+                <div class="n">437</div>
+                <div class="l">skeins total</div>
+              </div>
+              <div class="stat accent-b">
+                <div class="n">312</div>
+                <div class="l">unique colors</div>
+              </div>
+              <div class="stat accent-g">
+                <div class="n">3</div>
+                <div class="l">brands tracked</div>
+              </div>
+              <div class="stat accent-p">
+                <div class="n">12</div>
+                <div class="l" style="color:var(--red);font-weight:700">running low</div>
+              </div>
+            </div>
+            <div style="padding:6px 12px;font-family:'Caveat',cursive;font-size:20px;font-weight:700">Recently added</div>
+            <div style="padding:0 12px">
+              <div class="row">
+                <div class="skein sk-teal"></div>
+                <div class="meta"><div class="name">DMC 959</div><div class="sub">Medium Seagreen · ×3</div></div>
+                <div class="sub">2h ago</div>
+              </div>
+              <div class="row">
+                <div class="skein sk-pink"></div>
+                <div class="meta"><div class="name">DMC 3806</div><div class="sub">Light Cyclamen · ×2</div></div>
+                <div class="sub">yesterday</div>
+              </div>
+              <div class="row">
+                <div class="skein sk-yellow"></div>
+                <div class="meta"><div class="name">Anchor 289</div><div class="sub">Lemon · ×1</div></div>
+                <div class="sub">Mon</div>
+              </div>
+            </div>
+          </div>
+          <div class="fab">+</div>
+          <div class="bottom-nav">
+            <div class="bn-item on"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Home B: straight to inventory -->
+    <div class="phone-cell">
+      <div class="phone-label">B · Stash-first home</div>
+      <div class="phone-desc">No dashboard. Opens directly on your inventory with a big "Add by photo" action.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div style="flex:1">
+              <div class="title-h" style="font-family: 'Times New Roman'">my skeins</div>
+              <div class="title-sub">437 total</div>
+            </div>
+            <div class="icon sq">≡</div>
+          </div>
+          <div style="padding:10px 12px 6px;display:flex;gap:8px">
+            <div class="wire-btn accent-r" style="flex:1;text-align:center">📷 Snap a label</div>
+            <div class="wire-btn" style="text-align:center">✎ Manual</div>
+          </div>
+          <div class="search">🔍 &nbsp;search brand or #</div>
+          <div class="chips">
+            <span class="chip on">all</span>
+            <span class="chip">DMC</span>
+            <span class="chip">Anchor</span>
+            <span class="chip">low stock</span>
+          </div>
+          <div class="scroll-area">
+            <div class="row"><div class="skein sk-red"></div><div class="meta"><div class="name">DMC 321</div><div class="sub">Red · cotton floss</div></div><div class="count">×4</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-orange"></div><div class="meta"><div class="name">DMC 741</div><div class="sub">Med Tangerine</div></div><div class="count">×2</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-yellow"></div><div class="meta"><div class="name">Anchor 289</div><div class="sub">Lemon</div></div><div class="count" style="color:var(--red)">×1</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-green"></div><div class="meta"><div class="name">DMC 699</div><div class="sub">Green</div></div><div class="count">×6</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-teal"></div><div class="meta"><div class="name">DMC 959</div><div class="sub">Med Seagreen</div></div><div class="count">×3</div><div class="minus-btn">−</div></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="bn-item"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item on"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Sitemap -->
+    <div class="phone-cell" style="width:460px">
+      <div class="phone-label">C · App sitemap</div>
+      <div class="phone-desc">How the flows link together. Blue = capture, green = inventory, red = edit.</div>
+      <div style="width:460px; background: var(--paper); border: 2.5px solid var(--ink); border-radius: 12px; padding: 14px 14px 18px; box-shadow: 4px 6px 0 rgba(31,29,27,0.85); font-family:'Kalam',cursive; font-size:14px; min-height:580px; position:relative">
+        <svg viewBox="0 0 430 560" style="width:100%;height:560px">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#1f1d1b"></path>
+            </marker>
+          </defs>
+
+          <!-- Home -->
+          <g>
+            <rect x="150" y="10" width="130" height="46" rx="10" fill="#fdfbf5" stroke="#1f1d1b" stroke-width="2"></rect>
+            <text x="215" y="30" text-anchor="middle" font-family="Caveat" font-size="20" font-weight="700">Home</text>
+            <text x="215" y="46" text-anchor="middle" font-family="Kalam" font-size="11" fill="#8a847b">dashboard + recents</text>
+          </g>
+
+          <!-- Inventory -->
+          <g>
+            <rect x="20" y="130" width="150" height="54" rx="10" fill="#fdfbf5" stroke="#5ca35c" stroke-width="2.5"></rect>
+            <text x="95" y="152" text-anchor="middle" font-family="Caveat" font-size="20" font-weight="700">Inventory</text>
+            <text x="95" y="170" text-anchor="middle" font-family="Kalam" font-size="11" fill="#8a847b">list / grid / grouped</text>
+          </g>
+
+          <!-- Capture -->
+          <g>
+            <rect x="260" y="130" width="150" height="54" rx="10" fill="#fdfbf5" stroke="#3a6fb5" stroke-width="2.5"></rect>
+            <text x="335" y="152" text-anchor="middle" font-family="Caveat" font-size="20" font-weight="700">Snap label</text>
+            <text x="335" y="170" text-anchor="middle" font-family="Kalam" font-size="11" fill="#8a847b">camera → confirm</text>
+          </g>
+
+          <!-- Detail -->
+          <g>
+            <rect x="20" y="250" width="150" height="54" rx="10" fill="#fdfbf5" stroke="#1f1d1b" stroke-width="2"></rect>
+            <text x="95" y="272" text-anchor="middle" font-family="Caveat" font-size="20" font-weight="700">Skein detail</text>
+            <text x="95" y="290" text-anchor="middle" font-family="Kalam" font-size="11" fill="#8a847b">count · history</text>
+          </g>
+
+          <!-- Confirm -->
+          <g>
+            <rect x="260" y="250" width="150" height="54" rx="10" fill="#fdfbf5" stroke="#3a6fb5" stroke-width="2.5"></rect>
+            <text x="335" y="272" text-anchor="middle" font-family="Caveat" font-size="20" font-weight="700">Confirm fields</text>
+            <text x="335" y="290" text-anchor="middle" font-family="Kalam" font-size="11" fill="#8a847b">brand · code · qty</text>
+          </g>
+
+          <!-- Manual add -->
+          <g>
+            <rect x="260" y="340" width="150" height="46" rx="10" fill="#fdfbf5" stroke="#1f1d1b" stroke-width="2"></rect>
+            <text x="335" y="360" text-anchor="middle" font-family="Caveat" font-size="18" font-weight="700">Manual add</text>
+            <text x="335" y="376" text-anchor="middle" font-family="Kalam" font-size="10" fill="#8a847b">no photo path</text>
+          </g>
+
+          <!-- Edit -->
+          <g>
+            <rect x="20" y="340" width="150" height="46" rx="10" fill="#fdfbf5" stroke="#e24b3b" stroke-width="2.5"></rect>
+            <text x="95" y="360" text-anchor="middle" font-family="Caveat" font-size="18" font-weight="700">Edit skein</text>
+            <text x="95" y="376" text-anchor="middle" font-family="Kalam" font-size="10" fill="#8a847b">delete · adjust</text>
+          </g>
+
+          <!-- Deduct -->
+          <g>
+            <rect x="20" y="430" width="150" height="46" rx="10" fill="#fdfbf5" stroke="#1f1d1b" stroke-width="2" stroke-dasharray="4 3"></rect>
+            <text x="95" y="450" text-anchor="middle" font-family="Caveat" font-size="18" font-weight="700">−1 quick action</text>
+            <text x="95" y="466" text-anchor="middle" font-family="Kalam" font-size="10" fill="#8a847b">from any list row</text>
+          </g>
+
+          <!-- Export -->
+          <g>
+            <rect x="260" y="430" width="150" height="46" rx="10" fill="#fdfbf5" stroke="#1f1d1b" stroke-width="2"></rect>
+            <text x="335" y="450" text-anchor="middle" font-family="Caveat" font-size="18" font-weight="700">Export CSV</text>
+            <text x="335" y="466" text-anchor="middle" font-family="Kalam" font-size="10" fill="#8a847b">share sheet</text>
+          </g>
+
+          <!-- More -->
+          <g>
+            <rect x="150" y="510" width="130" height="38" rx="10" fill="#fdfbf5" stroke="#1f1d1b" stroke-width="2"></rect>
+            <text x="215" y="533" text-anchor="middle" font-family="Caveat" font-size="18" font-weight="700">Settings / More</text>
+          </g>
+
+          <!-- Lines -->
+          <path d="M215,56 L95,130" stroke="#1f1d1b" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M215,56 L335,130" stroke="#1f1d1b" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M95,184 L95,250" stroke="#5ca35c" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M335,184 L335,250" stroke="#3a6fb5" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M335,304 L95,340" stroke="#3a6fb5" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M95,304 L95,340" stroke="#e24b3b" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M170,275 Q 200 340 170 363" stroke="#1f1d1b" stroke-width="1.5" fill="none" stroke-dasharray="3 3" marker-end="url(#arr)"></path>
+          <path d="M95,386 L95,430" stroke="#1f1d1b" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+          <path d="M215,56 Q 400 70 410 340 L 410 360 L 410 345" stroke="#1f1d1b" stroke-width="1.5" fill="none" stroke-dasharray="3 3"></path>
+          <path d="M280,35 Q 420 70 410 360" stroke="#1f1d1b" stroke-width="1.5" fill="none" stroke-dasharray="3 3" marker-end="url(#arr)"></path>
+          <path d="M215,476 L215,510" stroke="#1f1d1b" stroke-width="1.5" fill="none" marker-end="url(#arr)"></path>
+
+        </svg>
+        <div style="font-family:'Caveat',cursive;font-size:16px;color:var(--ink-faint);position:absolute;bottom:10px;left:14px">
+          bottom nav: Home · Stash · Add · More
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ PAGE 2: CAPTURE ============ -->
+<div class="page active-page" data-page="capture">
+  <div class="section-title">Capture flow — 3 variations</div>
+  <div class="section-note">
+    All three: user snaps the label, OCR pre-fills, user confirms each field. Difference is in <em>how much camera</em> vs. <em>how much form</em> is shown, and in whether capture is single or batched.
+  </div>
+
+  <div class="phone-row">
+
+    <!-- Capture A: Camera first -->
+    <div class="phone-cell">
+      <div class="phone-label">A · Full-screen camera</div>
+      <div class="phone-desc">Big viewfinder with label guide. Bottom sheet slides up once you shoot.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar" style="color:#f7f1e2"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="viewfinder">
+            <div class="corner tl"></div><div class="corner tr"></div>
+            <div class="corner bl"></div><div class="corner br"></div>
+            <div class="skein-big" style="background:var(--teal)">
+              <div class="band">DMC · 959</div>
+            </div>
+            <div style="position:absolute;top:46px;left:0;right:0;text-align:center;font-family:'Caveat',cursive;font-size:22px;color:var(--paper-warm)">
+              line up the label
+            </div>
+            <div style="position:absolute;bottom:100px;left:0;right:0;text-align:center;font-family:'Kalam',cursive;font-size:13px;color:var(--paper-warm);opacity:0.8">
+              holding steady… ready
+            </div>
+            <div class="shutter"></div>
+            <div style="position:absolute;bottom:38px;left:22px;width:34px;height:34px;border:2px solid var(--paper-warm);border-radius:8px;color:var(--paper-warm);display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-size:16px">🖼</div>
+            <div style="position:absolute;bottom:38px;right:22px;width:34px;height:34px;border:2px solid var(--paper-warm);border-radius:50%;color:var(--paper-warm);display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-size:18px">⚡</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Capture B: Confirm screen -->
+    <div class="phone-cell">
+      <div class="phone-label">B · Confirm detected fields</div>
+      <div class="phone-desc">After shutter: preview thumb + editable fields. "Detected" badges on auto-filled values.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div class="icon">←</div>
+            <div class="title-h" style="flex:1; font-family: 'Times New Roman'">confirm skein</div>
+            <div class="icon">✕</div>
+          </div>
+          <div class="scroll-area" style="padding:0">
+            <div style="display:flex;gap:10px;padding:10px 12px 6px;align-items:center">
+              <div style="width:80px;height:80px;border:2px solid var(--ink);border-radius:10px;background:var(--teal);position:relative;overflow:hidden">
+                <div style="position:absolute;top:42%;left:-10%;right:-10%;height:34%;background:var(--paper-warm);border:1px solid var(--ink);transform:rotate(-4deg);display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;font-size:10px">DMC 959</div>
+              </div>
+              <div style="flex:1;font-family:'Kalam',cursive;font-size:12px;color:var(--ink-soft);line-height:1.4">
+                photo captured<br>
+                <span style="color:var(--green);font-weight:700">✓ 4 of 4 fields auto-read</span><br>
+                <span style="color:var(--ink-faint)">tap any field to tweak</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Brand</div>
+              <div class="fr-value">DMC <span class="detected">detected</span></div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Color #</div>
+              <div class="fr-value">959 <span class="detected">detected</span></div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Color name</div>
+              <div class="fr-value">Medium Seagreen <span class="detected">detected</span> <span class="pencil">✎</span></div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Quantity</div>
+              <div class="fr-value">
+                <div class="icon">−</div>
+                <span style="margin:0 8px">3</span>
+                <div class="icon">+</div>
+                <span class="pencil">skeins</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Notes (optional)</div>
+              <div class="fr-value" style="color:var(--ink-faint)">for "night sky" project…</div>
+            </div>
+            <div class="cta">✓ add to stash</div>
+            <div class="cta alt">+ scan another</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Capture C: Batch mode -->
+    <div class="phone-cell">
+      <div class="phone-label">C · Batch queue</div>
+      <div class="phone-desc">Shoot many in a row, confirm at the end. Good for big haul days.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div class="icon">←</div>
+            <div style="flex:1">
+              <div class="title-h" style="font-family: 'Times New Roman'">batch · 6 skeins</div>
+              <div class="title-sub">review &amp; confirm each</div>
+            </div>
+            <div class="icon">✓</div>
+          </div>
+          <div class="scroll-area">
+            <div class="row">
+              <div class="skein sk-red"></div>
+              <div class="meta"><div class="name">DMC 321 — Red</div><div class="sub" style="color:var(--green)">✓ 4/4 detected</div></div>
+              <div class="count">×2</div>
+              <div class="cb" style="background:var(--ink)"></div>
+            </div>
+            <div class="row">
+              <div class="skein sk-pink"></div>
+              <div class="meta"><div class="name">DMC 3806 — Lt Cyclamen</div><div class="sub" style="color:var(--green)">✓ 4/4 detected</div></div>
+              <div class="count">×1</div>
+              <div class="cb" style="background:var(--ink)"></div>
+            </div>
+            <div class="row">
+              <div class="skein sk-yellow"></div>
+              <div class="meta"><div class="name">Anchor 289 — Lemon</div><div class="sub" style="color:var(--orange)">! needs color name</div></div>
+              <div class="count">×1</div>
+              <div class="cb"></div>
+            </div>
+            <div class="row">
+              <div class="skein sk-teal"></div>
+              <div class="meta"><div class="name">DMC 959</div><div class="sub" style="color:var(--green)">✓ 4/4 detected</div></div>
+              <div class="count">×3</div>
+              <div class="cb" style="background:var(--ink)"></div>
+            </div>
+            <div class="row">
+              <div class="skein sk-purple"></div>
+              <div class="meta"><div class="name">DMC ??? — Violet</div><div class="sub" style="color:var(--red)">! code unclear</div></div>
+              <div class="count">×1</div>
+              <div class="cb"></div>
+            </div>
+            <div class="row">
+              <div class="skein sk-green"></div>
+              <div class="meta"><div class="name">DMC 699 — Green</div><div class="sub" style="color:var(--green)">✓ 4/4 detected</div></div>
+              <div class="count">×2</div>
+              <div class="cb" style="background:var(--ink)"></div>
+            </div>
+          </div>
+          <div class="cta">save 4 · fix 2</div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:24px">Capture happy path — storyboard</div>
+  <div class="section-note">Single skein add, quick version.</div>
+
+  <div class="phone-row" style="gap:20px">
+    <div class="phone-cell" style="width:180px">
+      <div class="phone-label" style="font-size:20px">1 · Tap +</div>
+      <div style="width:180px;height:360px;background:var(--paper);border:2px dashed var(--ink);border-radius:20px;display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-size:50px;position:relative">
+        +
+        <div style="position:absolute;bottom:18px;left:0;right:0;text-align:center;font-family:'Kalam',cursive;font-size:12px;color:var(--ink-soft)">
+          from any screen
+        </div>
+      </div>
+    </div>
+    <div class="phone-cell" style="width:180px">
+      <div class="phone-label" style="font-size:20px">2 · Frame label</div>
+      <div style="width:180px;height:360px;background:#1f1d1b;border:2px solid var(--ink);border-radius:20px;display:flex;align-items:center;justify-content:center;position:relative;color:var(--paper-warm)">
+        <div style="width:90px;height:90px;border-radius:50%;background:var(--teal);position:relative">
+          <div style="position:absolute;top:42%;left:-10%;right:-10%;height:34%;background:var(--paper-warm);border:1px solid var(--ink);transform:rotate(-6deg);display:flex;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-weight:700;font-size:10px;color:var(--ink)">DMC 959</div>
+        </div>
+        <div class="corner tl"></div><div class="corner tr"></div>
+        <div class="corner bl"></div><div class="corner br"></div>
+      </div>
+    </div>
+    <div class="phone-cell" style="width:180px">
+      <div class="phone-label" style="font-size:20px">3 · Confirm</div>
+      <div style="width:180px;height:360px;background:var(--paper);border:2px solid var(--ink);border-radius:20px;padding:14px;font-family:'Kalam',cursive;font-size:13px">
+        <div style="font-family:'Caveat',cursive;font-size:22px;font-weight:700;margin-bottom:10px">Confirm</div>
+        <div style="color:var(--ink-faint);font-size:10px;text-transform:uppercase">Brand</div>
+        <div style="border-bottom:1.5px solid var(--ink);padding-bottom:3px;margin-bottom:10px">DMC</div>
+        <div style="color:var(--ink-faint);font-size:10px;text-transform:uppercase">Color #</div>
+        <div style="border-bottom:1.5px solid var(--ink);padding-bottom:3px;margin-bottom:10px">959</div>
+        <div style="color:var(--ink-faint);font-size:10px;text-transform:uppercase">Qty</div>
+        <div style="border-bottom:1.5px solid var(--ink);padding-bottom:3px">×3</div>
+      </div>
+    </div>
+    <div class="phone-cell" style="width:180px">
+      <div class="phone-label" style="font-size:20px">4 · Added</div>
+      <div style="width:180px;height:360px;background:var(--paper);border:2px solid var(--ink);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Caveat',cursive;font-size:26px;gap:10px;padding:14px;text-align:center">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--green);border:2px solid var(--ink);display:flex;align-items:center;justify-content:center;color:var(--paper);font-size:36px">✓</div>
+        added to stash
+        <div style="font-family:'Kalam',cursive;font-size:12px;color:var(--ink-soft);font-weight:400">DMC 959 · ×3</div>
+        <div class="wire-btn" style="margin-top:8px">+ scan another</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAGE 3: INVENTORY ============ -->
+<div class="page hidden-page" data-page="inventory">
+  <div class="section-title">Inventory views — 3 variations</div>
+  <div class="section-note">
+    Same data, three lenses. All three support quick −1 deduction and filter chips. Pick a primary default; the others could be tab-toggles inside the screen.
+  </div>
+
+  <div class="phone-row">
+
+    <!-- Inventory A: List with thumbnails + quick minus -->
+    <div class="phone-cell">
+      <div class="phone-label">A · List + thumbnails</div>
+      <div class="phone-desc">Data-dense, scannable. Each row = one skein. Big fat <strong>−</strong> button for deduction.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div style="flex:1">
+              <div class="title-h" style="font-family: 'Times New Roman'">my skeins</div>
+              <div class="title-sub">sorted by brand · 437</div>
+            </div>
+            <div class="icon sq">↓</div>
+            <div class="icon">⋯</div>
+          </div>
+          <div class="search">🔍 &nbsp;DMC 3…</div>
+          <div class="chips">
+            <span class="chip on">all</span>
+            <span class="chip">DMC</span>
+            <span class="chip">Anchor</span>
+            <span class="chip">low</span>
+          </div>
+          <div class="scroll-area">
+            <div class="row"><div class="skein sk-red"></div><div class="meta"><div class="name">DMC 321</div><div class="sub">Red</div></div><div class="count">×4</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-orange"></div><div class="meta"><div class="name">DMC 741</div><div class="sub">Med Tangerine</div></div><div class="count">×2</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-yellow"></div><div class="meta"><div class="name">DMC 743</div><div class="sub">Med Yellow</div></div><div class="count">×5</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-green"></div><div class="meta"><div class="name">DMC 699</div><div class="sub">Green</div></div><div class="count">×6</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-teal"></div><div class="meta"><div class="name">DMC 959</div><div class="sub">Med Seagreen</div></div><div class="count">×3</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-blue"></div><div class="meta"><div class="name">DMC 336</div><div class="sub">Navy</div></div><div class="count" style="color:var(--red)">×1</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-purple"></div><div class="meta"><div class="name">DMC 550</div><div class="sub">VD Violet</div></div><div class="count">×2</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-pink"></div><div class="meta"><div class="name">DMC 3806</div><div class="sub">Lt Cyclamen</div></div><div class="count">×2</div><div class="minus-btn">−</div></div>
+          </div>
+          <div class="fab">+</div>
+          <div class="bottom-nav">
+            <div class="bn-item"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item on"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Inventory B: Swatch grid -->
+    <div class="phone-cell">
+      <div class="phone-label">B · Swatch grid</div>
+      <div class="phone-desc">Visual-first. 4-wide grid. Long-press a swatch for −1; tap for detail.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div style="flex:1">
+              <div class="title-h" style="font-family: 'Times New Roman'">my skeins</div>
+              <div class="title-sub">grid view · by color fam</div>
+            </div>
+            <div class="icon sq">≡</div>
+            <div class="icon">⋯</div>
+          </div>
+          <div class="chips">
+            <span class="chip on">all</span>
+            <span class="chip">warm</span>
+            <span class="chip">cool</span>
+            <span class="chip">neutral</span>
+          </div>
+          <div class="scroll-area" style="padding-top:4px">
+            <div class="grid-swatch">
+              <div class="swatch-cell" style="background:var(--red)"><span class="code">321</span><span class="q">4</span></div>
+              <div class="swatch-cell" style="background:#d94637"><span class="code">347</span><span class="q">2</span></div>
+              <div class="swatch-cell" style="background:#e8664a"><span class="code">350</span><span class="q">5</span></div>
+              <div class="swatch-cell" style="background:var(--orange)"><span class="code">741</span><span class="q">2</span></div>
+              <div class="swatch-cell" style="background:#f5a55f"><span class="code">742</span><span class="q">3</span></div>
+              <div class="swatch-cell" style="background:var(--yellow)"><span class="code">743</span><span class="q">5</span></div>
+              <div class="swatch-cell" style="background:#efd278"><span class="code">744</span><span class="q low">1</span></div>
+              <div class="swatch-cell" style="background:#c8c04a"><span class="code">732</span><span class="q">3</span></div>
+              <div class="swatch-cell" style="background:#8bac55"><span class="code">471</span><span class="q">2</span></div>
+              <div class="swatch-cell" style="background:var(--green)"><span class="code">699</span><span class="q">6</span></div>
+              <div class="swatch-cell" style="background:#3f8466"><span class="code">910</span><span class="q">4</span></div>
+              <div class="swatch-cell" style="background:var(--teal)"><span class="code">959</span><span class="q">3</span></div>
+              <div class="swatch-cell" style="background:#5890a9"><span class="code">3760</span><span class="q">2</span></div>
+              <div class="swatch-cell" style="background:var(--blue)"><span class="code">798</span><span class="q">3</span></div>
+              <div class="swatch-cell" style="background:#2e4d85"><span class="code">336</span><span class="q low">1</span></div>
+              <div class="swatch-cell" style="background:var(--purple)"><span class="code">553</span><span class="q">2</span></div>
+              <div class="swatch-cell" style="background:var(--pink)"><span class="code">3806</span><span class="q">2</span></div>
+              <div class="swatch-cell" style="background:#e3b3c2"><span class="code">3354</span><span class="q">4</span></div>
+              <div class="swatch-cell" style="background:var(--brown, #8a5a3b)"><span class="code">433</span><span class="q">3</span></div>
+              <div class="swatch-cell" style="background:#d4c49a"><span class="code">738</span><span class="q">5</span></div>
+            </div>
+          </div>
+          <div class="fab">+</div>
+          <div class="bottom-nav">
+            <div class="bn-item"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item on"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Inventory C: Grouped rails -->
+    <div class="phone-cell">
+      <div class="phone-label">C · Grouped rails</div>
+      <div class="phone-desc">Horizontal rails per color family / brand — easier to spot what's in each group at a glance.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div style="flex:1">
+              <div class="title-h" style="font-family: 'Times New Roman'">my skeins</div>
+              <div class="title-sub">grouped · color family</div>
+            </div>
+            <div class="icon sq">↕</div>
+          </div>
+          <div class="search">🔍 &nbsp;search</div>
+          <div class="scroll-area" style="padding:0 0 8px">
+            <div class="rail-group">
+              <h4>Reds &amp; oranges <span class="count-pill">42</span></h4>
+              <div class="rail-scroll">
+                <div class="rail-item"><div class="skein sk-red" style="width:36px;height:36px"></div><span class="code">321</span><span class="q">×4</span></div>
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#d94637;border:2px solid var(--ink);border-radius:50%;position:relative"></div><span class="code">347</span><span class="q">×2</span></div>
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#e8664a;border:2px solid var(--ink);border-radius:50%"></div><span class="code">350</span><span class="q">×5</span></div>
+                <div class="rail-item"><div class="skein sk-orange" style="width:36px;height:36px"></div><span class="code">741</span><span class="q">×2</span></div>
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#f5a55f;border:2px solid var(--ink);border-radius:50%"></div><span class="code">742</span><span class="q">×3</span></div>
+                <div class="rail-item"><div class="skein sk-yellow" style="width:36px;height:36px"></div><span class="code">743</span><span class="q">×5</span></div>
+              </div>
+            </div>
+            <div class="rail-group">
+              <h4>Greens <span class="count-pill">58</span></h4>
+              <div class="rail-scroll">
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#8bac55;border:2px solid var(--ink);border-radius:50%"></div><span class="code">471</span><span class="q">×2</span></div>
+                <div class="rail-item"><div class="skein sk-green" style="width:36px;height:36px"></div><span class="code">699</span><span class="q">×6</span></div>
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#3f8466;border:2px solid var(--ink);border-radius:50%"></div><span class="code">910</span><span class="q">×4</span></div>
+                <div class="rail-item"><div class="skein sk-teal" style="width:36px;height:36px"></div><span class="code">959</span><span class="q">×3</span></div>
+              </div>
+            </div>
+            <div class="rail-group">
+              <h4>Blues &amp; purples <span class="count-pill">61</span></h4>
+              <div class="rail-scroll">
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#5890a9;border:2px solid var(--ink);border-radius:50%"></div><span class="code">3760</span><span class="q">×2</span></div>
+                <div class="rail-item"><div class="skein sk-blue" style="width:36px;height:36px"></div><span class="code">798</span><span class="q">×3</span></div>
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#2e4d85;border:2px solid var(--ink);border-radius:50%"></div><span class="code">336</span><span class="q" style="color:var(--red)">×1</span></div>
+                <div class="rail-item"><div class="skein sk-purple" style="width:36px;height:36px"></div><span class="code">553</span><span class="q">×2</span></div>
+              </div>
+            </div>
+            <div class="rail-group">
+              <h4>Pinks <span class="count-pill">24</span></h4>
+              <div class="rail-scroll">
+                <div class="rail-item"><div class="skein sk-pink" style="width:36px;height:36px"></div><span class="code">3806</span><span class="q">×2</span></div>
+                <div class="rail-item"><div class="skein" style="width:36px;height:36px;background:#e3b3c2;border:2px solid var(--ink);border-radius:50%"></div><span class="code">3354</span><span class="q">×4</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="fab">+</div>
+          <div class="bottom-nav">
+            <div class="bn-item"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item on"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ PAGE 4: DETAIL / MANUAL ADD / EDIT ============ -->
+<div class="page hidden-page" data-page="detail">
+  <div class="section-title">Detail · Manual add · Edit</div>
+  <div class="section-note">
+    Supporting screens. Skein detail is where history lives. Manual add mirrors the capture-confirm screen but starts empty. Edit is a sheet from detail.
+  </div>
+
+  <div class="phone-row">
+
+    <!-- Detail -->
+    <div class="phone-cell">
+      <div class="phone-label">Skein detail</div>
+      <div class="phone-desc">Tap any row to arrive here. Count, history log, big −1 / +1.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div class="icon">←</div>
+            <div class="title-h" style="flex:1; font-family: 'Times New Roman'">DMC 959</div>
+            <div class="icon">✎</div>
+            <div class="icon">⋯</div>
+          </div>
+          <div class="scroll-area">
+            <div style="display:flex;gap:12px;align-items:center;padding:6px 4px 10px">
+              <div class="skein sk-teal" style="width:72px;height:72px"></div>
+              <div>
+                <div style="font-family:'Caveat',cursive;font-weight:700;font-size:28px;line-height:1">Medium Seagreen</div>
+                <div style="font-family:'Kalam',cursive;font-size:13px;color:var(--ink-soft)">DMC · 6-strand cotton</div>
+                <div style="font-family:'Kalam',cursive;font-size:11px;color:var(--ink-faint)">added Apr 14 · last used 2d ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:14px;padding:6px 0 12px;border-top:1.5px dashed var(--rule);border-bottom:1.5px dashed var(--rule);margin:0 4px">
+              <div class="minus-btn" style="width:44px;height:44px;font-size:30px">−</div>
+              <div style="font-family:'Caveat',cursive;font-weight:700;font-size:64px;line-height:1">×3</div>
+              <div class="minus-btn" style="width:44px;height:44px;font-size:30px">+</div>
+            </div>
+            <div style="padding:6px 4px 4px;font-family:'Caveat',cursive;font-size:20px;font-weight:700">History</div>
+            <div class="row"><div style="width:24px;text-align:center">−</div><div class="meta"><div class="name">used for Night Sky</div><div class="sub">2 days ago</div></div><div class="sub">×1</div></div>
+            <div class="row"><div style="width:24px;text-align:center">+</div><div class="meta"><div class="name">added (photo scan)</div><div class="sub">Apr 14</div></div><div class="sub">×3</div></div>
+            <div class="row"><div style="width:24px;text-align:center">+</div><div class="meta"><div class="name">added (manual)</div><div class="sub">Feb 2</div></div><div class="sub">×1</div></div>
+          </div>
+          <div class="bottom-nav">
+            <div class="bn-item"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item on"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Manual add -->
+    <div class="phone-cell">
+      <div class="phone-label">Manual add</div>
+      <div class="phone-desc">For when there's no label to photograph. Brand picker first (helps autofill color name from code).</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div class="icon">←</div>
+            <div class="title-h" style="flex:1; font-family: 'Times New Roman'">add manually</div>
+            <div class="icon">✕</div>
+          </div>
+          <div class="scroll-area" style="padding:0">
+            <div class="form-row">
+              <div class="fr-label">Brand</div>
+              <div class="fr-value" style="padding:2px 0 3px">
+                <span class="chip on" style="font-size:18px">DMC</span>
+                <span class="chip" style="font-size:18px">Anchor</span>
+                <span class="chip" style="font-size:18px">+ other</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Color number</div>
+              <div class="fr-value" style="color:var(--ink-faint)">e.g. 321</div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Color name <span style="color:var(--ink-faint);font-size:9px">(auto if code known)</span></div>
+              <div class="fr-value" style="color:var(--ink-faint)">—</div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Quantity</div>
+              <div class="fr-value">
+                <div class="icon">−</div>
+                <span style="margin:0 8px">1</span>
+                <div class="icon">+</div>
+                <span class="pencil">skein(s)</span>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Swatch (optional)</div>
+              <div style="display:flex;align-items:center;gap:10px;padding:4px 0">
+                <div class="skein sk-ecru" style="width:42px;height:42px"></div>
+                <span style="font-family:'Kalam',cursive;font-size:12px;color:var(--ink-faint)">tap to pick color chip →</span>
+              </div>
+            </div>
+            <div class="cta">✓ save skein</div>
+            <div class="cta alt">📷 use camera instead</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Edit / more actions -->
+    <div class="phone-cell">
+      <div class="phone-label">Edit sheet</div>
+      <div class="phone-desc">Pulls up over detail. Adjust any field, merge duplicates, or delete.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen" style="background: rgba(0,0,0,0.3)">
+          <div class="statusbar" style="color:var(--paper-warm)"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <!-- dimmed background -->
+          <div style="position:absolute;top:28px;left:0;right:0;bottom:0;background:rgba(31,29,27,0.35);pointer-events:none"></div>
+          <!-- sheet -->
+          <div style="position:absolute;bottom:18px;left:0;right:0;background:var(--paper);border-top:2px solid var(--ink);border-radius:22px 22px 0 0;padding:8px 0 12px;box-shadow:0 -6px 0 rgba(31,29,27,0.2)">
+            <div style="width:40px;height:4px;background:var(--ink);opacity:0.5;margin:0 auto 8px;border-radius:2px"></div>
+            <div style="padding:0 16px 8px;font-family:'Caveat',cursive;font-weight:700;font-size:24px">edit · DMC 959</div>
+            <div class="form-row">
+              <div class="fr-label">Color name</div>
+              <div class="fr-value">Medium Seagreen <span class="pencil">✎</span></div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Adjust count</div>
+              <div class="fr-value">
+                <div class="icon">−</div>
+                <span style="margin:0 8px">3</span>
+                <div class="icon">+</div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="fr-label">Swatch</div>
+              <div style="display:flex;gap:6px;padding:4px 0">
+                <div class="skein sk-teal" style="width:28px;height:28px;box-shadow:0 0 0 2px var(--ink)"></div>
+                <div class="skein" style="width:28px;height:28px;background:#3f8466"></div>
+                <div class="skein sk-green" style="width:28px;height:28px"></div>
+                <div class="skein sk-blue" style="width:28px;height:28px"></div>
+                <span style="font-family:'Kalam',cursive;font-size:11px;color:var(--ink-faint);align-self:center">+ pick</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;padding:10px 12px 0">
+              <div class="wire-btn accent-r" style="flex:1;text-align:center">🗑 delete</div>
+              <div class="wire-btn" style="flex:1;text-align:center">merge dup</div>
+            </div>
+            <div class="cta" style="margin-bottom:2px">✓ save changes</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============ PAGE 5: EXPORT + DEDUCT CONTEXT ============ -->
+<div class="page hidden-page" data-page="export">
+  <div class="section-title">Deduct-in-context &amp; CSV export</div>
+  <div class="section-note">
+    How the −1 button feels in practice (with undo), the bulk deduct mode, and the CSV export flow.
+  </div>
+
+  <div class="phone-row">
+
+    <!-- Deduct with undo -->
+    <div class="phone-cell">
+      <div class="phone-label">−1 with undo</div>
+      <div class="phone-desc">Tap − on any row → count drops, toast appears, 5s to undo. No modal.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div style="flex:1"><div class="title-h" style="font-family: 'Times New Roman'">my skeins</div></div>
+            <div class="icon sq">↓</div>
+          </div>
+          <div class="scroll-area" style="padding-top:6px">
+            <div class="row"><div class="skein sk-red"></div><div class="meta"><div class="name">DMC 321</div><div class="sub">Red</div></div><div class="count">×4</div><div class="minus-btn">−</div></div>
+            <div class="row" style="background:rgba(232,194,74,0.25);border-radius:6px">
+              <div class="skein sk-orange"></div>
+              <div class="meta"><div class="name">DMC 741</div><div class="sub" style="color:var(--green);font-weight:700">just used ×1</div></div>
+              <div class="count" style="text-decoration:line-through;color:var(--ink-faint)">×2</div>
+              <div class="count" style="color:var(--green)">×1</div>
+            </div>
+            <div class="row"><div class="skein sk-yellow"></div><div class="meta"><div class="name">DMC 743</div><div class="sub">Med Yellow</div></div><div class="count">×5</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-green"></div><div class="meta"><div class="name">DMC 699</div><div class="sub">Green</div></div><div class="count">×6</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-teal"></div><div class="meta"><div class="name">DMC 959</div><div class="sub">Med Seagreen</div></div><div class="count">×3</div><div class="minus-btn">−</div></div>
+            <div class="row"><div class="skein sk-blue"></div><div class="meta"><div class="name">DMC 336</div><div class="sub">Navy</div></div><div class="count" style="color:var(--red)">×1</div><div class="minus-btn">−</div></div>
+          </div>
+          <!-- Snackbar -->
+          <div style="position:absolute;bottom:72px;left:12px;right:12px;background:var(--ink);color:var(--paper);border:2px solid var(--ink);border-radius:14px;padding:8px 12px;display:flex;align-items:center;gap:10px;box-shadow:2px 2px 0 var(--yellow);font-family:'Kalam',cursive;font-size:13px">
+            <span>Used 1× DMC 741.</span>
+            <span style="margin-left:auto;font-family:'Caveat',cursive;font-weight:700;font-size:18px;color:var(--yellow)">undo</span>
+          </div>
+          <div class="bottom-nav">
+            <div class="bn-item"><div class="bn-icon"></div>Home</div>
+            <div class="bn-item on"><div class="bn-icon"></div>Stash</div>
+            <div class="bn-item"><div class="bn-icon"></div>Add</div>
+            <div class="bn-item"><div class="bn-icon"></div>More</div>
+          </div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Bulk deduct -->
+    <div class="phone-cell">
+      <div class="phone-label">Bulk mode</div>
+      <div class="phone-desc">Long-press any row → selection mode. Subtract the same amount from many at once.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar" style="background:var(--ink);color:var(--paper);border-bottom:none">
+            <div class="icon" style="border-color:var(--paper);color:var(--paper);background:transparent">✕</div>
+            <div class="title-h" style="flex:1;color:var(--paper); font-family: 'Times New Roman'">3 selected</div>
+            <div class="icon" style="border-color:var(--paper);color:var(--paper);background:transparent">⋯</div>
+          </div>
+          <div class="scroll-area" style="padding-top:6px">
+            <div class="row" style="background:rgba(58,111,181,0.15)">
+              <div class="cb" style="background:var(--ink)"></div>
+              <div class="skein sk-red"></div>
+              <div class="meta"><div class="name">DMC 321</div><div class="sub">Red</div></div>
+              <div class="count">×4</div>
+            </div>
+            <div class="row">
+              <div class="cb"></div>
+              <div class="skein sk-orange"></div>
+              <div class="meta"><div class="name">DMC 741</div><div class="sub">Med Tangerine</div></div>
+              <div class="count">×2</div>
+            </div>
+            <div class="row" style="background:rgba(58,111,181,0.15)">
+              <div class="cb" style="background:var(--ink)"></div>
+              <div class="skein sk-yellow"></div>
+              <div class="meta"><div class="name">DMC 743</div><div class="sub">Med Yellow</div></div>
+              <div class="count">×5</div>
+            </div>
+            <div class="row">
+              <div class="cb"></div>
+              <div class="skein sk-green"></div>
+              <div class="meta"><div class="name">DMC 699</div><div class="sub">Green</div></div>
+              <div class="count">×6</div>
+            </div>
+            <div class="row" style="background:rgba(58,111,181,0.15)">
+              <div class="cb" style="background:var(--ink)"></div>
+              <div class="skein sk-teal"></div>
+              <div class="meta"><div class="name">DMC 959</div><div class="sub">Med Seagreen</div></div>
+              <div class="count">×3</div>
+            </div>
+          </div>
+          <!-- action bar -->
+          <div style="border-top:2px solid var(--ink);background:var(--paper);padding:8px 12px;display:flex;gap:8px;align-items:center">
+            <span style="font-family:'Kalam',cursive;font-size:12px;color:var(--ink-soft)">deduct each by</span>
+            <div class="icon">−</div>
+            <span style="font-family:'Caveat',cursive;font-weight:700;font-size:22px">1</span>
+            <div class="icon">+</div>
+            <div class="wire-btn accent-r" style="margin-left:auto">apply</div>
+          </div>
+          <div class="bottom-nav" style="display:none"></div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+    <!-- Export CSV -->
+    <div class="phone-cell">
+      <div class="phone-label">Export CSV</div>
+      <div class="phone-desc">From More → Export. Choose scope, hit export, Android share sheet opens.</div>
+      <div class="phone">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="right">▲▲ ▇</span></div>
+          <div class="top-bar">
+            <div class="icon">←</div>
+            <div class="title-h" style="flex:1; font-family: 'Times New Roman'">export stash</div>
+          </div>
+          <div class="scroll-area" style="padding:8px 12px">
+            <div style="font-family:'Kalam',cursive;font-size:13px;color:var(--ink-soft);margin-bottom:8px">
+              Save a spreadsheet-friendly CSV of your stash.
+            </div>
+            <div style="font-family:'Caveat',cursive;font-size:20px;font-weight:700;margin-top:6px">what to include</div>
+            <div style="padding:6px 0">
+              <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><div class="cb" style="background:var(--ink)"></div><span>all skeins (437)</span></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><div class="cb"></div><span>only running low (12)</span></div>
+              <div style="display:flex;align-items:center;gap:8px;padding:4px 0"><div class="cb"></div><span>filter by brand…</span></div>
+            </div>
+            <div style="font-family:'Caveat',cursive;font-size:20px;font-weight:700;margin-top:12px">columns</div>
+            <div style="padding:6px 0;font-family:'Kalam',cursive;font-size:13px">
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb" style="background:var(--ink)"></div>brand</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb" style="background:var(--ink)"></div>color #</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb" style="background:var(--ink)"></div>color name</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb" style="background:var(--ink)"></div>quantity</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb"></div>date added</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb"></div>last used</div>
+              <div style="display:flex;align-items:center;gap:8px;padding:3px 0"><div class="cb"></div>notes</div>
+            </div>
+            <div style="border:1.5px dashed var(--ink);border-radius:8px;padding:8px;margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink-soft);line-height:1.5;background:var(--paper-warm)">
+              brand,code,name,qty<br>
+              DMC,321,Red,4<br>
+              DMC,741,Med Tangerine,2<br>
+              DMC,959,Med Seagreen,3<br>
+              …
+            </div>
+          </div>
+          <div class="cta">↗ export &amp; share</div>
+        </div>
+        <div class="homebar"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div> <!-- /canvas -->
+
+<div class="legend">
+  <div class="item"><div class="skein sk-red" style="width:22px;height:22px"></div> skein ball</div>
+  <div class="item"><div class="minus-btn" style="width:22px;height:22px;font-size:16px">−</div> quick deduct</div>
+  <div class="item"><div class="cb"></div> checkbox</div>
+  <div class="item"><div class="icon" style="width:22px;height:22px;font-size:12px">+</div> icon button</div>
+  <div class="item"><span class="chip" style="font-size:14px">chip</span> filter chip</div>
+  <div class="item"><span class="detected">detected</span> OCR-filled field</div>
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const pages = document.querySelectorAll('.page');
+  const KEY = 'skein-wires-tab';
+  function activate(page) {
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.page === page));
+    pages.forEach(p => {
+      const on = p.dataset.page === page;
+      p.classList.toggle('active-page', on);
+      p.classList.toggle('hidden-page', !on);
+    });
+    try { localStorage.setItem(KEY, page); } catch(e){}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabs.forEach(t => t.addEventListener('click', () => activate(t.dataset.page)));
+  try {
+    const saved = localStorage.getItem(KEY);
+    if (saved && document.querySelector(`.tab[data-page="${saved}"]`)) activate(saved);
+  } catch(e){}
+</script>
+
+
+
+</body></html>

@@ -5,6 +5,7 @@ import { mapReferenceColor } from "./sqliteReferenceColorRepository";
 
 type InventoryRow = {
   inventory_id: string;
+  inventory_updated_at: string;
   quantity: number;
   condition: "full" | "partial";
   notes: string | null;
@@ -92,6 +93,7 @@ function inventorySelectSql(suffix: string): string {
   return `
     SELECT
       ui.id AS inventory_id,
+      ui.updated_at AS inventory_updated_at,
       ui.quantity,
       ui.condition,
       ui.notes,
@@ -112,6 +114,7 @@ function inventorySelectSql(suffix: string): string {
 function mapInventoryItem(row: InventoryRow): InventoryItem {
   return {
     id: row.inventory_id,
+    updatedAt: row.inventory_updated_at,
     quantity: row.quantity,
     condition: row.condition,
     notes: row.notes,

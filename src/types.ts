@@ -25,6 +25,7 @@ export type InventoryItem = {
   quantity: number;
   condition: ThreadCondition;
   notes?: string | null;
+  updatedAt: string;
 };
 
 export type OcrCandidate = {

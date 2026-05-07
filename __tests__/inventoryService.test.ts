@@ -4,6 +4,7 @@ import type { InventoryItem } from "../src/types";
 
 const sampleItem: InventoryItem = {
   id: "inv-1",
+  updatedAt: "2025-01-01T00:00:00.000Z",
   referenceColor: {
     id: "color-310",
     threadTypeId: "dmc-six-strand",

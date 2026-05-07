@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\CodingProjects\\\\needle-minder\\\\app\\\\\\(tabs\\)\" -Force)",
+      "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\CodingProjects\\\\needle-minder\\\\app\\\\detail\" -Force)"
+    ]
+  }
+}
