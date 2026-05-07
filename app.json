@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "scheme": "needleminder",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.needleminder.app"
@@ -15,7 +14,10 @@
       "package": "com.needleminder.app",
       "adaptiveIcon": {
         "backgroundColor": "#f8f1e7"
-      }
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "plugins": [
       "expo-router",
@@ -24,10 +26,18 @@
         {
           "cameraPermission": "Allow Needle Minder to scan a thread label."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "ad406d51-e490-42e0-921e-d87f43cbe3af"
+      }
+    },
+    "owner": "jmcpeak53"
   }
 }

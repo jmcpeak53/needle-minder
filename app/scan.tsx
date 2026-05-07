@@ -1,8 +1,9 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
+import { useRouter } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { useNeedleMinder } from "../src/app/NeedleMinderContext";
+import { useNeedleMinder } from "../src/state/NeedleMinderContext";
 import { parseOcrCandidates } from "../src/ocr/ocrParser";
 import { MlKitOcrProvider } from "../src/providers/mlKitOcrProvider";
 import { ColorSwatch } from "../src/ui/ColorSwatch";
@@ -13,11 +14,13 @@ import type { OcrCandidate, ReferenceColor } from "../src/types";
 
 export default function ScanScreen() {
   const { catalog, addInventory } = useNeedleMinder();
+  const router = useRouter();
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [candidates, setCandidates] = useState<OcrCandidate[]>([]);
   const [rawText, setRawText] = useState<string[]>([]);
   const [selectedCode, setSelectedCode] = useState<string | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const ocrProvider = useMemo(() => new MlKitOcrProvider(), []);
 
@@ -57,15 +60,33 @@ export default function ScanScreen() {
           }
 
           setIsScanning(true);
-          const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-          const recognizedText = await ocrProvider.recognizeImage(photo.uri);
-          const nextCandidates = parseOcrCandidates(recognizedText, catalog);
-          setRawText(recognizedText);
-          setCandidates(nextCandidates);
-          setSelectedCode(nextCandidates[0]?.colorCode ?? null);
-          setIsScanning(false);
+          setScanError(null);
+
+          try {
+            const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
+            const recognizedText = await ocrProvider.recognizeImage(photo.uri);
+            const nextCandidates = parseOcrCandidates(recognizedText, catalog);
+            setRawText(recognizedText);
+            setCandidates(nextCandidates);
+            setSelectedCode(nextCandidates[0]?.colorCode ?? null);
+          } catch {
+            setCandidates([]);
+            setSelectedCode(null);
+            setRawText([]);
+            setScanError("Needle Minder could not scan that label. Try again or add the color manually.");
+          } finally {
+            setIsScanning(false);
+          }
         }}
       />
+
+      {scanError ? (
+        <View style={{ backgroundColor: colors.surface, borderRadius: 8, gap: spacing.sm, padding: spacing.lg }}>
+          <Text style={{ color: colors.ink, fontSize: 18, fontWeight: "800" }}>Scan failed</Text>
+          <Text style={{ color: colors.muted }}>{scanError}</Text>
+          <PrimaryButton label="Add manually" onPress={() => router.push("/add")} variant="secondary" />
+        </View>
+      ) : null}
 
       {candidates.length > 0 ? (
         <View style={{ gap: spacing.md }}>
@@ -105,6 +126,7 @@ export default function ScanScreen() {
           <Text style={{ color: colors.muted }}>
             Use the Add tab to search manually. OCR read: {rawText.join(" / ")}
           </Text>
+          <PrimaryButton label="Add manually" onPress={() => router.push("/add")} variant="secondary" />
         </View>
       ) : null}
     </Screen>

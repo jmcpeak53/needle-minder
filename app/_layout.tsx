@@ -1,7 +1,9 @@
+import "expo-dev-client";
+
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 
-import { NeedleMinderProvider } from "../src/app/NeedleMinderContext";
+import { NeedleMinderProvider } from "../src/state/NeedleMinderContext";
 import { colors } from "../src/ui/theme";
 
 export default function RootLayout() {

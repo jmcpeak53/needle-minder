@@ -24,6 +24,8 @@ This repo now contains the first implementation scaffold:
 npm install
 ```
 
+On Windows PowerShell, if `npm` is blocked by the local script execution policy, use `npm.cmd` for the same commands.
+
 ## Run In Development
 
 OCR uses native ML Kit code, so use a custom development build rather than Expo Go.
@@ -34,11 +36,18 @@ npm run android
 npm run ios
 ```
 
+After installing an EAS development build on a physical device, start Metro for that dev client with:
+
+```bash
+npx expo start --dev-client --host lan
+```
+
 ## Test And Validate
 
 ```bash
-npm test
+npm test -- --runInBand
 npm run typecheck
+npm run lint
 npm run validate:catalog
 ```
 
@@ -59,6 +68,7 @@ The Android `preview-apk` profile is intended for sideloaded APK testing. The iO
 
 - `app/` - Expo Router screens.
 - `src/db/` - SQLite setup, schema, and repositories.
+- `src/state/` - app-level state and context providers.
 - `src/inventory/` - inventory business rules.
 - `src/catalog/` - reference catalog interfaces and validation.
 - `src/ocr/` - OCR candidate parsing.

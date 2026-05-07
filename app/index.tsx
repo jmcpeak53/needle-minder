@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Alert, Pressable, Text, TextInput, View } from "react-native";
 
-import { useNeedleMinder } from "../src/app/NeedleMinderContext";
+import { useNeedleMinder } from "../src/state/NeedleMinderContext";
 import { ColorSwatch } from "../src/ui/ColorSwatch";
 import { PrimaryButton } from "../src/ui/PrimaryButton";
 import { Screen } from "../src/ui/Screen";
