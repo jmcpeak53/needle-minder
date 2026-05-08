@@ -2,7 +2,25 @@
   "permissions": {
     "allow": [
       "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\CodingProjects\\\\needle-minder\\\\app\\\\\\(tabs\\)\" -Force)",
-      "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\CodingProjects\\\\needle-minder\\\\app\\\\detail\" -Force)"
+      "PowerShell(New-Item -ItemType Directory -Path \"c:\\\\CodingProjects\\\\needle-minder\\\\app\\\\detail\" -Force)",
+      "Bash(adb devices *)",
+      "Bash(npx expo *)",
+      "PowerShell($env:ANDROID_HOME; $env:ANDROID_SDK_ROOT; if \\(Test-Path \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\"\\) { \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\" } elseif \\(Test-Path \"C:\\\\Android\\\\Sdk\"\\) { \"C:\\\\Android\\\\Sdk\" } else { \"not found in common locations\" })",
+      "PowerShell(cd \"c:\\\\CodingProjects\\\\needle-minder\"; npx expo run:android 2>&1 | Tee-Object -FilePath \"$env:TEMP\\\\expo-build.log\" | Select-Object -Last 60)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" -s 25251JEGR09236 uninstall com.needleminder.app)",
+      "PowerShell(& \"$env:LOCALAPPDATA\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" -s 25251JEGR09236 install -r \"c:\\\\CodingProjects\\\\needle-minder\\\\android\\\\app\\\\build\\\\outputs\\\\apk\\\\debug\\\\app-debug.apk\")",
+      "PowerShell(cd \"c:\\\\CodingProjects\\\\needle-minder\"; Start-Process powershell -ArgumentList \"-NoExit\", \"-Command\", \"npx expo start --dev-client --port 8082\" -WindowStyle Normal)",
+      "Bash(gh issue *)",
+      "PowerShell(gh issue list --state open)",
+      "WebFetch(domain:api.github.com)",
+      "PowerShell(eas --version)",
+      "PowerShell(eas whoami)",
+      "PowerShell(python3 \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\" report 2>&1)",
+      "PowerShell(New-Item *)",
+      "PowerShell($MEASURE_PY = \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\"; python $MEASURE_PY check-hook 2>&1; Write-Output \"EXIT:$LASTEXITCODE\")",
+      "PowerShell($MEASURE_PY = \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\"; python $MEASURE_PY daemon-status 2>&1; python $MEASURE_PY daemon-consent --get 2>&1)",
+      "PowerShell($MEASURE_PY = \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\"; python $MEASURE_PY setup-smart-compact --status 2>&1)",
+      "PowerShell(Get-ChildItem *)"
     ]
   }
 }

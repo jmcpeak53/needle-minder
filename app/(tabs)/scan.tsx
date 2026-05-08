@@ -9,7 +9,7 @@ import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
 import { parseOcrCandidates } from "../../src/ocr/ocrParser";
 import { MlKitOcrProvider } from "../../src/providers/mlKitOcrProvider";
 import { SkeinBall } from "../../src/ui/SkeinBall";
-import { colors, font, radius, spacing } from "../../src/ui/theme";
+import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 import type { OcrCandidate, ReferenceColor } from "../../src/types";
 
 type ConfirmState = {
@@ -88,7 +88,7 @@ export default function ScanScreen() {
         <Pressable onPress={() => router.back()} style={[styles.backBtn, { top: insets.top + 8 }]}>
           <Ionicons name="chevron-back" size={20} color={colors.card} />
         </Pressable>
-        <View style={styles.permContent}>
+        <View style={[styles.permContent, { paddingBottom: insets.bottom + NAV_HEIGHT + spacing.lg }]}>
           <Text style={styles.permTitle}>Camera access</Text>
           <Text style={styles.permBody}>
             Skein uses your camera to read the color number printed on thread labels.
