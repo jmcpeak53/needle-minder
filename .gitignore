@@ -9,6 +9,7 @@ android/
 ios/
 AGENTS.md
 CLAUDE.md
+/.claude/*
 dev-worktree/
 sampleImages/*
 sampleData/*
@@ -18,3 +19,4 @@ sampleData/*
 
 expo-env.d.ts
 # @end expo-cli
+.claude/settings.local.json

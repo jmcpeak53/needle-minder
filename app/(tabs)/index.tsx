@@ -57,21 +57,22 @@ export default function HomeScreen() {
 
         {/* Stats grid */}
         <View style={styles.statsGrid}>
-          <StatCard label="skeins in stash" value={stats.total} tag="total" />
-          <StatCard label="distinct colors" value={stats.unique} tag="unique" />
-          <StatCard label="brands" value={stats.brands} tag="brands" />
+          <StatCard label="skeins in stash" value={stats.total} tag="total" onPress={() => router.push("/stash")} />
+          <StatCard label="distinct colors" value={stats.unique} tag="unique" onPress={() => router.push("/stash")} />
+          <StatCard label="brands" value={stats.brands} tag="brands" onPress={() => router.push("/stash")} />
           <StatCard
             label="running low"
             value={stats.lowStock}
             tag="alert"
             warn={stats.lowStock > 0}
+            onPress={() => router.push({ pathname: "/stash", params: { filter: "low" } } as never)}
           />
         </View>
 
         {/* Low stock strip */}
         {lowStockItems.length > 0 && (
           <Pressable
-            onPress={() => router.push("/stash")}
+            onPress={() => router.push({ pathname: "/stash", params: { filter: "low" } } as never)}
             style={styles.lowstockStrip}
           >
             <View style={styles.lowstockIcon}>
@@ -148,19 +149,21 @@ function StatCard({
   label,
   value,
   tag,
-  warn = false
+  warn = false,
+  onPress
 }: {
   label: string;
   value: number;
   tag: string;
   warn?: boolean;
+  onPress?: () => void;
 }) {
   return (
-    <View style={[styles.statCard, warn && styles.statCardWarn]}>
+    <Pressable onPress={onPress} style={[styles.statCard, warn && styles.statCardWarn]}>
       <Text style={styles.statTag}>{tag}</Text>
       <Text style={[styles.statValue, warn && styles.statValueWarn]}>{value}</Text>
       <Text style={[styles.statLabel, warn && styles.statLabelWarn]}>{label}</Text>
-    </View>
+    </Pressable>
   );
 }
 

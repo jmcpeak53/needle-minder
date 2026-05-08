@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { BackHandler, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
@@ -9,26 +9,93 @@ import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 import type { ReferenceColor, ThreadCondition } from "../../src/types";
 
+function RainbowBall({ size }: { size: number }) {
+  const stripes = ["#E53935", "#FB8C00", "#FDD835", "#43A047", "#1E88E5", "#8E24AA"];
+  const stripeW = Math.ceil(size / stripes.length);
+  const r = size / 2;
+  return (
+    <View style={{ width: size, height: size, borderRadius: r, overflow: "hidden", flexDirection: "row", flexShrink: 0 }}>
+      {stripes.map((color, i) => (
+        <View key={i} style={{ width: stripeW, height: size, backgroundColor: color }} />
+      ))}
+      <View style={{ position: "absolute", width: size * 0.42, height: size * 0.3, borderRadius: size * 0.15, top: size * 0.12, left: size * 0.14, backgroundColor: "rgba(255,255,255,0.32)", transform: [{ rotate: "-20deg" }] }} />
+      <View style={{ position: "absolute", width: size * 0.5, height: size * 0.36, borderRadius: size * 0.18, bottom: size * 0.1, right: size * 0.08, backgroundColor: "rgba(0,0,0,0.18)", transform: [{ rotate: "-15deg" }] }} />
+    </View>
+  );
+}
+
 export default function AddScreen() {
   const { ready, catalog, addInventory } = useNeedleMinder();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
+  const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<ReferenceColor | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState<ThreadCondition>("full");
   const [notes, setNotes] = useState("");
 
+  const isSearching = query.trim().length > 0;
+  const mode = isSearching ? "search" : selectedFamily ? "family" : "browse";
+
+  const families = useMemo(() => {
+    const map = new Map<string, ReferenceColor[]>();
+    for (const c of catalog) {
+      const list = map.get(c.colorFamily) ?? [];
+      list.push(c);
+      map.set(c.colorFamily, list);
+    }
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, members]) => {
+        if (members.some((m) => m.threadSubtype === "metallic")) {
+          return { name, count: members.length, representativeHex: "#C0BDBA", isRainbow: false };
+        }
+        if (members.every((m) => m.threadSubtype === "variegated") || name.toLowerCase().includes("varieg")) {
+          return { name, count: members.length, representativeHex: "", isRainbow: true };
+        }
+        const nameLower = name.toLowerCase();
+        let rep = members.find((m) => m.colorName.toLowerCase() === nameLower);
+        if (!rep) rep = members.find((m) => m.colorName.toLowerCase().startsWith(nameLower));
+        if (!rep) rep = members[Math.floor(members.length / 2)];
+        return { name, count: members.length, representativeHex: rep.hexRgb, isRainbow: false };
+      });
+  }, [catalog]);
+
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return catalog.slice(0, 40);
-    return catalog.filter(
-      (c) =>
-        c.colorCode.toLowerCase().includes(q) ||
-        c.colorName.toLowerCase().includes(q) ||
-        c.colorFamily.toLowerCase().includes(q)
-    );
-  }, [catalog, query]);
+    if (mode === "search") {
+      const q = query.trim().toLowerCase();
+      return catalog.filter(
+        (c) =>
+          c.colorCode.toLowerCase().includes(q) ||
+          c.colorName.toLowerCase().includes(q) ||
+          c.colorFamily.toLowerCase().includes(q)
+      );
+    }
+    if (mode === "family" && selectedFamily) {
+      return catalog.filter((c) => c.colorFamily === selectedFamily);
+    }
+    return [];
+  }, [catalog, query, mode, selectedFamily]);
+
+  useEffect(() => {
+    const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (mode === "family") {
+        setSelectedFamily(null);
+        return true;
+      }
+      return false;
+    });
+    return () => subscription.remove();
+  }, [mode]);
+
+  function handleBack() {
+    if (mode === "family") {
+      setSelectedFamily(null);
+    } else {
+      router.back();
+    }
+  }
 
   if (!ready) return <View style={[styles.screen, { paddingTop: insets.top }]} />;
 
@@ -36,10 +103,12 @@ export default function AddScreen() {
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       {/* App bar */}
       <View style={styles.appbar}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+        <Pressable onPress={handleBack} style={styles.iconBtn}>
           <Ionicons name="chevron-back" size={18} color={colors.ink2} />
         </Pressable>
-        <Text style={styles.appbarTitle}>Add manually</Text>
+        <Text style={styles.appbarTitle} numberOfLines={1}>
+          {mode === "family" ? selectedFamily : "Add manually"}
+        </Text>
       </View>
 
       {/* Search */}
@@ -74,7 +143,9 @@ export default function AddScreen() {
               <SkeinBall color={selectedColor.hexRgb} size={52} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.selectedName}>{selectedColor.colorName}</Text>
-                <Text style={styles.selectedCode}>{selectedColor.colorCode} · {selectedColor.colorFamily}</Text>
+                <Text style={styles.selectedCode}>
+                  {selectedColor.colorCode} · {selectedColor.colorFamily}
+                </Text>
               </View>
               <Pressable onPress={() => setSelectedColor(null)} style={styles.iconBtn}>
                 <Ionicons name="close" size={16} color={colors.ink3} />
@@ -140,21 +211,48 @@ export default function AddScreen() {
           </View>
         )}
 
-        {/* Results list */}
-        {results.map((color) => (
-          <Pressable
-            key={color.id}
-            onPress={() => setSelectedColor(color)}
-            style={[styles.resultRow, selectedColor?.id === color.id && styles.resultRowSelected]}
-          >
-            <SkeinBall color={color.hexRgb} size={40} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.resultName}>{color.colorCode} <Text style={styles.resultColorName}>{color.colorName}</Text></Text>
-              <Text style={styles.resultFamily}>{color.colorFamily}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
-          </Pressable>
-        ))}
+        {/* Browse: family list */}
+        {mode === "browse" &&
+          families.map((family) => (
+            <Pressable
+              key={family.name}
+              style={styles.familyRow}
+              onPress={() => setSelectedFamily(family.name)}
+            >
+              {family.isRainbow
+                ? <RainbowBall size={28} />
+                : <SkeinBall color={family.representativeHex} size={28} />
+              }
+              <Text style={styles.familyName}>{family.name}</Text>
+              <Text style={styles.familyCount}>{family.count}</Text>
+              <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
+            </Pressable>
+          ))}
+
+        {/* Family drill-down or search: flat color list */}
+        {(mode === "family" || mode === "search") &&
+          results.map((color) => (
+            <Pressable
+              key={color.id}
+              onPress={() => setSelectedColor(color)}
+              style={[
+                styles.resultRow,
+                selectedColor?.id === color.id && styles.resultRowSelected
+              ]}
+            >
+              <SkeinBall color={color.hexRgb} size={40} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.resultName}>
+                  {color.colorCode}{" "}
+                  <Text style={styles.resultColorName}>{color.colorName}</Text>
+                </Text>
+                {mode === "search" && (
+                  <Text style={styles.resultFamily}>{color.colorFamily}</Text>
+                )}
+              </View>
+              <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
+            </Pressable>
+          ))}
       </ScrollView>
     </View>
   );
@@ -202,6 +300,27 @@ const styles = StyleSheet.create({
     color: colors.ink
   },
   scroll: { paddingHorizontal: spacing.lg },
+  // Family browse
+  familyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.ruleSoft
+  },
+  familyName: {
+    flex: 1,
+    fontFamily: font.sansMedium,
+    fontSize: 15,
+    color: colors.ink
+  },
+  familyCount: {
+    fontFamily: font.mono,
+    fontSize: 12,
+    color: colors.ink3
+  },
+  // Selected card
   selectedCard: {
     backgroundColor: colors.card,
     borderWidth: 1,
@@ -276,6 +395,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   saveBtnText: { fontFamily: font.sansSemiBold, fontSize: 14, color: colors.card },
+  // Color results (family drill-down + search)
   resultRow: {
     flexDirection: "row",
     alignItems: "center",

@@ -27,7 +27,8 @@
       "PowerShell(gh issue *)",
       "Bash(dir C:\\\\CodingProjects\\\\needle-minder\\\\app *)",
       "Bash(powershell *)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(awk -F',' '{print $3}')"
     ]
   }
 }

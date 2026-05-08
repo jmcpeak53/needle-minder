@@ -238,13 +238,6 @@ export default function ScanScreen() {
       <View style={[styles.corner, styles.cornerBL]} />
       <View style={[styles.corner, styles.cornerBR]} />
 
-      {/* Mode pills */}
-      <View style={styles.vfModes}>
-        <Text style={styles.vfModeInactive}>Scan</Text>
-        <Text style={styles.vfModeActive}>Single</Text>
-        <Text style={styles.vfModeInactive}>Batch</Text>
-      </View>
-
       {/* Capture bar */}
       <View style={[styles.captureBar, { bottom: insets.bottom + 30 }]}>
         <Pressable style={styles.vfSmallBtn} onPress={() => router.back()}>
@@ -436,29 +429,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     borderRightWidth: 2,
     borderBottomRightRadius: 10
-  },
-  vfModes: {
-    position: "absolute",
-    bottom: 120,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 14
-  },
-  vfModeInactive: {
-    fontFamily: font.sansMedium,
-    fontSize: 11,
-    color: "rgba(250,246,236,0.55)",
-    letterSpacing: 1,
-    textTransform: "uppercase"
-  },
-  vfModeActive: {
-    fontFamily: font.sansBold,
-    fontSize: 11,
-    color: colors.card,
-    letterSpacing: 1,
-    textTransform: "uppercase"
   },
   captureBar: {
     position: "absolute",

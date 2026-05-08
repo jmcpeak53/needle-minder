@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -31,9 +31,14 @@ export default function StashScreen() {
   const { ready, inventory, updateInventory } = useNeedleMinder();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
 
   const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [filter, setFilter] = useState<FilterKey>((filterParam as FilterKey) ?? "all");
+
+  useEffect(() => {
+    if (filterParam) setFilter(filterParam as FilterKey);
+  }, [filterParam]);
   const [pressedItem, setPressedItem] = useState<InventoryItem | null>(null);
   const [sheetQty, setSheetQty] = useState(0);
   const [snackbar, setSnackbar] = useState<{
@@ -358,8 +363,11 @@ function SwatchCell({
       onPress={onPress}
       onLongPress={onLongPress}
       delayLongPress={400}
-      style={[styles.swatch, { width: SWATCH_SIZE, height: SWATCH_SIZE, backgroundColor: item.referenceColor.hexRgb }]}
+      style={[styles.swatch, { width: SWATCH_SIZE, height: SWATCH_SIZE }]}
     >
+      <View style={styles.swatchBallWrap}>
+        <SkeinBall color={item.referenceColor.hexRgb} size={Math.floor(SWATCH_SIZE * 0.55)} />
+      </View>
       <View style={[styles.swatchQtyBadge, isLow && styles.swatchQtyBadgeLow]}>
         <Text style={[styles.swatchQtyText, isLow && styles.swatchQtyTextLow]}>
           {item.quantity}
@@ -501,7 +509,15 @@ const styles = StyleSheet.create({
   swatch: {
     borderRadius: radius.lg,
     overflow: "hidden",
-    position: "relative"
+    position: "relative",
+    backgroundColor: colors.card2,
+    borderWidth: 1,
+    borderColor: colors.ruleSoft
+  },
+  swatchBallWrap: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
   },
   swatchQtyBadge: {
     position: "absolute",
