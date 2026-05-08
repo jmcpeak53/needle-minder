@@ -8,6 +8,8 @@ export type ThreadType = {
   isActive: boolean;
 };
 
+export type ThreadSubtype = "solid" | "variegated" | "metallic";
+
 export type ReferenceColor = {
   id: string;
   threadTypeId: string;
@@ -16,6 +18,7 @@ export type ReferenceColor = {
   colorFamily: string;
   hexRgb: string;
   isVariegated: boolean;
+  threadSubtype: ThreadSubtype;
   upc?: string | null;
 };
 

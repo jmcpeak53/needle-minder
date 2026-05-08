@@ -50,7 +50,7 @@ export function BottomNav() {
   const insets = useSafeAreaInsets();
 
   // Hide on detail and other full-screen routes
-  if (pathname.startsWith("/detail") || pathname.startsWith("/add")) {
+  if (pathname.startsWith("/detail") || pathname.startsWith("/add") || pathname === "/scan") {
     return null;
   }
 

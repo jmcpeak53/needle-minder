@@ -9,7 +9,8 @@ export function parseOcrCandidates(rawTextLines: string[], catalog: ReferenceCol
   const candidates: OcrCandidate[] = [];
 
   rawTextLines.forEach((rawText) => {
-    const matches = rawText.toUpperCase().match(tokenPattern) ?? [];
+    const normalized = rawText.toUpperCase().replace(/([A-Z])(\d)/g, "$1 $2");
+    const matches = normalized.match(tokenPattern) ?? [];
 
     matches.forEach((match) => {
       const colorCode = match.replace(/\s+/g, "");
@@ -26,7 +27,7 @@ export function parseOcrCandidates(rawTextLines: string[], catalog: ReferenceCol
       candidates.push({
         rawText,
         colorCode,
-        confidence: rawText.toUpperCase().includes("DMC") ? "high" : "medium"
+        confidence: normalized.includes("DMC") ? "high" : "medium"
       });
     });
   });

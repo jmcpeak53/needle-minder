@@ -19,7 +19,7 @@ type ConfirmState = {
 };
 
 export default function ScanScreen() {
-  const { catalog, addInventory } = useNeedleMinder();
+  const { catalog, addInventory, ready } = useNeedleMinder();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<CameraView>(null);
@@ -34,12 +34,20 @@ export default function ScanScreen() {
 
   async function capture() {
     if (!cameraRef.current || isScanning) return;
+    if (!ready) {
+      setScanError("Loading catalog — try again in a moment.");
+      return;
+    }
     setIsScanning(true);
     setScanError(null);
     setSaved(false);
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
       const recognized = await ocrProvider.recognizeImage(photo.uri);
+      if (recognized.length === 0) {
+        setScanError("No text detected — move closer to the label and try again.");
+        return;
+      }
       const next = parseOcrCandidates(recognized, catalog);
       setRawText(recognized);
       setCandidates(next);
@@ -64,6 +72,7 @@ export default function ScanScreen() {
       condition: "full"
     });
     setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
     setConfirming(null);
     setCandidates([]);
     setRawText([]);
@@ -215,16 +224,6 @@ export default function ScanScreen() {
         barcodeScannerSettings={{ barcodeTypes: ["ean13", "upc_a"] }}
       />
 
-      {/* Dark header */}
-      <View style={[styles.vfHeader, { paddingTop: insets.top + 8 }]}>
-        <Pressable onPress={() => router.back()} style={styles.vfBtn}>
-          <Ionicons name="chevron-back" size={20} color={colors.card} />
-        </Pressable>
-        <Pressable style={styles.vfBtn} onPress={() => router.push("/add")}>
-          <Ionicons name="create-outline" size={18} color={colors.card} />
-        </Pressable>
-      </View>
-
       {/* Scan hint */}
       <View style={styles.vfHint}>
         <View style={[styles.vfHintDot, !isScanning && styles.vfHintDotReady]} />
@@ -248,8 +247,8 @@ export default function ScanScreen() {
 
       {/* Capture bar */}
       <View style={[styles.captureBar, { bottom: insets.bottom + 30 }]}>
-        <Pressable style={styles.vfSmallBtn} onPress={() => router.push("/add")}>
-          <Ionicons name="create-outline" size={18} color={colors.card} />
+        <Pressable style={styles.vfSmallBtn} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={20} color={colors.card} />
         </Pressable>
 
         <Pressable style={styles.shutter} onPress={capture} disabled={isScanning}>
@@ -261,7 +260,9 @@ export default function ScanScreen() {
             <Ionicons name="checkmark" size={18} color="#b6d47a" />
           </View>
         ) : (
-          <View style={styles.vfSmallBtn} />
+          <Pressable style={styles.vfSmallBtn} onPress={() => router.push("/add")}>
+            <Ionicons name="create-outline" size={18} color={colors.card} />
+          </Pressable>
         )}
       </View>
 
@@ -373,25 +374,6 @@ const styles = StyleSheet.create({
   viewfinder: {
     flex: 1,
     backgroundColor: "#0f0d0a"
-  },
-  vfHeader: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    zIndex: 10
-  },
-  vfBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: "rgba(250,246,236,0.12)",
-    alignItems: "center",
-    justifyContent: "center"
   },
   vfHint: {
     position: "absolute",

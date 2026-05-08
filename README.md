@@ -28,18 +28,47 @@ On Windows PowerShell, if `npm` is blocked by the local script execution policy,
 
 ## Run In Development
 
-OCR uses native ML Kit code, so use a custom development build rather than Expo Go.
+OCR uses native ML Kit code. Expo Go is not supported — you must use a custom development build.
+
+Development on a physical device uses a **two-phase model**:
+
+### Phase 1 — First-Time Device Setup
+
+Build and install an EAS development client on the target device. This is a persistent shell app that contains a Metro bundler client. You install it once; you do not rebuild it for every code change.
 
 ```bash
-npm run start
-npm run android
-npm run ios
+npm run build:dev:android   # Android
+npm run build:dev:ios       # iOS
 ```
 
-After installing an EAS development build on a physical device, start Metro for that dev client with:
+EAS will print a QR code and download link when the build finishes. Scan the QR code or open the link on the device to install. On Android, allow installation from unknown sources when prompted.
+
+**Rebuild the development client only when:**
+- A new npm package that contains native code is added to the project.
+- `app.json` fields that affect native output change (permissions, bundle identifier, splash screen, icons, Expo SDK version).
+- The Expo SDK is upgraded.
+
+For all other changes — new screens, new components, business logic, styles — the development client does not need to be rebuilt.
+
+### Phase 2 — Daily Development
+
+Start the Metro bundler on your development machine. Your phone connects to it over your local network; no USB connection is required.
 
 ```bash
-npx expo start --dev-client --host lan
+npm run dev
+```
+
+Open the installed development client on your device. It will discover Metro automatically if the device and development machine are on the same WiFi network. **Fast refresh is active** — code changes appear on the device within one to two seconds of saving a file.
+
+> **Troubleshooting:** If the device cannot find Metro, ensure both are on the same WiFi network. If behind a VPN or guest network, try connecting the device via USB once to let Metro detect it, then disconnect.
+
+### Simulator / Local Native Build (optional)
+
+The `android` and `ios` scripts use `expo run:*` and require Android Studio or Xcode installed locally. They are an alternative to the EAS workflow for developers with a full native toolchain.
+
+```bash
+npm run android
+npm run ios
 ```
 
 ## Test And Validate
@@ -55,14 +84,20 @@ The catalog validation command checks the CSV in `data/reference/dmc-six-strand.
 
 ## Build Profiles
 
+| Script | EAS Profile | Platform | Use when |
+|---|---|---|---|
+| `npm run build:dev:android` | `development` | Android | First device setup or after native code changes |
+| `npm run build:dev:ios` | `development` | iOS | First device setup or after native code changes |
+| `npm run build:preview` | `preview-apk` | Android | Testing standalone APK without Metro attached |
+| `npm run build:testflight` | `testflight` | iOS | TestFlight distribution |
+
+The `preview-apk` profile produces a standalone sideloaded APK — use it to validate release behavior, not for day-to-day debugging (see Development Workflow above). The `testflight` profile targets the App Store pipeline. App store submission remains out of scope for v1.
+
+To submit an iOS build to TestFlight after it completes:
+
 ```bash
-eas build --profile development --platform android
-eas build --profile preview-apk --platform android
-eas build --profile testflight --platform ios
 eas submit --profile testflight --platform ios
 ```
-
-The Android `preview-apk` profile is intended for sideloaded APK testing. The iOS `testflight` profile is intended for TestFlight distribution. App store submission remains out of scope for v1.
 
 ## Project Structure
 

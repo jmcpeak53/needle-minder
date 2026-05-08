@@ -16,6 +16,7 @@ type InventoryRow = {
   color_family: string;
   hex_rgb: string;
   is_variegated: number;
+  thread_subtype: string;
   upc: string | null;
 };
 
@@ -104,6 +105,7 @@ function inventorySelectSql(suffix: string): string {
       rc.color_family,
       rc.hex_rgb,
       rc.is_variegated,
+      rc.thread_subtype,
       rc.upc
     FROM user_inventory ui
     JOIN reference_colors rc ON rc.id = ui.reference_color_id
@@ -126,6 +128,7 @@ function mapInventoryItem(row: InventoryRow): InventoryItem {
       color_family: row.color_family,
       hex_rgb: row.hex_rgb,
       is_variegated: row.is_variegated,
+      thread_subtype: row.thread_subtype,
       upc: row.upc
     })
   };

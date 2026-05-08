@@ -1,4 +1,4 @@
-import type { ReferenceColor } from "../types";
+import type { ReferenceColor, ThreadSubtype } from "../types";
 import type { NeedleMinderDatabase } from "./database";
 import type { ReferenceColorRepository } from "../catalog/referenceColorRepository";
 
@@ -10,6 +10,7 @@ type ReferenceColorRow = {
   color_family: string;
   hex_rgb: string;
   is_variegated: number;
+  thread_subtype: string;
   upc: string | null;
 };
 
@@ -68,6 +69,7 @@ export function mapReferenceColor(row: ReferenceColorRow): ReferenceColor {
     colorFamily: row.color_family,
     hexRgb: row.hex_rgb,
     isVariegated: row.is_variegated === 1,
+    threadSubtype: (row.thread_subtype ?? "solid") as ThreadSubtype,
     upc: row.upc
   };
 }

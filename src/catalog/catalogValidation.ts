@@ -1,4 +1,6 @@
-import type { ReferenceColor } from "../types";
+import type { ReferenceColor, ThreadSubtype } from "../types";
+
+const VALID_SUBTYPES: ReadonlySet<string> = new Set(["solid", "variegated", "metallic"]);
 
 export type ReferenceColorCsvRow = {
   colorCode?: string;
@@ -6,6 +8,7 @@ export type ReferenceColorCsvRow = {
   colorFamily?: string;
   hexRgb?: string;
   isVariegated?: string | boolean;
+  threadSubtype?: string;
   upc?: string | null;
 };
 
@@ -35,6 +38,7 @@ export function validateReferenceColors(rows: ReferenceColorCsvRow[]): ValidCata
     const colorFamily = normalizeText(row.colorFamily);
     const hexRgb = normalizeText(row.hexRgb).toUpperCase();
     const variegated = parseBoolean(row.isVariegated);
+    const threadSubtype = normalizeText(row.threadSubtype) || "solid";
 
     if (!colorCode) {
       errors.push(`Row ${rowNumber}: colorCode is required.`);
@@ -58,17 +62,29 @@ export function validateReferenceColors(rows: ReferenceColorCsvRow[]): ValidCata
       errors.push(`Row ${rowNumber}: isVariegated must be true or false.`);
     }
 
+    if (!VALID_SUBTYPES.has(threadSubtype)) {
+      errors.push(`Row ${rowNumber}: threadSubtype must be solid, variegated, or metallic.`);
+    }
+
     if (colorCode) {
       seenCodes.add(colorCode);
     }
 
-    if (colorCode && colorName && colorFamily && hexPattern.test(hexRgb) && variegated !== null) {
+    if (
+      colorCode &&
+      colorName &&
+      colorFamily &&
+      hexPattern.test(hexRgb) &&
+      variegated !== null &&
+      VALID_SUBTYPES.has(threadSubtype)
+    ) {
       const validColor = {
         colorCode,
         colorName,
         colorFamily,
         hexRgb,
-        isVariegated: variegated
+        isVariegated: variegated,
+        threadSubtype: threadSubtype as ThreadSubtype
       };
       const upc = normalizeOptionalText(row.upc);
 

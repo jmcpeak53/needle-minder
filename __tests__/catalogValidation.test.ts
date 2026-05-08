@@ -28,14 +28,16 @@ describe("validateReferenceColors", () => {
         colorName: "Black",
         colorFamily: "Black and Gray",
         hexRgb: "#000000",
-        isVariegated: false
+        isVariegated: false,
+        threadSubtype: "solid"
       },
       {
         colorCode: "115",
         colorName: "Garnet",
         colorFamily: "Red",
         hexRgb: "#8F011B",
-        isVariegated: true
+        isVariegated: true,
+        threadSubtype: "solid"
       }
     ]);
   });

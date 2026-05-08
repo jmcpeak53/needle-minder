@@ -33,6 +33,7 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
       color_family TEXT NOT NULL,
       hex_rgb TEXT NOT NULL,
       is_variegated INTEGER NOT NULL DEFAULT 0,
+      thread_subtype TEXT NOT NULL DEFAULT 'solid',
       upc TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -51,6 +52,15 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
       updated_at TEXT NOT NULL
     );
   `);
+
+  try {
+    await database.execAsync(`ALTER TABLE reference_colors ADD COLUMN thread_subtype TEXT`);
+  } catch {
+    // column already exists on an existing device database
+  }
+  await database.execAsync(
+    `UPDATE reference_colors SET thread_subtype = 'solid' WHERE thread_subtype IS NULL`
+  );
 }
 
 async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> {
@@ -74,8 +84,8 @@ async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> 
   for (const color of referenceColorFixture) {
     await database.runAsync(
       `INSERT OR IGNORE INTO reference_colors
-        (id, thread_type_id, color_code, color_name, color_family, hex_rgb, is_variegated, upc, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (id, thread_type_id, color_code, color_name, color_family, hex_rgb, is_variegated, thread_subtype, upc, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         color.id,
         color.threadTypeId,
@@ -84,6 +94,7 @@ async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> 
         color.colorFamily,
         color.hexRgb,
         color.isVariegated ? 1 : 0,
+        color.threadSubtype,
         color.upc ?? null,
         now,
         now

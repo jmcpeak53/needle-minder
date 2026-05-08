@@ -20,7 +20,14 @@
       "PowerShell($MEASURE_PY = \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\"; python $MEASURE_PY check-hook 2>&1; Write-Output \"EXIT:$LASTEXITCODE\")",
       "PowerShell($MEASURE_PY = \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\"; python $MEASURE_PY daemon-status 2>&1; python $MEASURE_PY daemon-consent --get 2>&1)",
       "PowerShell($MEASURE_PY = \"C:\\\\Users\\\\jmcpe\\\\.claude\\\\plugins\\\\cache\\\\alexgreensh-token-optimizer\\\\token-optimizer\\\\5.6.5\\\\skills\\\\token-optimizer\\\\scripts\\\\measure.py\"; python $MEASURE_PY setup-smart-compact --status 2>&1)",
-      "PowerShell(Get-ChildItem *)"
+      "PowerShell(Get-ChildItem *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\CodingProjects\\\\needle-minder\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(Sort-Object)",
+      "PowerShell(gh issue *)",
+      "Bash(dir C:\\\\CodingProjects\\\\needle-minder\\\\app *)",
+      "Bash(powershell *)",
+      "Bash(python -c ' *)"
     ]
   }
 }

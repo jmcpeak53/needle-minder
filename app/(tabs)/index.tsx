@@ -140,13 +140,6 @@ export default function HomeScreen() {
         )}
       </ScrollView>
 
-      {/* Camera FAB */}
-      <Pressable
-        onPress={() => router.push("/scan")}
-        style={[styles.fab, { bottom: NAV_HEIGHT + 16 }]}
-      >
-        <Ionicons name="camera-outline" size={22} color={colors.card} />
-      </Pressable>
     </View>
   );
 }
@@ -400,19 +393,4 @@ const styles = StyleSheet.create({
     color: colors.ink3,
     textAlign: "center"
   },
-  fab: {
-    position: "absolute",
-    right: spacing.lg,
-    width: 54,
-    height: 54,
-    borderRadius: 18,
-    backgroundColor: colors.ink,
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: colors.ink,
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.5,
-    shadowRadius: 24,
-    elevation: 8
-  }
 });

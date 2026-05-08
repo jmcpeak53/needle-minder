@@ -10,6 +10,7 @@ const catalog: ReferenceColor[] = [
     colorFamily: "Black and Gray",
     hexRgb: "#000000",
     isVariegated: false,
+    threadSubtype: "solid",
     upc: null
   },
   {
@@ -20,6 +21,7 @@ const catalog: ReferenceColor[] = [
     colorFamily: "Red",
     hexRgb: "#C72B3B",
     isVariegated: false,
+    threadSubtype: "solid",
     upc: "077540051106"
   },
   {
@@ -30,6 +32,7 @@ const catalog: ReferenceColor[] = [
     colorFamily: "White",
     hexRgb: "#FFFFFF",
     isVariegated: false,
+    threadSubtype: "solid",
     upc: null
   }
 ];
@@ -66,5 +69,17 @@ describe("parseOcrCandidates", () => {
     const candidates = parseOcrCandidates(["077540051106"], catalog);
 
     expect(candidates).toEqual([]);
+  });
+
+  it("extracts a color code when brand and number are fused without a space (DMC310)", () => {
+    const candidates = parseOcrCandidates(["DMC310"], catalog);
+
+    expect(candidates).toEqual([
+      {
+        rawText: "DMC310",
+        colorCode: "310",
+        confidence: "high"
+      }
+    ]);
   });
 });

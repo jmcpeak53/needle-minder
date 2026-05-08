@@ -13,6 +13,7 @@ const sampleItem: InventoryItem = {
     colorFamily: "Black and Gray",
     hexRgb: "#000000",
     isVariegated: false,
+    threadSubtype: "solid",
     upc: null
   },
   quantity: 2,

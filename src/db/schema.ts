@@ -22,6 +22,7 @@ export const referenceColors = sqliteTable(
     colorFamily: text("color_family").notNull(),
     hexRgb: text("hex_rgb").notNull(),
     isVariegated: integer("is_variegated", { mode: "boolean" }).notNull().default(false),
+    threadSubtype: text("thread_subtype").notNull().default("solid"),
     upc: text("upc"),
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull()
