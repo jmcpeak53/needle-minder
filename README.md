@@ -80,7 +80,13 @@ npm run lint
 npm run validate:catalog
 ```
 
-The catalog validation command checks the CSV in `data/reference/dmc-six-strand.csv` for required fields, duplicate color codes, valid hex colors, and valid variegated flags.
+Validate specific catalog files only:
+
+```bash
+npm run validate:catalog -- data/reference/dmc-six-strand.csv data/reference/dmc-pearl-cotton-5.csv
+```
+
+The catalog validation command checks all CSVs in `data/reference/` (currently six-strand and pearl cotton size 5) for required fields, duplicate color codes, valid hex colors, and valid variegated flags.
 
 ## Build Profiles
 
@@ -111,3 +117,9 @@ eas submit --profile testflight --platform ios
 - `src/providers/` - device/provider integrations such as ML Kit OCR.
 - `data/reference/` - importable reference catalog CSV data.
 - `scripts/` - project maintenance scripts.
+
+## Thread Puller (Standalone Tool)
+
+`tools/thread-puller/` contains a standalone Python scraper + normalizer for generating importable thread catalog CSVs. V1 is configured for Penny Linn DMC Pearl Cotton Size 5.
+
+Tool setup and usage are documented in [tools/thread-puller/README.md](tools/thread-puller/README.md).

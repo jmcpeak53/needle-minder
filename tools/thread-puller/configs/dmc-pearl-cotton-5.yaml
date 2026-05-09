@@ -1,0 +1,33 @@
+catalog:
+  id: dmc-pearl-cotton-5
+  manufacturer: DMC
+  product_line: Pearl Cotton Size 5
+  display_name: DMC Pearl Cotton Size 5
+  title_include_regex: '^DMC\s+5\s+Pearl\s+Cotton\b'
+  title_exclude_regex: '^DMC\s+3\s+Pearl\s+Cotton\b'
+  color_code_regex: '^DMC\s+5\s+Pearl\s+Cotton\s+(?P<code>BLANC|ECRU|[A-Z]?\d{1,4})\b'
+
+reference_match:
+  existing_csv: data/reference/dmc-six-strand.csv
+  require_match_for_reference_export: true
+  unmatched_policy: report_only
+
+outputs:
+  raw_jsonl: data/import/thread-puller/dmc-pearl-cotton-5/raw-products.jsonl
+  normalized_csv: data/import/thread-puller/dmc-pearl-cotton-5/normalized-listings.csv
+  unmatched_csv: data/import/thread-puller/dmc-pearl-cotton-5/unmatched-codes.csv
+  reference_csv: data/reference/dmc-pearl-cotton-5.csv
+
+scrape:
+  user_agent: NeedleMinderThreadPuller/0.1 (+local catalog audit)
+  request_timeout_seconds: 20
+  min_delay_seconds: 1.0
+  max_retries: 3
+  prefer_shopify_json: true
+
+sources:
+  - id: pennylinn
+    base_url: https://pennylinn.com
+    collection_url: https://pennylinn.com/collections/dmc-5
+    platform: shopify
+    currency: USD

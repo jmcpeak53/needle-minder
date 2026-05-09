@@ -16,7 +16,7 @@
     "test:watch": "jest --watch",
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
-    "validate:catalog": "tsx scripts/validateCatalog.ts data/reference/dmc-six-strand.csv"
+    "validate:catalog": "tsx scripts/validateCatalog.ts"
   },
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",

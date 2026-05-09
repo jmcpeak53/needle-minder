@@ -1,9 +1,9 @@
 /**
- * Reads data/reference/dmc-six-strand.csv and regenerates
- * src/data/referenceColors.fixture.ts.
+ * Generates fixture modules from reference CSVs.
  *
  * Usage:
- *   npx tsx scripts/generate-catalog-fixture.ts
+ *   npx tsx scripts/generate-catalog-fixture.ts --catalog dmc-six-strand
+ *   npx tsx scripts/generate-catalog-fixture.ts --catalog dmc-pearl-cotton-5
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -11,9 +11,39 @@ import { join } from "node:path";
 
 import { validateReferenceColors } from "../src/catalog/catalogValidation";
 
-const CSV_PATH = join(__dirname, "..", "data", "reference", "dmc-six-strand.csv");
-const OUT_PATH = join(__dirname, "..", "src", "data", "referenceColors.fixture.ts");
-const THREAD_TYPE_ID = "dmc-six-strand";
+type CatalogMeta = {
+  id: string;
+  csvPath: string;
+  outPath: string;
+  threadTypeConst: string;
+  colorsConst: string;
+  manufacturer: string;
+  productLine: string;
+  displayName: string;
+};
+
+const catalogMap: Record<string, CatalogMeta> = {
+  "dmc-six-strand": {
+    id: "dmc-six-strand",
+    csvPath: join(__dirname, "..", "data", "reference", "dmc-six-strand.csv"),
+    outPath: join(__dirname, "..", "src", "data", "referenceColors.fixture.ts"),
+    threadTypeConst: "dmcSixStrandThreadType",
+    colorsConst: "referenceColorFixture",
+    manufacturer: "DMC",
+    productLine: "Six-Strand Embroidery Floss",
+    displayName: "DMC Six-Strand Embroidery Floss"
+  },
+  "dmc-pearl-cotton-5": {
+    id: "dmc-pearl-cotton-5",
+    csvPath: join(__dirname, "..", "data", "reference", "dmc-pearl-cotton-5.csv"),
+    outPath: join(__dirname, "..", "src", "data", "pearlCotton5.fixture.ts"),
+    threadTypeConst: "dmcPearlCotton5ThreadType",
+    colorsConst: "pearlCotton5ReferenceColorFixture",
+    manufacturer: "DMC",
+    productLine: "Pearl Cotton Size 5",
+    displayName: "DMC Pearl Cotton Size 5"
+  }
+};
 
 function parseCsv(contents: string): Record<string, string>[] {
   const [headerLine, ...lines] = contents.trim().split(/\r?\n/);
@@ -28,59 +58,74 @@ function escapeString(value: string): string {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-function toId(colorCode: string): string {
-  return `dmc-${colorCode.toLowerCase()}`;
+function toId(catalogId: string, colorCode: string): string {
+  return `${catalogId}-${colorCode.toLowerCase()}`;
+}
+
+function resolveCatalogId(argv: string[]): string {
+  const index = argv.indexOf("--catalog");
+  if (index === -1 || !argv[index + 1]) {
+    return "dmc-six-strand";
+  }
+  return argv[index + 1];
 }
 
 function main(): void {
-  const csv = readFileSync(CSV_PATH, "utf8");
+  const catalogId = resolveCatalogId(process.argv);
+  const meta = catalogMap[catalogId];
+
+  if (!meta) {
+    const validIds = Object.keys(catalogMap).join(", ");
+    console.error(`Unknown catalog '${catalogId}'. Valid values: ${validIds}`);
+    process.exit(1);
+  }
+
+  const csv = readFileSync(meta.csvPath, "utf8");
   const rows = parseCsv(csv);
   const result = validateReferenceColors(rows);
 
   if (!result.ok) {
     console.error("CSV validation failed:");
-    result.errors.forEach((e) => console.error(" ", e));
+    result.errors.forEach((error) => console.error(" ", error));
     process.exit(1);
   }
 
   const lines: string[] = [
     `import type { ReferenceColor, ThreadType } from "../types";`,
     ``,
-    `export const dmcSixStrandThreadType: ThreadType = {`,
-    `  id: "${THREAD_TYPE_ID}",`,
-    `  manufacturer: "DMC",`,
-    `  productLine: "Six-Strand Embroidery Floss",`,
-    `  displayName: "DMC Six-Strand Embroidery Floss",`,
+    `export const ${meta.threadTypeConst}: ThreadType = {`,
+    `  id: "${meta.id}",`,
+    `  manufacturer: "${meta.manufacturer}",`,
+    `  productLine: "${meta.productLine}",`,
+    `  displayName: "${meta.displayName}",`,
     `  isActive: true`,
     `};`,
     ``,
-    `export const referenceColorFixture: ReferenceColor[] = [`
+    `export const ${meta.colorsConst}: ReferenceColor[] = [`
   ];
 
-  for (let i = 0; i < result.colors.length; i++) {
-    const c = result.colors[i];
-    const isLast = i === result.colors.length - 1;
-    const upcLine =
-      c.upc ? `    upc: "${escapeString(c.upc)}"` : `    upc: null`;
+  for (let index = 0; index < result.colors.length; index += 1) {
+    const color = result.colors[index];
+    const isLast = index === result.colors.length - 1;
 
     lines.push(`  {`);
-    lines.push(`    id: "${toId(c.colorCode)}",`);
-    lines.push(`    threadTypeId: dmcSixStrandThreadType.id,`);
-    lines.push(`    colorCode: "${escapeString(c.colorCode)}",`);
-    lines.push(`    colorName: "${escapeString(c.colorName)}",`);
-    lines.push(`    colorFamily: "${escapeString(c.colorFamily)}",`);
-    lines.push(`    hexRgb: "${c.hexRgb}",`);
-    lines.push(`    isVariegated: ${c.isVariegated},`);
-    lines.push(`    threadSubtype: "${c.threadSubtype}",`);
-    lines.push(upcLine);
+    lines.push(`    id: "${toId(meta.id, color.colorCode)}",`);
+    lines.push(`    threadTypeId: ${meta.threadTypeConst}.id,`);
+    lines.push(`    colorCode: "${escapeString(color.colorCode)}",`);
+    lines.push(`    colorName: "${escapeString(color.colorName)}",`);
+    lines.push(`    colorFamily: "${escapeString(color.colorFamily)}",`);
+    lines.push(`    hexRgb: "${color.hexRgb}",`);
+    lines.push(`    isVariegated: ${color.isVariegated},`);
+    lines.push(`    threadSubtype: "${color.threadSubtype}",`);
+    lines.push(`    upc: ${color.upc ? `"${escapeString(color.upc)}"` : "null"}`);
     lines.push(`  }${isLast ? "" : ","}`);
   }
 
   lines.push(`];`);
   lines.push(``);
 
-  writeFileSync(OUT_PATH, lines.join("\n"), "utf8");
-  console.log(`Wrote ${result.colors.length} entries to ${OUT_PATH}`);
+  writeFileSync(meta.outPath, lines.join("\n"), "utf8");
+  console.log(`Wrote ${result.colors.length} entries to ${meta.outPath}`);
 }
 
 main();

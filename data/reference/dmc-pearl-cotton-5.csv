@@ -1,0 +1,296 @@
+colorCode,colorName,colorFamily,hexRgb,isVariegated,threadSubtype,upc
+208,Lavender - Very Dark,Lavender,#9442A7,false,solid,077540034017
+209,Lavender - Dark,Lavender,#BA72C6,false,solid,077540034024
+210,Lavender - Medium,Lavender,#D49FE1,false,solid,077540034031
+211,Lavender - Light,Lavender,#E5BDED,false,solid,077540034048
+221,Shell Pink - Very Dark,Orange,#792631,false,solid,077540034055
+223,Shell Pink - Light,Orange,#BB6864,false,solid,077540034062
+224,Shell Pink - Very Light,Orange,#E2A598,false,solid,077540034079
+225,Shell Pink - Ultra Very Light,Orange,#F8D9CD,false,solid,077540034086
+30,Blueberry - Medium Light,Purple,#6D54D3,false,solid,07754097520
+300,Mahogany - Very Dark,Orange,#6C3116,false,solid,077540034093
+301,Mahogany - Medium,Orange,#AA5237,false,solid,077540034109
+3011,Khaki Green - Dark,Green,#655935,false,solid,077540195848
+3012,Khaki Green - Medium,Green,#8B7B4E,false,solid,077540195824
+3013,Khaki Green - Light,Green,#AFA97B,false,solid,077540195831
+3021,Brown Gray - Very Dark,Gray,#50403B,false,solid,077540287192
+3022,Brown Gray - Medium,Black and White,#848274,false,solid,077540287208
+3024,Brown Gray - Very Light,Black and White,#BEB8AC,false,solid,077540287222
+3033,Mocha Brown - Very Light,Gray,#DBC7AD,false,solid,077540287253
+304,Red - Medium,Red,#A10C39,false,solid,01588537
+3041,Antique Violet - Medium,Purple,#866A76,false,solid,077540274215
+3042,Antique Violet - Light,Purple,#AF98A0,false,solid,077540274222
+3045,Yellow Beige - Dark,Yellow,#AF8152,false,solid,077540274239
+3046,Yellow Beige - Medium,Yellow,#CEB074,false,solid,077540274246
+3047,Yellow Beige - Light,Yellow,#EAD8AB,false,solid,077540274253
+3051,Green Gray - Dark,Green,#4C4C1E,false,solid,077540274260
+3052,Green Gray - Medium,Green,#787E5C,false,solid,077540274277
+3053,Green Gray,Green,#999D75,false,solid,077540274284
+307,Lemon,Orange,#FDE949,false,solid,077540034123
+3072,Beaver Gray - Very Light,Black and White,#D2D2CA,false,solid,077540036561
+3078,Golden Yellow - Very Light,Orange,#FCF6B6,false,solid,077540036578
+309,Rose - Dark,Pink,#BA2044,false,solid,077540034130
+310,Black,Black and White,#000000,false,solid,077540034147
+311,Blue - Medium,Blue,#002A64,false,solid,077540034154
+312,Baby Blue - Very Dark,Blue,#1F3279,false,solid,077540034161
+315,Antique Mauve - Medium Dark,Lavender,#7D4246,false,solid,077540034178
+316,Antique Mauve - Medium,Lavender,#BC757F,false,solid,077540034185
+317,Pewter Gray,Black and White,#6D6469,false,solid,077540034192
+318,Steel Gray - Light,Black and White,#999B9D,false,solid,077540034208
+319,Pistachio Green - Very Dark,Green,#3A553B,false,solid,077540034215
+32,Blueberry - Dark,Purple,#4D2E8A,false,solid,077540975228
+320,Pistachio Green - Medium,Green,#608C59,false,solid,077540034222
+321,Red,Red,#BD1136,false,solid,077540034239
+322,Baby Blue,Blue,#3A609D,false,solid,077540034246
+326,Rose - Very Dark,Pink,#AC1C37,false,solid,077540034253
+327,Violet,Lavender,#5E0F77,false,solid,077540034260
+33,Fuchsia,Pink,#D9539F,false,solid,077640975242
+3325,Baby Blue - Light,Blue,#ADCDE7,false,solid,077540036585
+3326,Rose - Light,Pink,#F9979C,false,solid,077540036592
+3328,Salmon - Dark,Red,#BE444A,false,solid,077540036608
+333,Blue Violet - Very Dark,Purple,#6E2E9B,false,solid,077540401536
+334,Baby Blue - Medium,Blue,#6085B8,false,solid,077540034277
+3345,Hunter Green - Dark,Green,#40552E,false,solid,077540036615
+3346,Hunter Green,Green,#56743B,false,solid,077540036622
+3347,Yellow Green - Medium,Green,#6D9646,false,solid,077540036639
+3348,Yellow Green - Light,Green,#BEDF74,false,solid,077540036646
+335,Rose,Pink,#D63D57,false,solid,077540034284
+3350,Dusty Rose - Ultra Dark,Pink,#AA3949,false,solid,077540036653
+3354,Dusty Rose - Light,Pink,#EFA5AC,false,solid,077540036660
+336,Blue,Blue,#0C275E,false,solid,077540034291
+3371,Black Brown,Brown,#36220E,false,solid,077540036677
+34,Fuchsia - Dark,Pink,#AE4280,false,solid,077540975266
+340,Blue Violet - Medium,Purple,#996DC3,false,solid,077540401543
+341,Blue Violet - Light,Purple,#A39AD7,false,solid,077540401550
+347,Salmon - Very Dark,Red,#AB1B33,false,solid,077540034307
+349,Coral - Dark,Red,#C62C38,false,solid,077540034314
+35,Fuchsia - Very Dark,Pink,#732B55,false,solid,077540975280
+350,Coral - Medium,Red,#DE3F40,false,solid,077540034321
+351,Coral,Red,#ED625B,false,solid,077540034338
+352,Coral - Light,Red,#F78372,false,solid,077540034345
+353,Peach,Red,#FDB4A1,false,solid,077540034352
+355,Terra Cotta - Dark,Peach,#97382B,false,solid,077540034369
+356,Terra Cotta - Medium,Peach,#BE5C4B,false,solid,077540034376
+367,Pistachio Green - Dark,Green,#446B45,false,solid,077540034383
+368,Pistachio Green - Light,Green,#7FC66D,false,solid,077540034390
+3685,Mauve - Very Dark,Pink,#79263B,false,solid,077540036684
+3687,Mauve,Pink,#B5455D,false,solid,077540036691
+3688,Mauve - Medium,Pink,#DC7C86,false,solid,077540036707
+3689,Mauve - Light,Pink,#F8BBC8,false,solid,077540036714
+369,Pistachio Green - Very Light,Green,#CDEFA6,false,solid,077540034406
+3731,Dusty Rose - Very Dark,Pink,#C34C5C,false,solid,077540401574
+3743,Antique Violet - Very Light,Purple,#CFC2C9,false,solid,077540310173
+3753,Antique Blue - Ultra Very Light,Blue,#D9E6EC,false,solid,077540707263
+3799,Pewter Gray - Very Dark,Black and White,#39393D,false,solid,077540975303
+3801,Melon - Very Dark,Red,#E4353D,false,solid,077540401581
+3814,Aquamarine,Blue Green,#0B8673,false,solid,077540401598
+3823,Yellow - Ultra Pale,Yellow,#FEF5CD,false,solid,077540707287
+3844,Bright Turquoise - Dark,Blue,#1F7FA0,false,solid,077540975327
+3846,Bright Turquoise - Light,Blue,#5ECCEC,false,solid,077540975341
+3847,Teal Green - Dark,Blue,#186358,false,solid,077540975365
+3865,Winter White,Gray,#FFFDF9,false,solid,077540975389
+402,Mahogany - Very Light,Orange,#EF9E74,false,solid,077540034420
+407,Desert Sand - Dark,Peach,#B77159,false,solid,077540034437
+413,Pewter Gray - Dark,Black and White,#4A4749,false,solid,077540034444
+414,Steel Gray - Dark,Black and White,#766E72,false,solid,077540034451
+415,Pearl Gray,Black and White,#B8B9BD,false,solid,077540034468
+420,Hazelnut Brown - Dark,Yellow,#855A30,false,solid,077540034475
+422,Hazelnut Brown - Light,Yellow,#C99A67,false,solid,077540034482
+433,Brown - Medium,Brown,#73421E,false,solid,077540034499
+434,Brown - Light,Brown,#8F5332,false,solid,077540034505
+435,Brown - Very Light,Brown,#A96538,false,solid,077540034512
+436,Tan,Brown,#C78559,false,solid,077540034529
+437,Tan - Light,Brown,#DAA26F,false,solid,077540034536
+444,Lemon - Dark,Orange,#F5BC13,false,solid,077540034543
+445,Lemon - Light,Orange,#FCF999,false,solid,077540034550
+451,Shell Gray - Dark,Brown,#887773,false,solid,077540034567
+453,Shell Gray - Light,Brown,#CCB8AA,false,solid,077540034581
+469,Avocado Green,Green,#5B6533,false,solid,077540034598
+470,Avocado Green - Light,Green,#72813E,false,solid,077540034604
+471,Avocado Green - Very Light,Green,#9EB357,false,solid,077540034611
+472,Avocado Green - Ultra Light,Green,#D1DE75,false,solid,077540034628
+498,Red - Dark,Red,#970B2C,false,solid,077540034635
+500,Blue Green - Very Dark,Blue Green,#1D362A,false,solid,077540034642
+501,Blue Green - Dark,Blue Green,#2F5446,false,solid,077540034659
+502,Blue Green,Blue Green,#57826E,false,solid,077540034666
+503,Blue Green - Medium,Blue Green,#89B89F,false,solid,077540034673
+51,Variegated - Burnt Orange,Variegated,#CC5500,true,variegated,077540033799
+517,Wedgewood - Dark,Blue,#216285,false,solid,077540034697
+518,Wedgewood - Light,Blue,#50819C,false,solid,077540034703
+519,Sky Blue,Blue,#94B7CB,false,solid,077540034710
+524,Fern Green - Very Light,Green,#AEA78E,false,solid,077540707249
+543,Beige Brown - Ultra Very Light,Brown,#EAD0B5,false,solid,077540034734
+550,Violet - Very Dark,Lavender,#580E5C,false,solid,077540034741
+552,Violet - Medium,Lavender,#902F99,false,solid,077540034758
+553,Violet,Lavender,#A449AC,false,solid,077540034765
+554,Violet - Light,Lavender,#DC9CDE,false,solid,077540034772
+580,Moss Green - Dark,Green,#355F0B,false,solid,077540034789
+581,Moss Green,Green,#838A29,false,solid,077540034796
+597,Turquoise,Blue,#52ADAB,false,solid,077540034802
+598,Turquoise - Light,Blue,#97D8D3,false,solid,077540034819
+600,Cranberry - Very Dark,Pink,#BF1C48,false,solid,077540034826
+601,Cranberry - Dark,Pink,#C62A53,false,solid,077540034833
+603,Cranberry - Light Medium,Pink,#FB4B7C,false,solid,077540034857
+604,Cranberry - Light,Pink,#F793B2,false,solid,077540034864
+605,Cranberry - Very Light,Pink,#FBACC4,false,solid,077540034871
+606,Orange-red - Bright,Orange,#F70F00,false,solid,077540034888
+608,Orange - Bright,Orange,#FD480C,false,solid,077540034895
+610,Drab Brown - Dark,Yellow,#6B5039,false,solid,077540034901
+611,Drab Brown,Yellow,#7C5F46,false,solid,077540034918
+612,Drab Brown - Light,Yellow,#A6885E,false,solid,077540034925
+613,Drab Brown - Very Light,Yellow,#B99F72,false,solid,077540034932
+632,Desert Sand - Ultra Very Dark,Peach,#7F4232,false,solid,077540034949
+642,Beige Gray - Dark,Gray,#958D79,false,solid,077540034963
+644,Beige Gray - Medium,Gray,#C4BEA6,false,solid,077540034970
+645,Beaver Gray - Very Dark,Black and White,#5D5D54,false,solid,077540034987
+646,Beaver Gray - Dark,Black and White,#6B6860,false,solid,077540034994
+647,Beaver Gray - Medium,Black and White,#908E85,false,solid,077540035007
+648,Beaver Gray - Light,Black and White,#A7A69F,false,solid,077540035014
+666,Red - Bright,Red,#CE1B33,false,solid,077540035021
+676,Old Gold - Light,Yellow,#ECBF7D,false,solid,077540035038
+677,Old Gold - Very Light,Yellow,#F2DC9F,false,solid,077540035045
+699,Green,Green,#075B26,false,solid,077540035069
+700,Green - Bright,Green,#076C34,false,solid,077540035076
+701,Green - Light,Green,#217C36,false,solid,077540035083
+702,Kelly Green,Green,#379130,false,solid,077540035090
+703,Chartreuse,Green,#63B330,false,solid,077540035106
+704,Chartreuse - Bright,Green,#88C53A,false,solid,077540035113
+712,Cream,Brown,#F6EFDA,false,solid,077540035120
+718,Plum,Pink,#CB2089,false,solid,077540035137
+725,Topaz,Orange,#F9C15B,false,solid,077540035144
+726,Topaz - Light,Orange,#FDDB63,false,solid,077540035151
+727,Topaz - Very Light,Orange,#FDE98B,false,solid,077540035168
+729,Old Gold - Medium,Yellow,#CE9657,false,solid,077540035175
+730,Olive Green - Very Dark,Green,#63520B,false,solid,077540035182
+732,Olive Green,Green,#725C0C,false,solid,077540035205
+733,Olive Green - Medium,Green,#A78A44,false,solid,07754003521
+734,Olive Green - Light,Green,#BB9C54,false,solid,077540035229
+738,Tan - Very Light,Brown,#E2B783,false,solid,077540035236
+739,Tan - Ultra Very Light,Brown,#F2DEB9,false,solid,077540035243
+740,Tangerine,Orange,#FD6F1A,false,solid,077540035250
+741,Tangerine - Medium,Orange,#FC8B10,false,solid,077540035267
+742,Tangerine - Light,Orange,#FDAE3C,false,solid,077540035274
+743,Yellow - Medium,Orange,#FDD769,false,solid,077540035281
+744,Yellow - Pale,Orange,#FEE88D,false,solid,077540035298
+745,Yellow - Light Pale,Orange,#FEEBA5,false,solid,077540035304
+746,Off White,Yellow,#FAF2D5,false,solid,077540035311
+747,Sky Blue - Very Light,Blue,#CEE9EA,false,solid,077540035328
+754,Peach - Light,Peach,#F7C9B0,false,solid,077540035335
+758,Terra Cotta - Very Light,Peach,#E99F83,false,solid,077540035342
+760,Salmon,Red,#EC8880,false,solid,077540035359
+761,Salmon - Light,Red,#F8B4AD,false,solid,077540035366
+762,Pearl Gray - Very Light,Black and White,#D1D0D2,false,solid,077540035373
+775,Baby Blue - Very Light,Blue,#D4E3EF,false,solid,077540035380
+778,Antique Mauve - Very Light,Lavender,#DCA6A4,false,solid,077540035403
+780,Topaz - Ultra Very Dark,Yellow,#945026,false,solid,077540035410
+782,Topaz - Dark,Yellow,#B26923,false,solid,077540035434
+783,Topaz - Medium,Yellow,#D0883D,false,solid,077540035441
+791,Cornflower Blue - Very Dark,Purple,#2D2068,false,solid,077540035458
+792,Cornflower Blue - Dark,Purple,#454B8B,false,solid,077540035465
+793,Cornflower Blue - Medium,Purple,#7C82B5,false,solid,077540035472
+794,Cornflower Blue - Light,Purple,#A0B2D7,false,solid,077540035489
+796,Royal Blue - Dark,Blue,#272276,false,solid,077540035496
+797,Royal Blue,Blue,#2B3288,false,solid,077540035502
+798,Delft Blue - Dark,Blue,#4E5CA7,false,solid,077540035519
+799,Delft Blue - Medium,Blue,#6B7FC0,false,solid,077540035526
+800,Delft Blue - Pale,Blue,#B5C7E9,false,solid,077540035533
+801,Coffee Brown - Dark,Brown,#60391D,false,solid,077540035540
+807,Peacock Blue,Blue,#558B9E,false,solid,077540035564
+809,Delft Blue,Blue,#919FD5,false,solid,077540035571
+813,Blue - Light,Blue,#7FA0C6,false,solid,077540035588
+814,Garnet - Dark,Red,#711033,false,solid,077540035595
+815,Garnet - Medium,Red,#800B34,false,solid,077540035601
+816,Garnet,Red,#921238,false,solid,077540035618
+817,Coral Red - Very Dark,Red,#BB1630,false,solid,077540035625
+818,Baby Pink,Pink,#FEDEDD,false,solid,077540035632
+819,Baby Pink - Light,Pink,#FCEBDE,false,solid,077540035649
+820,Royal Blue - Very Dark,Blue,#151264,false,solid,077540035656
+822,Beige Gray - Light,Gray,#E8DFC7,false,solid,077540035663
+823,Blue - Dark,Blue,#000B44,false,solid,077540035670
+824,Blue - Very Dark,Blue,#284779,false,solid,077540035687
+825,Blue - Dark,Blue,#34588F,false,solid,077540035694
+826,Blue - Medium,Blue,#5075A7,false,solid,077540035700
+827,Blue - Very Light,Blue,#A4C1DE,false,solid,077540035717
+828,Blue - Ultra Very Light,Blue,#C3D7E6,false,solid,077540035724
+829,Golden Olive - Very Dark,Yellow,#64480C,false,solid,077540035731
+830,Golden Olive - Dark,Yellow,#6E501D,false,solid,077540035748
+832,Golden Olive,Yellow,#9C7230,false,solid,077540035762
+834,Golden Olive - Very Light,Yellow,#D2B468,false,solid,077540035786
+838,Beige Brown - Very Dark,Gray,#4A3021,false,solid,077540035793
+839,Beige Brown - Dark,Gray,#5A3C2D,false,solid,077540035809
+840,Beige Brown - Medium,Gray,#7A5939,false,solid,077540035816
+841,Beige Brown - Light,Gray,#A37D64,false,solid,077540035823
+842,Beige Brown - Very Light,Gray,#CBB094,false,solid,077540035830
+844,Beaver Gray - Ultra Dark,Gray,#494842,false,solid,077540035847
+869,Hazelnut Brown - Very Dark,Yellow,#784C28,false,solid,077540035854
+890,Pistachio Green - Ultra Dark,Green,#324233,false,solid,077540035861
+891,Carnation - Dark,Pink,#EE3246,false,solid,077540035878
+892,Carnation - Medium,Pink,#F44753,false,solid,077540035885
+893,Carnation - Light,Pink,#F66879,false,solid,077540035892
+894,Carnation - Very Light,Pink,#FD95A3,false,solid,077540035908
+895,Hunter Green - Very Dark,Green,#344B2E,false,solid,077540035915
+898,Coffee Brown - Very Dark,Brown,#532F1B,false,solid,077540035922
+899,Rose - Medium,Pink,#EA6B78,false,solid,077540035939
+900,Burnt Orange - Dark,Orange,#C63117,false,solid,077540035946
+902,Garnet - Very Dark,Lavender,#651329,false,solid,077540035953
+904,Parrot Green - Very Dark,Green,#386324,false,solid,077540035960
+905,Parrot Green - Dark,Green,#467924,false,solid,077540035977
+906,Parrot Green - Medium,Green,#6C9E29,false,solid,077540035984
+907,Parrot Green - Light,Green,#9DC72D,false,solid,077540035991
+909,Emerald Green - Very Dark,Green,#106B43,false,solid,077540036004
+910,Emerald Green - Dark,Green,#10814E,false,solid,077540036011
+911,Emerald Green - Medium,Green,#109256,false,solid,077540036028
+912,Emerald Green - Light,Green,#36B26B,false,solid,077540036035
+913,Nile Green - Medium,Green,#55CA7D,false,solid,077540036042
+915,Plum - Dark,Pink,#95085A,false,solid,077540036059
+918,Red Copper - Dark,Orange,#883630,false,solid,077540036073
+919,Red Copper,Orange,#9B371B,false,solid,077540036080
+920,Copper - Medium,Orange,#AB4836,false,solid,077540036097
+921,Copper,Orange,#C0573D,false,solid,077540036103
+922,Copper - Light,Orange,#DD6E4C,false,solid,077540036110
+924,Gray Green - Very Dark,Blue,#384A4A,false,solid,077540036127
+926,Gray Green - Medium,Blue,#617674,false,solid,077540036134
+927,Gray Green - Light,Blue,#9FA8A5,false,solid,077540036141
+928,Gray Green - Very Light,Blue,#C0C6C0,false,solid,077540036158
+930,Antique Blue - Dark,Blue,#495C6B,false,solid,077540036165
+931,Antique Blue - Medium,Blue,#667684,false,solid,077540036172
+932,Antique Blue - Light,Blue,#93A0AF,false,solid,077540036189
+934,Avocado Green - BLACK,Green,#323324,false,solid,077540036196
+935,Avocado Green - Dark,Green,#383A2A,false,solid,077540036202
+936,Avocado Green - Very Dark,Green,#3F4227,false,solid,077540036219
+937,Avocado Green - Medium,Green,#434F2C,false,solid,077540036226
+938,Coffee Brown - Ultra Dark,Brown,#45271A,false,solid,077540036233
+939,Blue - Very Dark,Blue,#09092F,false,solid,077540036240
+943,Aquamarine - Medium,Blue Green,#009A77,false,solid,077540036257
+945,Tawny,Orange,#F6C19A,false,solid,077540036264
+946,Burnt Orange - Medium,Orange,#ED4115,false,solid,077540036271
+947,Burnt Orange,Orange,#FC4F16,false,solid,077540036288
+948,Peach - Very Light,Peach,#FDE6D3,false,solid,077540036295
+950,Desert Sand - Light,Peach,#E5AC8D,false,solid,077540036301
+951,Tawny - Light,Orange,#FADDB6,false,solid,077540036318
+954,Nile Green,Green,#6FDA8A,false,solid,077540036325
+955,Nile Green - Light,Green,#A8EBAD,false,solid,077540036332
+956,Geranium,Pink,#F7566D,false,solid,10049593
+957,Geranium - Pale,Pink,#FD99AF,false,solid,077540649358
+959,Seagreen - Medium,Blue Green,#72D0B7,false,solid,077540401567
+961,Dusty Rose - Dark,Pink,#DE586C,false,solid,077540036363
+962,Dusty Rose - Medium,Pink,#EB7183,false,solid,077540036370
+963,Dusty Rose - Ultra Very Light,Pink,#FDCCD1,false,solid,077540036387
+966,Baby Green - Medium,Blue Green,#94D28A,false,solid,077540036394
+972,Canary - Deep,Orange,#FB9F11,false,solid,077540036424
+973,Canary - Bright,Orange,#FCCD2D,false,solid,077540036431
+975,Golden Brown - Dark,Yellow,#813C11,false,solid,077540036448
+976,Golden Brown - Medium,Yellow,#CF7532,false,solid,077540036455
+977,Golden Brown - Light,Yellow,#EC8F43,false,solid,077540036462
+986,Forest Green - Very Dark,Green,#2E5230,false,solid,077540036479
+987,Forest Green - Dark,Green,#436838,false,solid,077540036486
+988,Forest Green - Medium,Green,#66924A,false,solid,077540036493
+989,Forest Green,Green,#71A74E,false,solid,077540036509
+991,Aquamarine - Dark,Blue Green,#135F55,false,solid,077540036516
+992,Aquamarine - Light,Blue Green,#42B59E,false,solid,077540036523
+993,Aquamarine - Very Light,Blue Green,#62D8B6,false,solid,077540036530
+995,Electric Blue - Dark,Blue,#0061B0,false,solid,077540036547
+996,Electric Blue - Medium,Blue,#49A8EB,false,solid,077540036554
+B5200,Snow White,Black and White,#FFFFFF,false,solid,077540281435
+BLANC,White,Black and White,#FCFCFF,false,solid,077540036721
+ECRU,Ecru/off-white,Gray,#FFF7E7,false,solid,077540036738

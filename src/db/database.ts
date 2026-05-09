@@ -1,6 +1,6 @@
 import * as SQLite from "expo-sqlite";
 
-import { dmcSixStrandThreadType, referenceColorFixture } from "../data/referenceColors.fixture";
+import { referenceColorFixture, threadTypeFixture } from "../data/referenceCatalog.fixture";
 
 export type NeedleMinderDatabase = SQLite.SQLiteDatabase;
 
@@ -94,20 +94,22 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
 async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> {
   const now = new Date().toISOString();
 
-  await database.runAsync(
-    `INSERT OR IGNORE INTO thread_types
-      (id, manufacturer, product_line, display_name, is_active, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [
-      dmcSixStrandThreadType.id,
-      dmcSixStrandThreadType.manufacturer,
-      dmcSixStrandThreadType.productLine,
-      dmcSixStrandThreadType.displayName,
-      dmcSixStrandThreadType.isActive ? 1 : 0,
-      now,
-      now
-    ]
-  );
+  for (const threadType of threadTypeFixture) {
+    await database.runAsync(
+      `INSERT OR IGNORE INTO thread_types
+        (id, manufacturer, product_line, display_name, is_active, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        threadType.id,
+        threadType.manufacturer,
+        threadType.productLine,
+        threadType.displayName,
+        threadType.isActive ? 1 : 0,
+        now,
+        now
+      ]
+    );
+  }
 
   for (const color of referenceColorFixture) {
     await database.runAsync(

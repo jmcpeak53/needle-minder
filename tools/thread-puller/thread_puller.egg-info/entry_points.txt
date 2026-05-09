@@ -1,0 +1,2 @@
+[console_scripts]
+thread-puller = thread_puller.cli:app
