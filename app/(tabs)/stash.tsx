@@ -18,6 +18,7 @@ import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
+import { ThreadConditionPill } from "../../src/ui/ThreadConditionPill";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 import type { InventoryItem } from "../../src/types";
 
@@ -299,12 +300,20 @@ export default function StashScreen() {
             {pressedItem && (
               <>
                 <View style={styles.sheetTop}>
-                  <SkeinBall color={pressedItem.referenceColor.hexRgb} size={48} />
+                  <SkeinBall
+                    color={pressedItem.referenceColor.hexRgb}
+                    size={48}
+                    condition={pressedItem.condition}
+                    showConditionBadge
+                  />
                   <View style={styles.sheetMeta}>
                     <Text style={styles.sheetName}>{pressedItem.referenceColor.colorName}</Text>
                     <Text style={styles.sheetSub}>
                       {pressedItem.referenceColor.colorCode} · {getThreadTypeDisplayName(pressedItem.referenceColor.threadTypeId)}
                     </Text>
+                    <View style={styles.sheetCondition}>
+                      <ThreadConditionPill condition={pressedItem.condition} />
+                    </View>
                   </View>
                   <Text style={styles.sheetCurrentQty}>
                     <Text style={styles.sheetQtyX}>×</Text>
@@ -372,7 +381,12 @@ function SwatchCell({
       style={[styles.swatch, { width: SWATCH_SIZE, height: SWATCH_SIZE }]}
     >
       <View style={styles.swatchBallWrap}>
-        <SkeinBall color={item.referenceColor.hexRgb} size={Math.floor(SWATCH_SIZE * 0.55)} />
+        <SkeinBall
+          color={item.referenceColor.hexRgb}
+          size={Math.floor(SWATCH_SIZE * 0.55)}
+          condition={item.condition}
+          showConditionBadge
+        />
       </View>
       <View style={[styles.swatchQtyBadge, isLow && styles.swatchQtyBadgeLow]}>
         <Text style={[styles.swatchQtyText, isLow && styles.swatchQtyTextLow]}>
@@ -610,6 +624,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.ink3,
     marginTop: 1
+  },
+  sheetCondition: {
+    marginTop: 8
   },
   sheetCurrentQty: {
     fontFamily: font.serif,

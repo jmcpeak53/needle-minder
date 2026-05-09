@@ -10,14 +10,17 @@ import { useInventory } from "../../src/state/InventoryContext";
 import { parseOcrCandidates } from "../../src/ocr/ocrParser";
 import { MlKitOcrProvider } from "../../src/providers/mlKitOcrProvider";
 import { resolveScanCandidate, type ScanCatalogMatch } from "../../src/scan/scanResolution";
+import { InventoryForm } from "../../src/ui/InventoryForm";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
-import type { OcrCandidate, ReferenceColor } from "../../src/types";
+import type { OcrCandidate, ReferenceColor, ThreadCondition } from "../../src/types";
 
 type ConfirmState = {
   candidate: OcrCandidate;
   color: ReferenceColor;
   quantity: number;
+  condition: ThreadCondition;
+  notes: string;
   selectionToast: string | null;
 };
 
@@ -79,6 +82,8 @@ export default function ScanScreen() {
       candidate: resolution.candidate,
       color: resolution.color,
       quantity: 1,
+      condition: "full",
+      notes: "",
       selectionToast: resolution.selectionToast
     });
     setSelectionToast(resolution.selectionToast);
@@ -120,7 +125,8 @@ export default function ScanScreen() {
     await addInventory({
       referenceColorId: confirming.color.id,
       quantity: confirming.quantity,
-      condition: "full"
+      condition: confirming.condition,
+      notes: confirming.notes
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
@@ -205,6 +211,8 @@ export default function ScanScreen() {
                   candidate: catalogChoice.candidate,
                   color: match.color,
                   quantity: 1,
+                  condition: "full",
+                  notes: "",
                   selectionToast: `${match.threadType.displayName} selected`
                 });
                 setSelectionToast(`${match.threadType.displayName} selected`);
@@ -288,27 +296,15 @@ export default function ScanScreen() {
           <ConfirmField label="Color number" value={confirming.color.colorCode} detected mono />
           <ConfirmField label="Color name" value={confirming.color.colorName} detected />
 
-          {/* Qty field with stepper */}
-          <View style={styles.confirmField}>
-            <Text style={styles.fieldLabel}>QUANTITY</Text>
-            <View style={styles.fieldRow}>
-              <Text style={styles.fieldValue}>{confirming.quantity} skeins</Text>
-              <View style={styles.pillStepper}>
-                <Pressable
-                  style={styles.pillStepBtn}
-                  onPress={() => setConfirming((c) => c && { ...c, quantity: Math.max(1, c.quantity - 1) })}
-                >
-                  <Text style={styles.pillStepText}>−</Text>
-                </Pressable>
-                <Text style={styles.pillStepValue}>{confirming.quantity}</Text>
-                <Pressable
-                  style={styles.pillStepBtn}
-                  onPress={() => setConfirming((c) => c && { ...c, quantity: c.quantity + 1 })}
-                >
-                  <Text style={styles.pillStepText}>+</Text>
-                </Pressable>
-              </View>
-            </View>
+          <View style={styles.formWrap}>
+            <InventoryForm
+              quantity={confirming.quantity}
+              onQuantityChange={(quantity) => setConfirming((c) => c && { ...c, quantity })}
+              condition={confirming.condition}
+              onConditionChange={(condition) => setConfirming((c) => c && { ...c, condition })}
+              notes={confirming.notes}
+              onNotesChange={(notes) => setConfirming((c) => c && { ...c, notes })}
+            />
           </View>
 
           {/* Other candidates */}
@@ -334,6 +330,8 @@ export default function ScanScreen() {
                         candidate: cand,
                         color: col,
                         quantity: confirming.quantity,
+                        condition: confirming.condition,
+                        notes: confirming.notes,
                         selectionToast: resolution.selectionToast
                       });
                       setSelectionToast(resolution.selectionToast);
@@ -820,37 +818,8 @@ const styles = StyleSheet.create({
   fieldValueMono: {
     fontFamily: font.mono
   },
-  pillStepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: colors.card2,
-    borderWidth: 1,
-    borderColor: colors.ruleSoft,
-    borderRadius: 10,
-    padding: 2,
-    marginLeft: "auto"
-  },
-  pillStepBtn: {
-    width: 28,
-    height: 26,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  pillStepText: {
-    fontFamily: font.sansMedium,
-    fontSize: 16,
-    color: colors.ink,
-    lineHeight: 20
-  },
-  pillStepValue: {
-    minWidth: 28,
-    textAlign: "center",
-    fontFamily: font.serif,
-    fontSize: 18,
-    color: colors.ink,
-    lineHeight: 20
+  formWrap: {
+    paddingVertical: spacing.md
   },
   altSection: {
     marginTop: 16

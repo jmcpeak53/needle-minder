@@ -8,6 +8,7 @@ import { buildCatalogBrowseResults, buildReferenceColorSubtitle } from "../../sr
 import { buildCatalogFilterOptions, type CatalogFilter } from "../../src/catalog/catalogFilter";
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
+import { InventoryForm } from "../../src/ui/InventoryForm";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
@@ -158,43 +159,13 @@ export default function AddScreen() {
           </Pressable>
         </View>
 
-        <View style={styles.qtyRow}>
-          <Text style={styles.qtyLabel}>Quantity</Text>
-          <View style={styles.stepper}>
-            <Pressable
-              style={[styles.stepBtn, styles.stepBtnPrimary]}
-              onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-            >
-              <Ionicons name="remove" size={14} color={colors.card} />
-            </Pressable>
-            <Text style={styles.stepValue}>{quantity}</Text>
-            <Pressable style={styles.stepBtn} onPress={() => setQuantity((q) => q + 1)}>
-              <Ionicons name="add" size={14} color={colors.ink} />
-            </Pressable>
-          </View>
-        </View>
-
-        <View style={styles.condRow}>
-          {(["full", "partial"] as ThreadCondition[]).map((c) => (
-            <Pressable
-              key={c}
-              onPress={() => setCondition(c)}
-              style={[styles.condBtn, condition === c && styles.condBtnActive]}
-            >
-              <Text style={[styles.condBtnText, condition === c && styles.condBtnTextActive]}>
-                {c.charAt(0).toUpperCase() + c.slice(1)}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <TextInput
-          value={notes}
-          onChangeText={setNotes}
-          placeholder="Notes (optional)"
-          placeholderTextColor={colors.ink4}
-          style={styles.notesInput}
-          multiline
+        <InventoryForm
+          quantity={quantity}
+          onQuantityChange={setQuantity}
+          condition={condition}
+          onConditionChange={setCondition}
+          notes={notes}
+          onNotesChange={setNotes}
         />
 
         <Pressable style={styles.saveBtn} onPress={handleSave}>
@@ -363,58 +334,6 @@ const styles = StyleSheet.create({
   selectedHeader: { flexDirection: "row", alignItems: "center", gap: 12 },
   selectedName: { fontFamily: font.sansSemiBold, fontSize: 16, color: colors.ink },
   selectedCode: { fontFamily: font.mono, fontSize: 11, color: colors.ink3, marginTop: 2 },
-  qtyRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  qtyLabel: { fontFamily: font.sans, fontSize: 13, color: colors.ink3 },
-  stepper: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-    backgroundColor: colors.card2,
-    borderWidth: 1,
-    borderColor: colors.ruleSoft,
-    borderRadius: radius.md,
-    padding: 2
-  },
-  stepBtn: {
-    width: 32,
-    height: 30,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  stepBtnPrimary: { backgroundColor: colors.ink },
-  stepValue: {
-    minWidth: 34,
-    textAlign: "center",
-    fontFamily: font.serif,
-    fontSize: 22,
-    color: colors.ink,
-    lineHeight: 24
-  },
-  condRow: { flexDirection: "row", gap: spacing.sm },
-  condBtn: {
-    flex: 1,
-    paddingVertical: 8,
-    borderRadius: radius.md,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.rule,
-    alignItems: "center"
-  },
-  condBtnActive: { backgroundColor: colors.card2, borderColor: colors.ink },
-  condBtnText: { fontFamily: font.sansMedium, fontSize: 13, color: colors.ink3 },
-  condBtnTextActive: { color: colors.ink },
-  notesInput: {
-    fontFamily: font.sans,
-    fontSize: 14,
-    color: colors.ink,
-    backgroundColor: colors.card2,
-    borderWidth: 1,
-    borderColor: colors.ruleSoft,
-    borderRadius: radius.md,
-    padding: 10,
-    minHeight: 60
-  },
   saveBtn: {
     flexDirection: "row",
     alignItems: "center",

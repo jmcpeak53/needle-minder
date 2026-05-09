@@ -9,6 +9,7 @@ import { useInventory } from "../../src/state/InventoryContext";
 import { useProjects } from "../../src/state/ProjectsContext";
 import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPill";
 import { SkeinBall } from "../../src/ui/SkeinBall";
+import { ThreadConditionPill } from "../../src/ui/ThreadConditionPill";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 
 export default function DetailScreen() {
@@ -95,14 +96,17 @@ export default function DetailScreen() {
       >
         {/* Hero */}
         <View style={styles.hero}>
-          <SkeinBall color={item.referenceColor.hexRgb} size={80} />
-          <View>
+          <SkeinBall color={item.referenceColor.hexRgb} size={80} condition={item.condition} showConditionBadge />
+          <View style={styles.heroInfo}>
             <Text style={styles.heroType}>{getThreadTypeDisplayName(item.referenceColor.threadTypeId)}</Text>
             <Text style={styles.heroMeta}>
               Added {formatDate(item.updatedAt)} · {item.referenceColor.colorFamily}
             </Text>
-            <View style={styles.heroCode}>
-              <Text style={styles.heroCodeText}>{item.referenceColor.colorCode}</Text>
+            <View style={styles.heroTags}>
+              <View style={styles.heroCode}>
+                <Text style={styles.heroCodeText}>{item.referenceColor.colorCode}</Text>
+              </View>
+              <ThreadConditionPill condition={item.condition} />
             </View>
           </View>
         </View>
@@ -248,6 +252,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: spacing.md
   },
+  heroInfo: {
+    flex: 1
+  },
   heroType: {
     fontFamily: font.serif,
     fontSize: 22,
@@ -260,13 +267,19 @@ const styles = StyleSheet.create({
     color: colors.ink3,
     marginTop: 3
   },
+  heroTags: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginTop: 6
+  },
   heroCode: {
     backgroundColor: colors.card2,
     borderRadius: 6,
     paddingHorizontal: 6,
     paddingVertical: 2,
-    alignSelf: "flex-start",
-    marginTop: 6
+    alignSelf: "flex-start"
   },
   heroCodeText: {
     fontFamily: font.mono,
