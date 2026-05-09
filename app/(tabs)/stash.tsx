@@ -15,6 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 import type { InventoryItem } from "../../src/types";
@@ -28,7 +29,7 @@ const SWATCH_SIZE = Math.floor((SCREEN_W - SWATCH_PAD - SWATCH_GAP * (SWATCH_COL
 type FilterKey = "all" | "low" | string; // threadTypeId
 
 export default function StashScreen() {
-  const { ready, inventory, updateInventory } = useNeedleMinder();
+  const { ready, inventory, updateInventory, getThreadTypeDisplayName } = useNeedleMinder();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
@@ -175,7 +176,7 @@ export default function StashScreen() {
           <TextInput
             value={query}
             onChangeText={setQuery}
-            placeholder="Search brand or code…"
+            placeholder="Search catalog or code…"
             placeholderTextColor={colors.ink3}
             style={styles.searchInput}
             returnKeyType="search"
@@ -188,19 +189,15 @@ export default function StashScreen() {
         </View>
 
         {/* Filter chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterRow}
-        >
-          <FilterChip label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
+        <PillRow contentContainerStyle={styles.filterRow}>
+          <PillButton label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
           {brandFilters.map(({ id, count }) => (
-            <FilterChip key={id} label={id.toUpperCase()} count={count} active={filter === id} onPress={() => setFilter(id)} />
+            <PillButton key={id} label={getThreadTypeDisplayName(id)} count={count} active={filter === id} onPress={() => setFilter(id)} />
           ))}
           {lowCount > 0 && (
-            <FilterChip label="Low" count={lowCount} active={filter === "low"} onPress={() => setFilter("low")} warn />
+            <PillButton label="Low" count={lowCount} active={filter === "low"} onPress={() => setFilter("low")} warn />
           )}
-        </ScrollView>
+        </PillRow>
 
         {/* Swatch groups */}
         {groups.length === 0 ? (
@@ -267,7 +264,7 @@ export default function StashScreen() {
                   <View style={styles.sheetMeta}>
                     <Text style={styles.sheetName}>{pressedItem.referenceColor.colorName}</Text>
                     <Text style={styles.sheetSub}>
-                      {pressedItem.referenceColor.colorCode} · 6-strand
+                      {pressedItem.referenceColor.colorCode} · {getThreadTypeDisplayName(pressedItem.referenceColor.threadTypeId)}
                     </Text>
                   </View>
                   <Text style={styles.sheetCurrentQty}>
@@ -315,36 +312,6 @@ export default function StashScreen() {
         </Pressable>
       </Modal>
     </View>
-  );
-}
-
-function FilterChip({
-  label,
-  count,
-  active,
-  warn = false,
-  onPress
-}: {
-  label: string;
-  count: number;
-  active: boolean;
-  warn?: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={[
-        styles.chip,
-        active && styles.chipActive,
-        warn && !active && styles.chipWarn
-      ]}
-    >
-      <Text style={[styles.chipLabel, active && styles.chipLabelActive, warn && !active && styles.chipLabelWarn]}>
-        {label}
-      </Text>
-      <Text style={[styles.chipCount, active && styles.chipCountActive]}>{count}</Text>
-    </Pressable>
   );
 }
 
@@ -437,46 +404,7 @@ const styles = StyleSheet.create({
     color: colors.ink
   },
   filterRow: {
-    flexDirection: "row",
-    gap: 6,
     paddingBottom: 12
-  },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: radius.pill,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.rule
-  },
-  chipActive: {
-    backgroundColor: colors.ink,
-    borderColor: colors.ink
-  },
-  chipWarn: {
-    borderColor: colors.accentSoft
-  },
-  chipLabel: {
-    fontFamily: font.sansMedium,
-    fontSize: 12,
-    color: colors.ink2
-  },
-  chipLabelActive: {
-    color: colors.card
-  },
-  chipLabelWarn: {
-    color: colors.accent
-  },
-  chipCount: {
-    fontFamily: font.mono,
-    fontSize: 10,
-    color: colors.ink4
-  },
-  chipCountActive: {
-    color: "rgba(250,246,236,0.7)"
   },
   groupHead: {
     flexDirection: "row",

@@ -14,12 +14,12 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets();
 
   const stats = useMemo(() => {
-    if (!inventory.length) return { total: 0, unique: 0, brands: 0, lowStock: 0 };
+    if (!inventory.length) return { total: 0, unique: 0, catalogs: 0, lowStock: 0 };
     const total = inventory.reduce((sum, item) => sum + item.quantity, 0);
     const unique = inventory.length;
-    const brands = new Set(inventory.map((i) => i.referenceColor.threadTypeId)).size;
+    const catalogs = new Set(inventory.map((i) => i.referenceColor.threadTypeId)).size;
     const lowStock = inventory.filter((i) => i.quantity <= 1).length;
-    return { total, unique, brands, lowStock };
+    return { total, unique, catalogs, lowStock };
   }, [inventory]);
 
   const recentItems = useMemo(
@@ -44,7 +44,7 @@ export default function HomeScreen() {
           <View style={styles.appbarGrow}>
             <Text style={styles.appbarTitle}>Good morning</Text>
             <Text style={styles.appbarSub}>
-              {stats.total} skeins · {stats.brands} {stats.brands === 1 ? "brand" : "brands"} · {stats.unique} unique
+              {stats.total} skeins · {stats.catalogs} {stats.catalogs === 1 ? "catalog" : "catalogs"} · {stats.unique} unique
             </Text>
           </View>
           <Pressable
@@ -59,7 +59,7 @@ export default function HomeScreen() {
         <View style={styles.statsGrid}>
           <StatCard label="skeins in stash" value={stats.total} tag="total" onPress={() => router.push("/stash")} />
           <StatCard label="distinct colors" value={stats.unique} tag="unique" onPress={() => router.push("/stash")} />
-          <StatCard label="brands" value={stats.brands} tag="brands" onPress={() => router.push("/stash")} />
+          <StatCard label="catalogs" value={stats.catalogs} tag="catalogs" onPress={() => router.push("/stash")} />
           <StatCard
             label="running low"
             value={stats.lowStock}

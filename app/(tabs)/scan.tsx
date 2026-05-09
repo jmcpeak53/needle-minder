@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
 import { parseOcrCandidates } from "../../src/ocr/ocrParser";
 import { MlKitOcrProvider } from "../../src/providers/mlKitOcrProvider";
+import { resolveScanCandidate, type ScanCatalogMatch } from "../../src/scan/scanResolution";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 import type { OcrCandidate, ReferenceColor } from "../../src/types";
@@ -16,10 +17,23 @@ type ConfirmState = {
   candidate: OcrCandidate;
   color: ReferenceColor;
   quantity: number;
+  selectionToast: string | null;
+};
+
+type CatalogChoiceState = {
+  candidate: OcrCandidate;
+  matches: ScanCatalogMatch[];
 };
 
 export default function ScanScreen() {
-  const { catalog, addInventory, ready } = useNeedleMinder();
+  const {
+    catalog,
+    threadTypes,
+    sessionCatalogThreadTypeId,
+    setSessionCatalogThreadTypeId,
+    addInventory,
+    ready
+  } = useNeedleMinder();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<CameraView>(null);
@@ -29,8 +43,51 @@ export default function ScanScreen() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [confirming, setConfirming] = useState<ConfirmState | null>(null);
+  const [catalogChoice, setCatalogChoice] = useState<CatalogChoiceState | null>(null);
+  const [saveForSession, setSaveForSession] = useState(false);
+  const [selectionToast, setSelectionToast] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const ocrProvider = useMemo(() => new MlKitOcrProvider(), []);
+
+  useEffect(() => {
+    if (!selectionToast) {
+      return;
+    }
+
+    const timer = setTimeout(() => setSelectionToast(null), 2200);
+    return () => clearTimeout(timer);
+  }, [selectionToast]);
+
+  function applyCandidate(candidate: OcrCandidate) {
+    const resolution = resolveScanCandidate({
+      candidate,
+      catalog,
+      threadTypes,
+      sessionCatalogThreadTypeId
+    });
+
+    if (!resolution) {
+      return;
+    }
+
+    if (resolution.mode === "choose-catalog") {
+      setCatalogChoice({
+        candidate: resolution.candidate,
+        matches: resolution.matches
+      });
+      setSaveForSession(false);
+      return;
+    }
+
+    setCatalogChoice(null);
+    setConfirming({
+      candidate: resolution.candidate,
+      color: resolution.color,
+      quantity: 1,
+      selectionToast: resolution.selectionToast
+    });
+    setSelectionToast(resolution.selectionToast);
+  }
 
   async function capture() {
     if (!cameraRef.current || isScanning) return;
@@ -52,8 +109,7 @@ export default function ScanScreen() {
       setRawText(recognized);
       setCandidates(next);
       if (next.length > 0) {
-        const color = catalog.find((c) => c.colorCode === next[0].colorCode);
-        if (color) setConfirming({ candidate: next[0], color, quantity: 1 });
+        applyCandidate(next[0]);
       }
     } catch {
       setScanError("Couldn't read that label. Try again or add manually.");
@@ -80,10 +136,13 @@ export default function ScanScreen() {
 
   function reset() {
     setConfirming(null);
+    setCatalogChoice(null);
     setCandidates([]);
     setRawText([]);
     setScanError(null);
     setSaved(false);
+    setSaveForSession(false);
+    setSelectionToast(null);
   }
 
   // Permission gate
@@ -109,6 +168,74 @@ export default function ScanScreen() {
             <Text style={styles.permBtnSecondaryText}>Add manually instead</Text>
           </Pressable>
         </View>
+      </View>
+    );
+  }
+
+  if (catalogChoice) {
+    return (
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <View style={styles.confirmBar}>
+          <Pressable onPress={reset} style={styles.iconBtn}>
+            <Ionicons name="chevron-back" size={18} color={colors.ink2} />
+          </Pressable>
+          <View style={styles.confirmBarCenter}>
+            <Text style={styles.confirmBarTitle}>Choose catalog</Text>
+            <Text style={styles.confirmBarSub}>Code {catalogChoice.candidate.colorCode} appears in more than one catalog</Text>
+          </View>
+          <Pressable onPress={reset} style={styles.iconBtn}>
+            <Ionicons name="close" size={18} color={colors.ink2} />
+          </Pressable>
+        </View>
+
+        <ScrollView
+          contentContainerStyle={[styles.confirmScroll, { paddingBottom: insets.bottom + 40 }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <Text style={styles.choiceIntro}>
+            Select the thread catalog for this skein. You can save the choice for the rest of this session.
+          </Text>
+
+          {catalogChoice.matches.map((match) => (
+            <Pressable
+              key={match.color.id}
+              style={styles.choiceRow}
+              onPress={async () => {
+                if (saveForSession) {
+                  await setSessionCatalogThreadTypeId(match.threadType.id);
+                }
+
+                setCatalogChoice(null);
+                setConfirming({
+                  candidate: catalogChoice.candidate,
+                  color: match.color,
+                  quantity: 1,
+                  selectionToast: `${match.threadType.displayName} selected`
+                });
+                setSelectionToast(`${match.threadType.displayName} selected`);
+              }}
+            >
+              <SkeinBall color={match.color.hexRgb} size={42} />
+              <View style={styles.choiceMeta}>
+                <Text style={styles.choiceTitle}>{match.threadType.displayName}</Text>
+                <Text style={styles.choiceBody}>
+                  {match.color.colorCode} · {match.color.colorName}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={16} color={colors.ink4} />
+            </Pressable>
+          ))}
+
+          <Pressable style={styles.sessionRow} onPress={() => setSaveForSession((value) => !value)}>
+            <View style={[styles.sessionCheckbox, saveForSession && styles.sessionCheckboxChecked]}>
+              {saveForSession ? <Ionicons name="checkmark" size={14} color={colors.card} /> : null}
+            </View>
+            <View style={styles.choiceMeta}>
+              <Text style={styles.choiceTitle}>Save for session</Text>
+              <Text style={styles.choiceBody}>Use this catalog automatically for matching scans until it is cleared.</Text>
+            </View>
+          </Pressable>
+        </ScrollView>
       </View>
     );
   }
@@ -149,7 +276,20 @@ export default function ScanScreen() {
             </View>
           </View>
 
-          <ConfirmField label="Brand" value="DMC" detected />
+          {selectionToast ? (
+            <View style={styles.selectionToast}>
+              <Text style={styles.selectionToastText}>{selectionToast}</Text>
+            </View>
+          ) : null}
+
+          <ConfirmField
+            label="Catalog"
+            value={
+              threadTypes.find((threadType) => threadType.id === confirming.color.threadTypeId)?.displayName ??
+              confirming.color.threadTypeId
+            }
+            detected
+          />
           <ConfirmField label="Color number" value={confirming.color.colorCode} detected mono />
           <ConfirmField label="Color name" value={confirming.color.colorName} detected />
 
@@ -181,13 +321,28 @@ export default function ScanScreen() {
             <View style={styles.altSection}>
               <Text style={styles.altLabel}>Other possible matches</Text>
               {candidates.slice(1).map((cand) => {
-                const col = catalog.find((c) => c.colorCode === cand.colorCode);
-                if (!col) return null;
+                const resolution = resolveScanCandidate({
+                  candidate: cand,
+                  catalog,
+                  threadTypes,
+                  sessionCatalogThreadTypeId
+                });
+                if (!resolution || resolution.mode !== "confirm") return null;
+                const col = resolution.color;
                 return (
                   <Pressable
-                    key={cand.colorCode}
+                    key={`${cand.colorCode}-${col.id}`}
                     style={styles.altRow}
-                    onPress={() => setConfirming({ candidate: cand, color: col, quantity: confirming.quantity })}
+                    onPress={() => {
+                      setCatalogChoice(null);
+                      setConfirming({
+                        candidate: cand,
+                        color: col,
+                        quantity: confirming.quantity,
+                        selectionToast: resolution.selectionToast
+                      });
+                      setSelectionToast(resolution.selectionToast);
+                    }}
                   >
                     <SkeinBall color={col.hexRgb} size={32} />
                     <Text style={styles.altRowText}>{col.colorCode} {col.colorName}</Text>
@@ -498,6 +653,65 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.accent
   },
+  choiceIntro: {
+    fontFamily: font.sans,
+    fontSize: 13,
+    color: colors.ink3,
+    lineHeight: 19,
+    marginBottom: spacing.md
+  },
+  choiceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.rule,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm
+  },
+  choiceMeta: {
+    flex: 1
+  },
+  choiceTitle: {
+    fontFamily: font.sansSemiBold,
+    fontSize: 14,
+    color: colors.ink
+  },
+  choiceBody: {
+    fontFamily: font.sans,
+    fontSize: 12,
+    color: colors.ink3,
+    marginTop: 2,
+    lineHeight: 17
+  },
+  sessionRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    backgroundColor: colors.card2,
+    borderWidth: 1,
+    borderColor: colors.ruleSoft,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginTop: spacing.sm
+  },
+  sessionCheckbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: colors.rule,
+    backgroundColor: colors.card,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2
+  },
+  sessionCheckboxChecked: {
+    backgroundColor: colors.ink,
+    borderColor: colors.ink
+  },
   // Confirm screen
   confirmBar: {
     flexDirection: "row",
@@ -555,6 +769,20 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.ink3,
     marginTop: 3
+  },
+  selectionToast: {
+    backgroundColor: colors.infoSoft,
+    borderWidth: 1,
+    borderColor: colors.info,
+    borderRadius: radius.md,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    marginBottom: 12
+  },
+  selectionToastText: {
+    fontFamily: font.sansMedium,
+    fontSize: 12,
+    color: colors.info
   },
   badgeOk: {
     backgroundColor: "#e1ebdb",

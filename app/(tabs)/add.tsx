@@ -4,7 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { BackHandler, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { buildCatalogBrowseResults, buildReferenceColorSubtitle } from "../../src/catalog/catalogBrowse";
+import { buildCatalogFilterOptions, type CatalogFilter } from "../../src/catalog/catalogFilter";
 import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 import type { ReferenceColor, ThreadCondition } from "../../src/types";
@@ -25,10 +28,11 @@ function RainbowBall({ size }: { size: number }) {
 }
 
 export default function AddScreen() {
-  const { ready, catalog, addInventory } = useNeedleMinder();
+  const { ready, catalog, threadTypes, defaultCatalogFilter, addInventory } = useNeedleMinder();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
+  const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>("all");
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<ReferenceColor | null>(null);
   const [quantity, setQuantity] = useState(1);
@@ -38,45 +42,17 @@ export default function AddScreen() {
   const isSearching = query.trim().length > 0;
   const mode = isSearching ? "search" : selectedFamily ? "family" : "browse";
 
-  const families = useMemo(() => {
-    const map = new Map<string, ReferenceColor[]>();
-    for (const c of catalog) {
-      const list = map.get(c.colorFamily) ?? [];
-      list.push(c);
-      map.set(c.colorFamily, list);
-    }
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, members]) => {
-        if (members.some((m) => m.threadSubtype === "metallic")) {
-          return { name, count: members.length, representativeHex: "#C0BDBA", isRainbow: false };
-        }
-        if (members.every((m) => m.threadSubtype === "variegated") || name.toLowerCase().includes("varieg")) {
-          return { name, count: members.length, representativeHex: "", isRainbow: true };
-        }
-        const nameLower = name.toLowerCase();
-        let rep = members.find((m) => m.colorName.toLowerCase() === nameLower);
-        if (!rep) rep = members.find((m) => m.colorName.toLowerCase().startsWith(nameLower));
-        if (!rep) rep = members[Math.floor(members.length / 2)];
-        return { name, count: members.length, representativeHex: rep.hexRgb, isRainbow: false };
-      });
-  }, [catalog]);
-
-  const results = useMemo(() => {
-    if (mode === "search") {
-      const q = query.trim().toLowerCase();
-      return catalog.filter(
-        (c) =>
-          c.colorCode.toLowerCase().includes(q) ||
-          c.colorName.toLowerCase().includes(q) ||
-          c.colorFamily.toLowerCase().includes(q)
-      );
-    }
-    if (mode === "family" && selectedFamily) {
-      return catalog.filter((c) => c.colorFamily === selectedFamily);
-    }
-    return [];
-  }, [catalog, query, mode, selectedFamily]);
+  const filterOptions = useMemo(() => buildCatalogFilterOptions(threadTypes), [threadTypes]);
+  const { families, results } = useMemo(
+    () =>
+      buildCatalogBrowseResults({
+        catalog,
+        filter: catalogFilter,
+        query,
+        selectedFamily
+      }),
+    [catalog, catalogFilter, query, selectedFamily]
+  );
 
   useEffect(() => {
     const subscription = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -88,6 +64,10 @@ export default function AddScreen() {
     });
     return () => subscription.remove();
   }, [mode]);
+
+  useEffect(() => {
+    setCatalogFilter(defaultCatalogFilter);
+  }, [defaultCatalogFilter]);
 
   function handleBack() {
     if (mode === "family") {
@@ -131,6 +111,21 @@ export default function AddScreen() {
         </View>
       </View>
 
+      <PillRow contentContainerStyle={styles.filterRow}>
+        {filterOptions.map((option) => (
+          <PillButton
+            key={option.value}
+            onPress={() => {
+              setCatalogFilter(option.value);
+              setSelectedFamily(null);
+              setSelectedColor(null);
+            }}
+            active={catalogFilter === option.value}
+            label={option.label}
+          />
+        ))}
+      </PillRow>
+
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
         showsVerticalScrollIndicator={false}
@@ -144,7 +139,11 @@ export default function AddScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.selectedName}>{selectedColor.colorName}</Text>
                 <Text style={styles.selectedCode}>
-                  {selectedColor.colorCode} · {selectedColor.colorFamily}
+                  {selectedColor.colorCode} · {buildReferenceColorSubtitle(selectedColor, {
+                    filter: catalogFilter,
+                    catalog,
+                    threadTypes
+                  })}
                 </Text>
               </View>
               <Pressable onPress={() => setSelectedColor(null)} style={styles.iconBtn}>
@@ -247,7 +246,13 @@ export default function AddScreen() {
                   <Text style={styles.resultColorName}>{color.colorName}</Text>
                 </Text>
                 {mode === "search" && (
-                  <Text style={styles.resultFamily}>{color.colorFamily}</Text>
+                  <Text style={styles.resultFamily}>
+                    {buildReferenceColorSubtitle(color, {
+                      filter: catalogFilter,
+                      catalog,
+                      threadTypes
+                    })}
+                  </Text>
                 )}
               </View>
               <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
@@ -298,6 +303,10 @@ const styles = StyleSheet.create({
     fontFamily: font.sans,
     fontSize: 13,
     color: colors.ink
+  },
+  filterRow: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm
   },
   scroll: { paddingHorizontal: spacing.lg },
   // Family browse

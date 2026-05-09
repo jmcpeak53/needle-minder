@@ -1,6 +1,6 @@
 # Needle Minder
 
-Needle Minder is an offline mobile app for cross-stitch and embroidery hobbyists to track physical thread inventory and plan projects. V1 targets Android and iOS with React Native, Expo, local SQLite storage, DMC Six-Strand Embroidery Floss reference data, manual entry, one-skein-at-a-time label scanning with required confirmation, and project-level thread reservations.
+Needle Minder is an offline mobile app for cross-stitch and embroidery hobbyists to track physical thread inventory and plan projects. V1 targets Android and iOS with React Native, Expo, local SQLite storage, DMC thread reference data, manual entry, one-skein-at-a-time label scanning with required confirmation, and project-level thread reservations.
 
 ## Current Status
 
@@ -9,7 +9,7 @@ This repo now contains the first implementation scaffold:
 - Expo SDK 55 app with Expo Router tabs.
 - Local SQLite schema and repositories for thread types, reference colors, user inventory, projects, and thread reservations.
 - Manual add, inventory management, project planning, scan/confirm, and settings screens.
-- A small DMC development fixture. The full DMC catalog still needs to be sourced and audited before v1 release.
+- Multi-catalog DMC reference data, currently including Six-Strand Embroidery Floss and Pearl Cotton Size 5.
 
 ## Prerequisites
 
@@ -86,7 +86,7 @@ Validate specific catalog files only:
 npm run validate:catalog -- data/reference/dmc-six-strand.csv data/reference/dmc-pearl-cotton-5.csv
 ```
 
-The catalog validation command checks all CSVs in `data/reference/` (currently six-strand and pearl cotton size 5) for required fields, duplicate color codes, valid hex colors, and valid variegated flags.
+The catalog validation command checks all CSVs in `data/reference/` (currently six-strand and pearl cotton size 5) for required fields, duplicate color codes within each catalog, valid hex colors, and valid variegated flags.
 
 ## Build Profiles
 

@@ -44,11 +44,11 @@ export class SqliteReferenceColorRepository implements ReferenceColorRepository 
   }
 
   async findByCode(code: string): Promise<ReferenceColor | null> {
-    const row = await this.database.getFirstAsync<ReferenceColorRow>(
+    const rows = await this.database.getAllAsync<ReferenceColorRow>(
       "SELECT * FROM reference_colors WHERE color_code = ?",
       [code.trim().toUpperCase()]
     );
-    return row ? mapReferenceColor(row) : null;
+    return rows.length === 1 ? mapReferenceColor(rows[0]) : null;
   }
 
   async findByUpc(upc: string): Promise<ReferenceColor | null> {

@@ -1,43 +1,54 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { buildReferenceColorSubtitle } from "../../../src/catalog/catalogBrowse";
+import { buildCatalogFilterOptions, type CatalogFilter } from "../../../src/catalog/catalogFilter";
 import { ProjectStatusPill } from "../../../src/projects/components/ProjectStatusPill";
+import { buildVisibleProjectThreadColors } from "../../../src/projects/projectThreadSelection";
 import { useNeedleMinder } from "../../../src/state/NeedleMinderContext";
+import { PillButton, PillRow } from "../../../src/ui/PillButton";
 import { colors, font, radius, spacing } from "../../../src/ui/theme";
 
 export default function ProjectThreadsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { catalog, inventory, getProjectDetail, getReservationsByReferenceColor, setProjectReservation, removeProjectReservation } =
-    useNeedleMinder();
+  const {
+    catalog,
+    threadTypes,
+    defaultCatalogFilter,
+    inventory,
+    getProjectDetail,
+    getReservationsByReferenceColor,
+    setProjectReservation,
+    removeProjectReservation
+  } = useNeedleMinder();
   const [query, setQuery] = useState("");
+  const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>("all");
 
   const detail = useMemo(() => (id ? getProjectDetail(id) : null), [getProjectDetail, id]);
+  const filterOptions = useMemo(() => buildCatalogFilterOptions(threadTypes), [threadTypes]);
 
   const visibleColors = useMemo(() => {
     if (!detail) {
       return [];
     }
 
-    const stashIds = new Set(inventory.map((item) => item.referenceColor.id));
-    const reservedIds = new Set(detail.reservations.map((item) => item.referenceColorId));
-    const q = query.trim().toLowerCase();
+    return buildVisibleProjectThreadColors({
+      catalog,
+      inventory,
+      reservedColorIds: new Set(detail.reservations.map((item) => item.referenceColorId)),
+      query,
+      filter: catalogFilter
+    });
+  }, [catalog, catalogFilter, detail, inventory, query]);
 
-    const base = q
-      ? catalog.filter(
-          (color) =>
-            color.colorCode.toLowerCase().includes(q) ||
-            color.colorName.toLowerCase().includes(q) ||
-            color.colorFamily.toLowerCase().includes(q)
-        )
-      : catalog.filter((color) => stashIds.has(color.id) || reservedIds.has(color.id));
-
-    return base.slice(0, 80);
-  }, [catalog, detail, inventory, query]);
+  useEffect(() => {
+    setCatalogFilter(defaultCatalogFilter);
+  }, [defaultCatalogFilter]);
 
   if (!detail) {
     return (
@@ -80,6 +91,17 @@ export default function ProjectThreadsScreen() {
         />
       </View>
 
+      <PillRow contentContainerStyle={styles.filterRow}>
+        {filterOptions.map((option) => (
+          <PillButton
+            key={option.value}
+            onPress={() => setCatalogFilter(option.value)}
+            active={catalogFilter === option.value}
+            label={option.label}
+          />
+        ))}
+      </PillRow>
+
       <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
         {visibleColors.map((color) => {
           const projectQuantity = quantities.get(color.id) ?? 0;
@@ -95,7 +117,11 @@ export default function ProjectThreadsScreen() {
               <View style={styles.rowMeta}>
                 <Text style={styles.rowName}>{color.colorName}</Text>
                 <Text style={styles.rowSub}>
-                  {color.colorCode} · {color.colorFamily}
+                  {color.colorCode} · {buildReferenceColorSubtitle(color, {
+                    filter: catalogFilter,
+                    catalog,
+                    threadTypes
+                  })}
                 </Text>
                 <Text style={[styles.rowHealth, available < 0 && styles.rowHealthWarn]}>
                   In stash {stash} · Reserved {reserved} · Available {available}
@@ -205,6 +231,10 @@ const styles = StyleSheet.create({
     fontFamily: font.sans,
     fontSize: 14,
     color: colors.ink
+  },
+  filterRow: {
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm
   },
   list: {
     paddingVertical: spacing.md,

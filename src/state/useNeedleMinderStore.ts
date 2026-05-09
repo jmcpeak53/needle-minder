@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import type { CatalogFilter } from "../catalog/catalogFilter";
+import { normalizeCatalogFilter } from "../catalog/catalogFilter";
 import type { ReferenceColorRepository } from "../catalog/referenceColorRepository";
+import type { ThreadTypeRepository } from "../catalog/threadTypeRepository";
 import { openNeedleMinderDatabase } from "../db/database";
 import { SqliteInventoryRepository } from "../db/sqliteInventoryRepository";
+import { SqlitePreferencesRepository } from "../db/sqlitePreferencesRepository";
 import { SqliteProjectRepository } from "../db/sqliteProjectRepository";
 import { SqliteReferenceColorRepository } from "../db/sqliteReferenceColorRepository";
+import { SqliteThreadTypeRepository } from "../db/sqliteThreadTypeRepository";
 import type { AddInventoryInput } from "../inventory/inventoryRepository";
 import { InventoryService } from "../inventory/inventoryService";
-import type { InventoryItem, ReferenceColor } from "../types";
+import type { InventoryItem, ReferenceColor, ThreadType } from "../types";
 import {
   buildProjectDetail,
   buildProjectReverseLookup,
@@ -16,6 +21,7 @@ import {
 } from "../projects/projectMath";
 import type { SaveProjectInput } from "../projects/projectRepository";
 import { ProjectService } from "../projects/projectService";
+import type { PreferencesRepository } from "../settings/preferencesRepository";
 import type {
   Project,
   ProjectDetail,
@@ -29,6 +35,9 @@ type StoreState = {
   ready: boolean;
   inventory: InventoryItem[];
   catalog: ReferenceColor[];
+  threadTypes: ThreadType[];
+  defaultCatalogFilter: CatalogFilter;
+  sessionCatalogThreadTypeId: string | null;
   projects: Project[];
   projectSummaries: ProjectSummary[];
   shoppingShortfalls: ShoppingShortfall[];
@@ -42,6 +51,11 @@ type StoreState = {
   setProjectReservation(projectId: string, referenceColorId: string, quantity: number): Promise<void>;
   removeProjectReservation(projectId: string, referenceColorId: string): Promise<void>;
   clearProjectReservations(projectId: string): Promise<void>;
+  setDefaultCatalogFilter(filter: CatalogFilter): Promise<void>;
+  setSessionCatalogThreadTypeId(threadTypeId: string): Promise<void>;
+  clearSessionCatalogThreadTypeId(): Promise<void>;
+  getThreadTypeById(threadTypeId: string): ThreadType | null;
+  getThreadTypeDisplayName(threadTypeId: string): string;
   getProjectDetail(projectId: string): ProjectDetail | null;
   getReservationsByReferenceColor(referenceColorId: string): ProjectLookupReservation[];
   refresh(): Promise<void>;
@@ -51,10 +65,15 @@ export function useNeedleMinderStore(): StoreState {
   const [ready, setReady] = useState(false);
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [catalog, setCatalog] = useState<ReferenceColor[]>([]);
+  const [threadTypes, setThreadTypes] = useState<ThreadType[]>([]);
+  const [defaultCatalogFilter, setDefaultCatalogFilterState] = useState<CatalogFilter>("all");
+  const [sessionCatalogThreadTypeId, setSessionCatalogThreadTypeIdState] = useState<string | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [reservations, setReservations] = useState<ProjectReservationRecord[]>([]);
   const [repositories, setRepositories] = useState<{
     referenceColors: ReferenceColorRepository;
+    threadTypes: ThreadTypeRepository;
+    preferences: PreferencesRepository;
     inventoryService: InventoryService;
     projectService: ProjectService;
   } | null>(null);
@@ -68,17 +87,38 @@ export function useNeedleMinderStore(): StoreState {
       }
 
       const referenceColors = new SqliteReferenceColorRepository(database);
+      const threadTypes = new SqliteThreadTypeRepository(database);
+      const preferences = new SqlitePreferencesRepository(database);
       const inventoryService = new InventoryService(new SqliteInventoryRepository(database));
       const projectService = new ProjectService(new SqliteProjectRepository(database));
-      const [loadedCatalog, loadedInventory, loadedProjects, loadedReservations] = await Promise.all([
+      const [loadedCatalog, loadedThreadTypes, savedDefaultFilter, savedSessionCatalogThreadTypeId, loadedInventory, loadedProjects, loadedReservations] = await Promise.all([
         referenceColors.list(),
+        threadTypes.list(),
+        preferences.getDefaultCatalogFilter(),
+        preferences.getSessionCatalogThreadTypeId(),
         inventoryService.list(),
         projectService.listProjects(),
         projectService.listReservations()
       ]);
 
-      setRepositories({ referenceColors, inventoryService, projectService });
+      const normalizedDefaultFilter = normalizeCatalogFilter(savedDefaultFilter, loadedThreadTypes);
+      const normalizedSessionCatalogThreadTypeId = loadedThreadTypes.some((item) => item.id === savedSessionCatalogThreadTypeId)
+        ? savedSessionCatalogThreadTypeId
+        : null;
+
+      if (normalizedDefaultFilter !== savedDefaultFilter) {
+        await preferences.setDefaultCatalogFilter(normalizedDefaultFilter);
+      }
+
+      if (savedSessionCatalogThreadTypeId && !normalizedSessionCatalogThreadTypeId) {
+        await preferences.clearSessionCatalogThreadTypeId();
+      }
+
+      setRepositories({ referenceColors, threadTypes, preferences, inventoryService, projectService });
       setCatalog(loadedCatalog);
+      setThreadTypes(loadedThreadTypes);
+      setDefaultCatalogFilterState(normalizedDefaultFilter);
+      setSessionCatalogThreadTypeIdState(normalizedSessionCatalogThreadTypeId);
       setInventory(loadedInventory);
       setProjects(loadedProjects);
       setReservations(loadedReservations);
@@ -95,17 +135,44 @@ export function useNeedleMinderStore(): StoreState {
       return;
     }
 
-    const [loadedCatalog, loadedInventory, loadedProjects, loadedReservations] = await Promise.all([
+    const [
+      nextCatalog,
+      nextThreadTypes,
+      savedDefaultFilter,
+      savedSessionCatalogThreadTypeId,
+      nextInventory,
+      nextProjects,
+      nextReservations
+    ] = await Promise.all([
       repositories.referenceColors.list(),
+      repositories.threadTypes.list(),
+      repositories.preferences.getDefaultCatalogFilter(),
+      repositories.preferences.getSessionCatalogThreadTypeId(),
       repositories.inventoryService.list(),
       repositories.projectService.listProjects(),
       repositories.projectService.listReservations()
     ]);
 
-    setCatalog(loadedCatalog);
-    setInventory(loadedInventory);
-    setProjects(loadedProjects);
-    setReservations(loadedReservations);
+    const normalizedDefaultFilter = normalizeCatalogFilter(savedDefaultFilter, nextThreadTypes);
+    const normalizedSessionCatalogThreadTypeId = nextThreadTypes.some((item) => item.id === savedSessionCatalogThreadTypeId)
+      ? savedSessionCatalogThreadTypeId
+      : null;
+
+    if (normalizedDefaultFilter !== savedDefaultFilter) {
+      await repositories.preferences.setDefaultCatalogFilter(normalizedDefaultFilter);
+    }
+
+    if (savedSessionCatalogThreadTypeId && !normalizedSessionCatalogThreadTypeId) {
+      await repositories.preferences.clearSessionCatalogThreadTypeId();
+    }
+
+    setCatalog(nextCatalog);
+    setThreadTypes(nextThreadTypes);
+    setDefaultCatalogFilterState(normalizedDefaultFilter);
+    setSessionCatalogThreadTypeIdState(normalizedSessionCatalogThreadTypeId);
+    setInventory(nextInventory);
+    setProjects(nextProjects);
+    setReservations(nextReservations);
   }, [repositories]);
 
   const projectSummaries = useMemo(
@@ -123,6 +190,9 @@ export function useNeedleMinderStore(): StoreState {
       ready,
       inventory,
       catalog,
+      threadTypes,
+      defaultCatalogFilter,
+      sessionCatalogThreadTypeId,
       projects,
       projectSummaries,
       shoppingShortfalls,
@@ -210,6 +280,41 @@ export function useNeedleMinderStore(): StoreState {
         await repositories.projectService.clearReservations(projectId);
         await refresh();
       },
+      async setDefaultCatalogFilter(filter: CatalogFilter) {
+        if (!repositories) {
+          return;
+        }
+
+        const normalized = normalizeCatalogFilter(filter, threadTypes);
+        await repositories.preferences.setDefaultCatalogFilter(normalized);
+        setDefaultCatalogFilterState(normalized);
+      },
+      async setSessionCatalogThreadTypeId(threadTypeId: string) {
+        if (!repositories) {
+          return;
+        }
+
+        if (!threadTypes.some((threadType) => threadType.id === threadTypeId)) {
+          return;
+        }
+
+        await repositories.preferences.setSessionCatalogThreadTypeId(threadTypeId);
+        setSessionCatalogThreadTypeIdState(threadTypeId);
+      },
+      async clearSessionCatalogThreadTypeId() {
+        if (!repositories) {
+          return;
+        }
+
+        await repositories.preferences.clearSessionCatalogThreadTypeId();
+        setSessionCatalogThreadTypeIdState(null);
+      },
+      getThreadTypeById(threadTypeId: string) {
+        return threadTypes.find((threadType) => threadType.id === threadTypeId) ?? null;
+      },
+      getThreadTypeDisplayName(threadTypeId: string) {
+        return threadTypes.find((threadType) => threadType.id === threadTypeId)?.displayName ?? threadTypeId;
+      },
       getProjectDetail(projectId: string) {
         const project = projects.find((item) => item.id === projectId);
         if (!project) {
@@ -225,6 +330,7 @@ export function useNeedleMinderStore(): StoreState {
     }),
     [
       catalog,
+      defaultCatalogFilter,
       inventory,
       projectSummaries,
       projects,
@@ -232,7 +338,9 @@ export function useNeedleMinderStore(): StoreState {
       refresh,
       repositories,
       reservations,
-      shoppingShortfalls
+      sessionCatalogThreadTypeId,
+      shoppingShortfalls,
+      threadTypes
     ]
   );
 }

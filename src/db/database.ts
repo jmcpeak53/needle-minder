@@ -79,6 +79,12 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
 
     CREATE UNIQUE INDEX IF NOT EXISTS project_thread_reservations_project_color_unique
       ON project_thread_reservations(project_id, reference_color_id);
+
+    CREATE TABLE IF NOT EXISTS app_preferences (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
 
   try {

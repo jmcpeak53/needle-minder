@@ -13,7 +13,7 @@ export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { inventory, decrementInventory, updateInventory, removeInventory, getReservationsByReferenceColor } = useNeedleMinder();
+  const { inventory, decrementInventory, updateInventory, removeInventory, getReservationsByReferenceColor, getThreadTypeDisplayName } = useNeedleMinder();
 
   const item = useMemo(() => inventory.find((i) => i.id === id) ?? null, [inventory, id]);
   const projectReservations = useMemo(
@@ -93,7 +93,7 @@ export default function DetailScreen() {
         <View style={styles.hero}>
           <SkeinBall color={item.referenceColor.hexRgb} size={80} />
           <View>
-            <Text style={styles.heroType}>6-strand cotton</Text>
+            <Text style={styles.heroType}>{getThreadTypeDisplayName(item.referenceColor.threadTypeId)}</Text>
             <Text style={styles.heroMeta}>
               Added {formatDate(item.updatedAt)} · {item.referenceColor.colorFamily}
             </Text>

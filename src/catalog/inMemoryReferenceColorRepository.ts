@@ -29,7 +29,8 @@ export class InMemoryReferenceColorRepository implements ReferenceColorRepositor
 
   async findByCode(code: string): Promise<ReferenceColor | null> {
     const normalized = code.trim().toUpperCase();
-    return this.colors.find((color) => color.colorCode === normalized) ?? null;
+    const matches = this.colors.filter((color) => color.colorCode === normalized);
+    return matches.length === 1 ? matches[0] : null;
   }
 
   async findByUpc(upc: string): Promise<ReferenceColor | null> {

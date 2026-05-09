@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProjectCard } from "../../src/projects/components/ProjectCard";
 import type { ProjectStatus, ProjectSummary } from "../../src/projects/types";
 import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
 type ViewMode = "grid" | "list";
@@ -73,13 +74,13 @@ export default function ProjectsScreen() {
           </Pressable>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterRow}>
-          <FilterChip label="All" count={filterCounts.all} active={filter === "all"} onPress={() => setFilter("all")} />
-          <FilterChip label="WIP" count={filterCounts.wip} active={filter === "wip"} onPress={() => setFilter("wip")} />
-          <FilterChip label="Pattern" count={filterCounts.pattern} active={filter === "pattern"} onPress={() => setFilter("pattern")} />
-          <FilterChip label="Not started" count={filterCounts.not_started} active={filter === "not_started"} onPress={() => setFilter("not_started")} />
-          <FilterChip label="Finished" count={filterCounts.finished} active={filter === "finished"} onPress={() => setFilter("finished")} />
-        </ScrollView>
+        <PillRow contentContainerStyle={styles.filterRow}>
+          <PillButton label="All" count={filterCounts.all} active={filter === "all"} onPress={() => setFilter("all")} />
+          <PillButton label="WIP" count={filterCounts.wip} active={filter === "wip"} onPress={() => setFilter("wip")} />
+          <PillButton label="Pattern" count={filterCounts.pattern} active={filter === "pattern"} onPress={() => setFilter("pattern")} />
+          <PillButton label="Not started" count={filterCounts.not_started} active={filter === "not_started"} onPress={() => setFilter("not_started")} />
+          <PillButton label="Finished" count={filterCounts.finished} active={filter === "finished"} onPress={() => setFilter("finished")} />
+        </PillRow>
 
         <View style={styles.controls}>
           <View style={styles.segment}>
@@ -142,25 +143,6 @@ function compareByStatusThenDate(a: ProjectSummary, b: ProjectSummary): number {
   const aDate = a.project.startDate ?? a.project.updatedAt;
   const bDate = b.project.startDate ?? b.project.updatedAt;
   return bDate.localeCompare(aDate);
-}
-
-function FilterChip({
-  label,
-  count,
-  active,
-  onPress
-}: {
-  label: string;
-  count: number;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable onPress={onPress} style={[styles.chip, active && styles.chipActive]}>
-      <Text style={[styles.chipLabel, active && styles.chipLabelActive]}>{label}</Text>
-      <Text style={[styles.chipCount, active && styles.chipCountActive]}>{count}</Text>
-    </Pressable>
-  );
 }
 
 function SegmentButton({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
@@ -228,39 +210,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   filterRow: {
-    gap: 8,
     paddingBottom: spacing.md
-  },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.card,
-    borderWidth: 1,
-    borderColor: colors.rule,
-    borderRadius: radius.pill,
-    paddingHorizontal: 12,
-    paddingVertical: 7
-  },
-  chipActive: {
-    backgroundColor: colors.ink,
-    borderColor: colors.ink
-  },
-  chipLabel: {
-    fontFamily: font.sansMedium,
-    fontSize: 12,
-    color: colors.ink
-  },
-  chipLabelActive: {
-    color: colors.card
-  },
-  chipCount: {
-    fontFamily: font.mono,
-    fontSize: 10,
-    color: colors.ink4
-  },
-  chipCountActive: {
-    color: "rgba(250,246,236,0.7)"
   },
   controls: {
     flexDirection: "row",

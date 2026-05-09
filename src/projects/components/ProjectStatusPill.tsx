@@ -2,7 +2,8 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { getProjectStatusLabel } from "../projectMath";
 import type { ProjectStatus } from "../types";
-import { colors, font, radius } from "../../ui/theme";
+import { colors, font } from "../../ui/theme";
+import { pillFrameStyle, pillLabelLineHeight } from "../../ui/pillStyles";
 
 export function ProjectStatusPill({ status }: { status: ProjectStatus }) {
   const palette = statusPalette(status);
@@ -50,12 +51,10 @@ function statusPalette(status: ProjectStatus) {
 
 const styles = StyleSheet.create({
   pill: {
-    flexDirection: "row",
-    alignItems: "center",
+    ...pillFrameStyle,
     gap: 6,
-    alignSelf: "flex-start",
     borderWidth: 1,
-    borderRadius: radius.pill,
+    minHeight: 28,
     paddingHorizontal: 9,
     paddingVertical: 5
   },
@@ -66,6 +65,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: font.sansMedium,
-    fontSize: 11
+    fontSize: 11,
+    lineHeight: pillLabelLineHeight
   }
 });
