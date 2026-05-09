@@ -1,153 +1,45 @@
 import { Ionicons } from "@expo/vector-icons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useCatalog } from "../../src/state/CatalogContext";
-import { useInventory } from "../../src/state/InventoryContext";
-import { parseOcrCandidates } from "../../src/ocr/ocrParser";
-import { MlKitOcrProvider } from "../../src/providers/mlKitOcrProvider";
-import { resolveScanCandidate, type ScanCatalogMatch } from "../../src/scan/scanResolution";
+import type { ScanResolution } from "../../src/scan/scanResolution";
+import { resolveScanCandidate } from "../../src/scan/scanResolution";
+import type { ConfirmState } from "../../src/scan/useScanFlow";
+import { useScanFlow } from "../../src/scan/useScanFlow";
 import { InventoryForm } from "../../src/ui/InventoryForm";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
-import type { OcrCandidate, ReferenceColor, ThreadCondition } from "../../src/types";
-
-type ConfirmState = {
-  candidate: OcrCandidate;
-  color: ReferenceColor;
-  quantity: number;
-  condition: ThreadCondition;
-  favorite: boolean;
-  notes: string;
-  selectionToast: string | null;
-};
-
-type CatalogChoiceState = {
-  candidate: OcrCandidate;
-  matches: ScanCatalogMatch[];
-};
+import type { OcrCandidate, ReferenceColor, ThreadType } from "../../src/types";
 
 export default function ScanScreen() {
-  const { catalog, threadTypes, sessionCatalogThreadTypeId, setSessionCatalogThreadTypeId, ready } = useCatalog();
-  const { addInventory } = useInventory();
+  const [permission, requestPermission] = useCameraPermissions();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const cameraRef = useRef<CameraView>(null);
-  const [permission, requestPermission] = useCameraPermissions();
-  const [candidates, setCandidates] = useState<OcrCandidate[]>([]);
-  const [rawText, setRawText] = useState<string[]>([]);
-  const [scanError, setScanError] = useState<string | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const [confirming, setConfirming] = useState<ConfirmState | null>(null);
-  const [catalogChoice, setCatalogChoice] = useState<CatalogChoiceState | null>(null);
-  const [saveForSession, setSaveForSession] = useState(false);
-  const [selectionToast, setSelectionToast] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
-  const ocrProvider = useMemo(() => new MlKitOcrProvider(), []);
 
-  useEffect(() => {
-    if (!selectionToast) {
-      return;
-    }
-
-    const timer = setTimeout(() => setSelectionToast(null), 2200);
-    return () => clearTimeout(timer);
-  }, [selectionToast]);
-
-  function applyCandidate(candidate: OcrCandidate) {
-    const resolution = resolveScanCandidate({
-      candidate,
-      catalog,
-      threadTypes,
-      sessionCatalogThreadTypeId
-    });
-
-    if (!resolution) {
-      return;
-    }
-
-    if (resolution.mode === "choose-catalog") {
-      setCatalogChoice({
-        candidate: resolution.candidate,
-        matches: resolution.matches
-      });
-      setSaveForSession(false);
-      return;
-    }
-
-    setCatalogChoice(null);
-    setConfirming({
-      candidate: resolution.candidate,
-      color: resolution.color,
-      quantity: 1,
-      condition: "full",
-      favorite: false,
-      notes: "",
-      selectionToast: resolution.selectionToast
-    });
-    setSelectionToast(resolution.selectionToast);
-  }
-
-  async function capture() {
-    if (!cameraRef.current || isScanning) return;
-    if (!ready) {
-      setScanError("Loading catalog — try again in a moment.");
-      return;
-    }
-    setIsScanning(true);
-    setScanError(null);
-    setSaved(false);
-    try {
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-      const recognized = await ocrProvider.recognizeImage(photo.uri);
-      if (recognized.length === 0) {
-        setScanError("No text detected — move closer to the label and try again.");
-        return;
-      }
-      const next = parseOcrCandidates(recognized, catalog);
-      setRawText(recognized);
-      setCandidates(next);
-      if (next.length > 0) {
-        applyCandidate(next[0]);
-      }
-    } catch {
-      setScanError("Couldn't read that label. Try again or add manually.");
-      setCandidates([]);
-      setRawText([]);
-    } finally {
-      setIsScanning(false);
-    }
-  }
-
-  async function addToStash() {
-    if (!confirming) return;
-    await addInventory({
-      referenceColorId: confirming.color.id,
-      quantity: confirming.quantity,
-      condition: confirming.condition,
-      favorite: confirming.favorite,
-      notes: confirming.notes
-    });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    setConfirming(null);
-    setCandidates([]);
-    setRawText([]);
-  }
-
-  function reset() {
-    setConfirming(null);
-    setCatalogChoice(null);
-    setCandidates([]);
-    setRawText([]);
-    setScanError(null);
-    setSaved(false);
-    setSaveForSession(false);
-    setSelectionToast(null);
-  }
+  const {
+    cameraRef,
+    candidates,
+    rawText,
+    scanError,
+    setScanError,
+    isScanning,
+    confirming,
+    setConfirming,
+    catalogChoice,
+    saveForSession,
+    setSaveForSession,
+    selectionToast,
+    saved,
+    capture,
+    addToStash,
+    chooseCatalogMatch,
+    reset,
+    catalog,
+    threadTypes,
+    sessionCatalogThreadTypeId
+  } = useScanFlow();
 
   // Permission gate
   if (!permission) {
@@ -204,23 +96,7 @@ export default function ScanScreen() {
             <Pressable
               key={match.color.id}
               style={styles.choiceRow}
-              onPress={async () => {
-                if (saveForSession) {
-                  await setSessionCatalogThreadTypeId(match.threadType.id);
-                }
-
-                setCatalogChoice(null);
-                setConfirming({
-                  candidate: catalogChoice.candidate,
-                  color: match.color,
-                  quantity: 1,
-                  condition: "full",
-                  favorite: false,
-                  notes: "",
-                  selectionToast: `${match.threadType.displayName} selected`
-                });
-                setSelectionToast(`${match.threadType.displayName} selected`);
-              }}
+              onPress={() => chooseCatalogMatch(match)}
             >
               <SkeinBall color={match.color.hexRgb} size={42} />
               <View style={styles.choiceMeta}>
@@ -315,42 +191,24 @@ export default function ScanScreen() {
 
           {/* Other candidates */}
           {candidates.length > 1 && (
-            <View style={styles.altSection}>
-              <Text style={styles.altLabel}>Other possible matches</Text>
-              {candidates.slice(1).map((cand) => {
-                const resolution = resolveScanCandidate({
+            <AltCandidates
+              candidates={candidates.slice(1)}
+              confirming={confirming}
+              catalog={catalog}
+              threadTypes={threadTypes}
+              sessionCatalogThreadTypeId={sessionCatalogThreadTypeId}
+              onSelect={(col, cand, resolution) => {
+                setConfirming({
                   candidate: cand,
-                  catalog,
-                  threadTypes,
-                  sessionCatalogThreadTypeId
+                  color: col,
+                  quantity: confirming.quantity,
+                  condition: confirming.condition,
+                  favorite: confirming.favorite,
+                  notes: confirming.notes,
+                  selectionToast: resolution.selectionToast
                 });
-                if (!resolution || resolution.mode !== "confirm") return null;
-                const col = resolution.color;
-                return (
-                  <Pressable
-                    key={`${cand.colorCode}-${col.id}`}
-                    style={styles.altRow}
-                    onPress={() => {
-                      setCatalogChoice(null);
-                      setConfirming({
-                        candidate: cand,
-                        color: col,
-                        quantity: confirming.quantity,
-                        condition: confirming.condition,
-                        favorite: confirming.favorite,
-                        notes: confirming.notes,
-                        selectionToast: resolution.selectionToast
-                      });
-                      setSelectionToast(resolution.selectionToast);
-                    }}
-                  >
-                    <SkeinBall color={col.hexRgb} size={32} />
-                    <Text style={styles.altRowText}>{col.colorCode} {col.colorName}</Text>
-                    <Text style={styles.altRowConf}>{cand.confidence}</Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+              }}
+            />
           )}
         </ScrollView>
 
@@ -430,6 +288,44 @@ export default function ScanScreen() {
           </Pressable>
         </View>
       )}
+    </View>
+  );
+}
+
+function AltCandidates({
+  candidates,
+  confirming,
+  catalog,
+  threadTypes,
+  sessionCatalogThreadTypeId,
+  onSelect
+}: {
+  candidates: OcrCandidate[];
+  confirming: ConfirmState;
+  catalog: ReferenceColor[];
+  threadTypes: ThreadType[];
+  sessionCatalogThreadTypeId: string | null;
+  onSelect: (color: ReferenceColor, candidate: OcrCandidate, resolution: ScanResolution & { mode: "confirm" }) => void;
+}) {
+  return (
+    <View style={styles.altSection}>
+      <Text style={styles.altLabel}>Other possible matches</Text>
+      {candidates.map((cand) => {
+        const resolution = resolveScanCandidate({ candidate: cand, catalog, threadTypes, sessionCatalogThreadTypeId });
+        if (!resolution || resolution.mode !== "confirm") return null;
+        const col = resolution.color;
+        return (
+          <Pressable
+            key={`${cand.colorCode}-${col.id}`}
+            style={styles.altRow}
+            onPress={() => onSelect(col, cand, resolution)}
+          >
+            <SkeinBall color={col.hexRgb} size={32} />
+            <Text style={styles.altRowText}>{col.colorCode} {col.colorName}</Text>
+            <Text style={styles.altRowConf}>{cand.confidence}</Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
