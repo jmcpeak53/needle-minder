@@ -95,6 +95,14 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
   await database.execAsync(
     `UPDATE reference_colors SET thread_subtype = 'solid' WHERE thread_subtype IS NULL`
   );
+
+  try {
+    await database.execAsync(
+      `ALTER TABLE user_inventory ADD COLUMN is_favorite INTEGER NOT NULL DEFAULT 0`
+    );
+  } catch {
+    // column already exists on an existing device database
+  }
 }
 
 async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> {

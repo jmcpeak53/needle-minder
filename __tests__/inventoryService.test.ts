@@ -18,6 +18,7 @@ const sampleItem: InventoryItem = {
   },
   quantity: 2,
   condition: "full",
+  favorite: false,
   notes: null
 };
 

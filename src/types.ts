@@ -27,6 +27,7 @@ export type InventoryItem = {
   referenceColor: ReferenceColor;
   quantity: number;
   condition: ThreadCondition;
+  favorite: boolean;
   notes?: string | null;
   updatedAt: string;
 };

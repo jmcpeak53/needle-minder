@@ -49,6 +49,7 @@ export default function AddScreen() {
   const [selectedColor, setSelectedColor] = useState<ReferenceColor | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [condition, setCondition] = useState<ThreadCondition>("full");
+  const [favorite, setFavorite] = useState(false);
   const [notes, setNotes] = useState("");
 
   const isSearching = query.trim().length > 0;
@@ -91,13 +92,14 @@ export default function AddScreen() {
 
   const handleSave = useCallback(async () => {
     if (!selectedColor) return;
-    await addInventory({ referenceColorId: selectedColor.id, quantity, condition, notes });
+    await addInventory({ referenceColorId: selectedColor.id, quantity, condition, favorite, notes });
     setSelectedColor(null);
     setQuantity(1);
     setCondition("full");
+    setFavorite(false);
     setNotes("");
     router.back();
-  }, [selectedColor, quantity, condition, notes, addInventory, router]);
+  }, [selectedColor, quantity, condition, favorite, notes, addInventory, router]);
 
   const renderFamilyRow = useCallback(({ item: family }: { item: CatalogFamilySummary }) => (
     <Pressable
@@ -164,6 +166,8 @@ export default function AddScreen() {
           onQuantityChange={setQuantity}
           condition={condition}
           onConditionChange={setCondition}
+          favorite={favorite}
+          onFavoriteChange={setFavorite}
           notes={notes}
           onNotesChange={setNotes}
         />
@@ -174,7 +178,7 @@ export default function AddScreen() {
         </Pressable>
       </View>
     );
-  }, [selectedColor, quantity, condition, notes, catalogFilter, catalog, threadTypes, handleSave]);
+  }, [selectedColor, quantity, condition, favorite, notes, catalogFilter, catalog, threadTypes, handleSave]);
 
   const listContentStyle = useMemo(
     () => [styles.scroll, { paddingBottom: insets.bottom + 24 }],

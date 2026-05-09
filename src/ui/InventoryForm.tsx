@@ -9,6 +9,8 @@ interface InventoryFormProps {
   onQuantityChange: (quantity: number) => void;
   condition: ThreadCondition;
   onConditionChange: (condition: ThreadCondition) => void;
+  favorite: boolean;
+  onFavoriteChange: (value: boolean) => void;
   notes: string;
   onNotesChange: (notes: string) => void;
 }
@@ -18,6 +20,8 @@ export function InventoryForm({
   onQuantityChange,
   condition,
   onConditionChange,
+  favorite,
+  onFavoriteChange,
   notes,
   onNotesChange
 }: InventoryFormProps) {
@@ -41,6 +45,17 @@ export function InventoryForm({
           </Pressable>
         </View>
       </View>
+
+      <Pressable style={styles.favoriteRow} onPress={() => onFavoriteChange(!favorite)}>
+        <Ionicons
+          name={favorite ? "star" : "star-outline"}
+          size={18}
+          color={favorite ? "#e6a817" : colors.ink3}
+        />
+        <Text style={[styles.favoriteLabel, favorite && styles.favoriteLabelActive]}>
+          Mark as favorite
+        </Text>
+      </Pressable>
 
       <View style={styles.condRow}>
         {(["full", "partial"] as ThreadCondition[]).map((c) => (
@@ -109,6 +124,20 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.ink,
     lineHeight: 24
+  },
+  favoriteRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingVertical: 6
+  },
+  favoriteLabel: {
+    fontFamily: font.sans,
+    fontSize: 13,
+    color: colors.ink3
+  },
+  favoriteLabelActive: {
+    color: "#e6a817"
   },
   condRow: {
     flexDirection: "row",

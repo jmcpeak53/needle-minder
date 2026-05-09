@@ -16,7 +16,7 @@ export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { inventory, decrementInventory, updateInventory, removeInventory } = useInventory();
+  const { inventory, decrementInventory, updateInventory, toggleFavorite, removeInventory } = useInventory();
   const { getReservationsByReferenceColor } = useProjects();
   const { getThreadTypeDisplayName } = useCatalog();
 
@@ -74,9 +74,6 @@ export default function DetailScreen() {
           <Text style={styles.appbarCode}>{item.referenceColor.colorCode}</Text>
           <Text style={styles.appbarName}>{item.referenceColor.colorName}</Text>
         </View>
-        <Pressable style={styles.iconBtn}>
-          <Ionicons name="create-outline" size={18} color={colors.ink2} />
-        </Pressable>
         <Pressable
           style={styles.iconBtn}
           onPress={() =>
@@ -107,6 +104,13 @@ export default function DetailScreen() {
                 <Text style={styles.heroCodeText}>{item.referenceColor.colorCode}</Text>
               </View>
               <ThreadConditionPill condition={item.condition} />
+              <Pressable onPress={() => toggleFavorite(item.id)} hitSlop={8}>
+                <Ionicons
+                  name={item.favorite ? "star" : "star-outline"}
+                  size={16}
+                  color={item.favorite ? "#e6a817" : colors.ink3}
+                />
+              </Pressable>
             </View>
           </View>
         </View>

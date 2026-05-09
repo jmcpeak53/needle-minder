@@ -44,6 +44,7 @@ function createInventoryItem(id: string, quantity: number, condition: "full" | "
     id,
     quantity,
     condition,
+    favorite: false,
     notes: null,
     updatedAt: "2026-05-01T00:00:00.000Z",
     referenceColor: sampleReservation.referenceColor

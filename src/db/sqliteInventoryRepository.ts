@@ -9,6 +9,7 @@ type InventoryRow = {
   inventory_updated_at: string;
   quantity: number;
   condition: "full" | "partial";
+  is_favorite: number;
   notes: string | null;
   color_id: string;
   thread_type_id: string;
@@ -54,13 +55,14 @@ export class SqliteInventoryRepository implements InventoryRepository {
 
     await this.database.runAsync(
       `INSERT INTO user_inventory
-        (id, reference_color_id, quantity, condition, notes, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        (id, reference_color_id, quantity, condition, is_favorite, notes, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         createId(),
         input.referenceColorId,
         input.quantity,
         input.condition,
+        input.favorite ? 1 : 0,
         input.notes ?? null,
         now,
         now
@@ -75,10 +77,11 @@ export class SqliteInventoryRepository implements InventoryRepository {
     }
 
     await this.database.runAsync(
-      "UPDATE user_inventory SET quantity = ?, condition = ?, notes = ?, updated_at = ? WHERE id = ?",
+      "UPDATE user_inventory SET quantity = ?, condition = ?, is_favorite = ?, notes = ?, updated_at = ? WHERE id = ?",
       [
         input.quantity ?? current.quantity,
         input.condition ?? current.condition,
+        input.favorite === undefined ? (current.favorite ? 1 : 0) : (input.favorite ? 1 : 0),
         input.notes === undefined ? current.notes ?? null : input.notes,
         new Date().toISOString(),
         id
@@ -98,6 +101,7 @@ function inventorySelectSql(suffix: string): string {
       ui.updated_at AS inventory_updated_at,
       ui.quantity,
       ui.condition,
+      ui.is_favorite,
       ui.notes,
       rc.id AS color_id,
       rc.thread_type_id,
@@ -120,6 +124,7 @@ function mapInventoryItem(row: InventoryRow): InventoryItem {
     updatedAt: row.inventory_updated_at,
     quantity: row.quantity,
     condition: row.condition,
+    favorite: row.is_favorite === 1,
     notes: row.notes,
     referenceColor: mapReferenceColor({
       id: row.color_id,

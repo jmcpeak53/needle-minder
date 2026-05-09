@@ -43,6 +43,7 @@ type InventoryRow = {
   inventory_updated_at: string;
   quantity: number;
   condition: "full" | "partial";
+  is_favorite: number;
   notes: string | null;
   color_id: string;
   thread_type_id: string;
@@ -186,6 +187,7 @@ export class SqliteProjectRepository implements ProjectRepository {
           ui.updated_at AS inventory_updated_at,
           ui.quantity,
           ui.condition,
+          ui.is_favorite,
           ui.notes,
           rc.id AS color_id,
           rc.thread_type_id,
@@ -325,6 +327,7 @@ function mapInventoryItem(row: InventoryRow): InventoryItem {
     updatedAt: row.inventory_updated_at,
     quantity: row.quantity,
     condition: row.condition,
+    favorite: row.is_favorite === 1,
     notes: row.notes,
     referenceColor: mapReferenceColor({
       id: row.color_id,

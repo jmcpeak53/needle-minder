@@ -20,6 +20,7 @@ type ConfirmState = {
   color: ReferenceColor;
   quantity: number;
   condition: ThreadCondition;
+  favorite: boolean;
   notes: string;
   selectionToast: string | null;
 };
@@ -83,6 +84,7 @@ export default function ScanScreen() {
       color: resolution.color,
       quantity: 1,
       condition: "full",
+      favorite: false,
       notes: "",
       selectionToast: resolution.selectionToast
     });
@@ -126,6 +128,7 @@ export default function ScanScreen() {
       referenceColorId: confirming.color.id,
       quantity: confirming.quantity,
       condition: confirming.condition,
+      favorite: confirming.favorite,
       notes: confirming.notes
     });
     setSaved(true);
@@ -212,6 +215,7 @@ export default function ScanScreen() {
                   color: match.color,
                   quantity: 1,
                   condition: "full",
+                  favorite: false,
                   notes: "",
                   selectionToast: `${match.threadType.displayName} selected`
                 });
@@ -302,6 +306,8 @@ export default function ScanScreen() {
               onQuantityChange={(quantity) => setConfirming((c) => c && { ...c, quantity })}
               condition={confirming.condition}
               onConditionChange={(condition) => setConfirming((c) => c && { ...c, condition })}
+              favorite={confirming.favorite}
+              onFavoriteChange={(favorite) => setConfirming((c) => c && { ...c, favorite })}
               notes={confirming.notes}
               onNotesChange={(notes) => setConfirming((c) => c && { ...c, notes })}
             />
@@ -331,6 +337,7 @@ export default function ScanScreen() {
                         color: col,
                         quantity: confirming.quantity,
                         condition: confirming.condition,
+                        favorite: confirming.favorite,
                         notes: confirming.notes,
                         selectionToast: resolution.selectionToast
                       });

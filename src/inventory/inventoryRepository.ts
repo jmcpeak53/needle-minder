@@ -4,12 +4,14 @@ export type AddInventoryInput = {
   referenceColorId: string;
   quantity: number;
   condition: ThreadCondition;
+  favorite?: boolean;
   notes?: string | null;
 };
 
 export type UpdateInventoryInput = {
   quantity?: number;
   condition?: ThreadCondition;
+  favorite?: boolean;
   notes?: string | null;
 };
 

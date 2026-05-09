@@ -75,6 +75,7 @@ function inventory(referenceColor: ReferenceColor, quantity: number): InventoryI
     id: `inv-${referenceColor.id}`,
     quantity,
     condition: "full",
+    favorite: false,
     notes: null,
     updatedAt: "2026-05-01T00:00:00.000Z",
     referenceColor

@@ -8,6 +8,7 @@ export type InventoryContextValue = {
   inventory: InventoryItem[];
   addInventory(input: AddInventoryInput): Promise<void>;
   updateInventory(item: InventoryItem): Promise<void>;
+  toggleFavorite(id: string): Promise<void>;
   decrementInventory(id: string): Promise<void>;
   removeInventory(id: string): Promise<void>;
 };

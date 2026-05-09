@@ -148,8 +148,16 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
         await services.inventoryService.update(item.id, {
           quantity: item.quantity,
           condition: item.condition,
+          favorite: item.favorite,
           notes: item.notes
         });
+        await refresh();
+      },
+      async toggleFavorite(id: string) {
+        if (!services) return;
+        const item = inventory.find((i) => i.id === id);
+        if (!item) return;
+        await services.inventoryService.update(id, { favorite: !item.favorite });
         await refresh();
       },
       async decrementInventory(id: string) {

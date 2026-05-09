@@ -28,7 +28,7 @@ const SWATCH_COLS = 4;
 const SWATCH_PAD = spacing.lg * 2;
 const SWATCH_SIZE = Math.floor((SCREEN_W - SWATCH_PAD - SWATCH_GAP * (SWATCH_COLS - 1)) / SWATCH_COLS);
 
-type FilterKey = "all" | "low" | string; // threadTypeId
+type FilterKey = "all" | "low" | "favorites" | string; // threadTypeId
 
 type SwatchRow = InventoryItem[];
 
@@ -75,11 +75,13 @@ export default function StashScreen() {
     return Array.from(map.entries()).map(([id, count]) => ({ id, count }));
   }, [inventory]);
 
-  const lowCount = useMemo(() => inventory.filter((i) => i.quantity <= 1).length, [inventory]);
+  const lowCount = useMemo(() => inventory.filter((i) => i.quantity <= 2).length, [inventory]);
+  const favoritesCount = useMemo(() => inventory.filter((i) => i.favorite).length, [inventory]);
 
   const filtered = useMemo(() => {
     let items = inventory;
-    if (filter === "low") items = items.filter((i) => i.quantity <= 1);
+    if (filter === "low") items = items.filter((i) => i.quantity <= 2);
+    else if (filter === "favorites") items = items.filter((i) => i.favorite);
     else if (filter !== "all") items = items.filter((i) => i.referenceColor.threadTypeId === filter);
 
     if (query.trim()) {
@@ -227,6 +229,9 @@ export default function StashScreen() {
 
       <PillRow contentContainerStyle={styles.filterRow}>
         <PillButton label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
+        {favoritesCount > 0 && (
+          <PillButton label="Favorites" count={favoritesCount} active={filter === "favorites"} onPress={() => setFilter("favorites")} />
+        )}
         {brandFilters.map(({ id, count }) => (
           <PillButton key={id} label={getThreadTypeDisplayName(id)} count={count} active={filter === id} onPress={() => setFilter(id)} />
         ))}
@@ -235,7 +240,7 @@ export default function StashScreen() {
         )}
       </PillRow>
     </>
-  ), [totalFiltered, query, inventory, filter, brandFilters, lowCount, getThreadTypeDisplayName]);
+  ), [totalFiltered, query, inventory, filter, brandFilters, lowCount, favoritesCount, getThreadTypeDisplayName]);
 
   const emptyComponent = useMemo(() => (
     <View style={styles.emptyState}>

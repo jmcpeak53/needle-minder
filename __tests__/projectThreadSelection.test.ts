@@ -43,6 +43,7 @@ const inventory: InventoryItem[] = [
     referenceColor: pearlBlack,
     quantity: 1,
     condition: "full",
+    favorite: false,
     notes: null,
     updatedAt: "2026-05-09T00:00:00.000Z"
   }

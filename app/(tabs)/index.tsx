@@ -18,7 +18,7 @@ export default function HomeScreen() {
     const total = inventory.reduce((sum, item) => sum + item.quantity, 0);
     const unique = inventory.length;
     const catalogs = new Set(inventory.map((i) => i.referenceColor.threadTypeId)).size;
-    const lowStock = inventory.filter((i) => i.quantity <= 1).length;
+    const lowStock = inventory.filter((i) => i.favorite && i.quantity <= 2).length;
     return { total, unique, catalogs, lowStock };
   }, [inventory]);
 
@@ -27,7 +27,7 @@ export default function HomeScreen() {
     [inventory]
   );
 
-  const lowStockItems = useMemo(() => inventory.filter((i) => i.quantity <= 1), [inventory]);
+  const lowStockItems = useMemo(() => inventory.filter((i) => i.favorite && i.quantity <= 2), [inventory]);
 
   if (!ready) {
     return <View style={[styles.screen, { backgroundColor: colors.bg }]} />;
@@ -79,8 +79,8 @@ export default function HomeScreen() {
               <Text style={styles.lowstockBang}>!</Text>
             </View>
             <Text style={styles.lowstockText}>
-              <Text style={styles.lowstockBold}>{lowStockItems.length} colors</Text>
-              {" "}down to one skein. Restock?
+              <Text style={styles.lowstockBold}>{lowStockItems.length} favorites</Text>
+              {" "}down to two skeins. Restock?
             </Text>
             <Text style={styles.lowstockArrow}>→</Text>
           </Pressable>
