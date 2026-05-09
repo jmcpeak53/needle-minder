@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import type { Href } from "expo-router";
 import { usePathname, useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -70,7 +71,7 @@ export function BottomNav() {
           return (
             <Pressable
               key={item.href}
-              onPress={() => router.push(item.href as never)}
+              onPress={() => router.push(item.href as Href)}
               style={[styles.navItem, active && styles.navItemActive]}
             >
               <Ionicons
@@ -101,7 +102,7 @@ export function BottomNav() {
           return (
             <Pressable
               key={item.href}
-              onPress={() => router.push(item.href as never)}
+              onPress={() => router.push(item.href as Href)}
               style={[styles.navItem, active && styles.navItemActive]}
             >
               <Ionicons

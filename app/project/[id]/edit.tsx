@@ -37,7 +37,7 @@ export default function EditProjectScreen() {
         submitLabel="Save changes"
         onSubmit={async (input) => {
           await updateProject(project.id, input);
-          router.replace(`/project/${project.id}` as never);
+          router.replace(`/project/${project.id}`);
         }}
       />
     </View>

@@ -65,14 +65,14 @@ export default function HomeScreen() {
             value={stats.lowStock}
             tag="alert"
             warn={stats.lowStock > 0}
-            onPress={() => router.push({ pathname: "/stash", params: { filter: "low" } } as never)}
+            onPress={() => router.push({ pathname: "/stash", params: { filter: "low" } })}
           />
         </View>
 
         {/* Low stock strip */}
         {lowStockItems.length > 0 && (
           <Pressable
-            onPress={() => router.push({ pathname: "/stash", params: { filter: "low" } } as never)}
+            onPress={() => router.push({ pathname: "/stash", params: { filter: "low" } })}
             style={styles.lowstockStrip}
           >
             <View style={styles.lowstockIcon}>
@@ -101,7 +101,7 @@ export default function HomeScreen() {
               return (
                 <Pressable
                   key={item.id}
-                  onPress={() => router.push(`/detail/${item.id}` as never)}
+                  onPress={() => router.push(`/detail/${item.id}`)}
                   style={styles.recentRow}
                 >
                   <SkeinBall color={item.referenceColor.hexRgb} size={44} />

@@ -25,7 +25,7 @@ export default function NewProjectScreen() {
         submitLabel="Save project"
         onSubmit={async (input) => {
           const id = await createProject(input);
-          router.replace(`/project/${id}` as never);
+          router.replace(`/project/${id}`);
         }}
       />
     </View>

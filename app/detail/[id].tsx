@@ -175,7 +175,7 @@ export default function DetailScreen() {
           projectReservations.map((reservation) => (
             <Pressable
               key={reservation.project.id}
-              onPress={() => router.push(`/project/${reservation.project.id}` as never)}
+              onPress={() => router.push(`/project/${reservation.project.id}`)}
               style={styles.projectRow}
             >
               <View style={styles.projectMeta}>

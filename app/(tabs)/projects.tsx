@@ -66,10 +66,10 @@ export default function ProjectsScreen() {
               {projectSummaries.length} project{projectSummaries.length === 1 ? "" : "s"} · {shoppingShortfalls.length} shopping color{shoppingShortfalls.length === 1 ? "" : "s"}
             </Text>
           </View>
-          <Pressable style={styles.iconBtn} onPress={() => router.push("/project/shopping" as never)}>
+          <Pressable style={styles.iconBtn} onPress={() => router.push("/project/shopping")}>
             <Ionicons name="bag-handle-outline" size={18} color={colors.ink2} />
           </Pressable>
-          <Pressable style={styles.iconBtn} onPress={() => router.push("/project/new" as never)}>
+          <Pressable style={styles.iconBtn} onPress={() => router.push("/project/new")}>
             <Ionicons name="add" size={18} color={colors.ink2} />
           </Pressable>
         </View>
@@ -99,7 +99,7 @@ export default function ProjectsScreen() {
             <Text style={styles.emptyBody}>
               Projects keep planned skeins separate from your stash and build a single shopping list when you are short.
             </Text>
-            <Pressable style={styles.emptyButton} onPress={() => router.push("/project/new" as never)}>
+            <Pressable style={styles.emptyButton} onPress={() => router.push("/project/new")}>
               <Text style={styles.emptyButtonText}>New project</Text>
             </Pressable>
           </View>
@@ -110,7 +110,7 @@ export default function ProjectsScreen() {
                 key={summary.project.id}
                 summary={summary}
                 variant="grid"
-                onPress={() => router.push(`/project/${summary.project.id}` as never)}
+                onPress={() => router.push(`/project/${summary.project.id}`)}
               />
             ))}
           </View>
@@ -121,7 +121,7 @@ export default function ProjectsScreen() {
                 key={summary.project.id}
                 summary={summary}
                 variant="list"
-                onPress={() => router.push(`/project/${summary.project.id}` as never)}
+                onPress={() => router.push(`/project/${summary.project.id}`)}
               />
             ))}
           </View>

@@ -175,7 +175,7 @@ export default function StashScreen() {
         <SwatchCell
           key={item.id}
           item={item}
-          onPress={() => router.push(`/detail/${item.id}` as never)}
+          onPress={() => router.push(`/detail/${item.id}`)}
           onLongPress={() => openSheet(item)}
         />
       ))}
@@ -350,7 +350,7 @@ export default function StashScreen() {
                     style={[styles.actionBtn, styles.actionBtnGhost]}
                     onPress={() => {
                       closeSheet();
-                      router.push(`/detail/${pressedItem.id}` as never);
+                      router.push(`/detail/${pressedItem.id}`);
                     }}
                   >
                     <Text style={styles.actionBtnTextGhost}>Open detail</Text>

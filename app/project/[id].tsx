@@ -35,6 +35,7 @@ export default function ProjectDetailScreen() {
   }
 
   const finishProject = async () => {
+    if (detail.shortfallSkeins > 0) return;
     Alert.alert(
       "Finish project?",
       "Finishing this project deducts its reserved skeins from your stash. This cannot be undone in this version.",
@@ -84,10 +85,10 @@ export default function ProjectDetailScreen() {
           <Text style={styles.back}>Back</Text>
         </Pressable>
         <View style={styles.appbarActions}>
-          <Pressable style={styles.iconBtn} onPress={() => router.push(`/project/${detail.project.id}/edit` as never)}>
+          <Pressable style={styles.iconBtn} onPress={() => router.push(`/project/${detail.project.id}/edit`)}>
             <Ionicons name="create-outline" size={18} color={colors.ink2} />
           </Pressable>
-          <Pressable style={styles.iconBtn} onPress={() => router.push(`/project/${detail.project.id}/threads` as never)}>
+          <Pressable style={styles.iconBtn} onPress={() => router.push(`/project/${detail.project.id}/threads`)}>
             <Ionicons name="add" size={18} color={colors.ink2} />
           </Pressable>
         </View>
@@ -131,7 +132,7 @@ export default function ProjectDetailScreen() {
             </View>
 
             {detail.project.status !== "finished" ? (
-              <Pressable style={[styles.actionButton, detail.shortfallSkeins > 0 && styles.actionButtonDisabled]} onPress={finishProject}>
+              <Pressable disabled={detail.shortfallSkeins > 0} style={[styles.actionButton, detail.shortfallSkeins > 0 && styles.actionButtonDisabled]} onPress={finishProject}>
                 <Text style={styles.actionButtonText}>Finish project</Text>
               </Pressable>
             ) : (
@@ -146,7 +147,7 @@ export default function ProjectDetailScreen() {
         ) : (
           <View style={styles.threadSection}>
             <View style={styles.threadActions}>
-              <Pressable style={styles.secondaryButton} onPress={() => router.push(`/project/${detail.project.id}/threads` as never)}>
+              <Pressable style={styles.secondaryButton} onPress={() => router.push(`/project/${detail.project.id}/threads`)}>
                 <Text style={styles.secondaryButtonText}>Add threads</Text>
               </Pressable>
               {detail.reservations.length > 0 ? (
@@ -167,7 +168,7 @@ export default function ProjectDetailScreen() {
                   <ReservationRow
                     key={reservation.id}
                     reservation={reservation}
-                    onPress={stashItem ? () => router.push(`/detail/${stashItem.id}` as never) : undefined}
+                    onPress={stashItem ? () => router.push(`/detail/${stashItem.id}`) : undefined}
                   />
                 );
               })
