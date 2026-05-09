@@ -3,13 +3,13 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProjectForm } from "../../src/projects/components/ProjectForm";
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useProjects } from "../../src/state/ProjectsContext";
 import { colors, font, spacing } from "../../src/ui/theme";
 
 export default function NewProjectScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { createProject } = useNeedleMinder();
+  const { createProject } = useProjects();
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>

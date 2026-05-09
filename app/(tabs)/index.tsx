@@ -4,12 +4,12 @@ import { useMemo } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useInventory } from "../../src/state/InventoryContext";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
 export default function HomeScreen() {
-  const { ready, inventory } = useNeedleMinder();
+  const { ready, inventory } = useInventory();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 

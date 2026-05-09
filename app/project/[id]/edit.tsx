@@ -3,14 +3,14 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProjectForm } from "../../../src/projects/components/ProjectForm";
-import { useNeedleMinder } from "../../../src/state/NeedleMinderContext";
+import { useProjects } from "../../../src/state/ProjectsContext";
 import { colors, font, spacing } from "../../../src/ui/theme";
 
 export default function EditProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { projects, updateProject } = useNeedleMinder();
+  const { projects, updateProject } = useProjects();
 
   const project = projects.find((item) => item.id === id) ?? null;
 

@@ -19,7 +19,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View } from "react-native";
 
-import { NeedleMinderProvider } from "../src/state/NeedleMinderContext";
+import { NeedleMinderProvider } from "../src/state/NeedleMinderProvider";
 import { colors } from "../src/ui/theme";
 
 export default function RootLayout() {

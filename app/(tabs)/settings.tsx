@@ -4,7 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildCatalogFilterOptions } from "../../src/catalog/catalogFilter";
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useCatalog } from "../../src/state/CatalogContext";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
 export default function SettingsScreen() {
@@ -16,7 +16,7 @@ export default function SettingsScreen() {
     setDefaultCatalogFilter,
     clearSessionCatalogThreadTypeId,
     getThreadTypeDisplayName
-  } = useNeedleMinder();
+  } = useCatalog();
   const [showCatalogOptions, setShowCatalogOptions] = useState(false);
 
   const filterOptions = useMemo(() => buildCatalogFilterOptions(threadTypes), [threadTypes]);

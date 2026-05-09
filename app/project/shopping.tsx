@@ -3,13 +3,13 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ShoppingShortfallCard } from "../../src/projects/components/ShoppingShortfallCard";
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useProjects } from "../../src/state/ProjectsContext";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 
 export default function ProjectShoppingScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { shoppingShortfalls } = useNeedleMinder();
+  const { shoppingShortfalls } = useProjects();
 
   const totalMissing = shoppingShortfalls.reduce((sum, item) => sum + item.missingQuantity, 0);
 

@@ -1,42 +1,52 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildReferenceColorSubtitle } from "../../../src/catalog/catalogBrowse";
 import { buildCatalogFilterOptions, type CatalogFilter } from "../../../src/catalog/catalogFilter";
 import { ProjectStatusPill } from "../../../src/projects/components/ProjectStatusPill";
 import { buildVisibleProjectThreadColors } from "../../../src/projects/projectThreadSelection";
-import { useNeedleMinder } from "../../../src/state/NeedleMinderContext";
+import { useCatalog } from "../../../src/state/CatalogContext";
+import { useInventory } from "../../../src/state/InventoryContext";
+import { useProjects } from "../../../src/state/ProjectsContext";
 import { PillButton, PillRow } from "../../../src/ui/PillButton";
 import { colors, font, radius, spacing } from "../../../src/ui/theme";
+import type { ReferenceColor } from "../../../src/types";
+
+type ThreadColorRow = {
+  color: ReferenceColor;
+  projectQuantity: number;
+  stash: number;
+  reserved: number;
+  available: number;
+};
+
+function keyExtractor(item: ThreadColorRow) {
+  return item.color.id;
+}
 
 export default function ProjectThreadsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const {
-    catalog,
-    threadTypes,
-    defaultCatalogFilter,
-    inventory,
-    getProjectDetail,
-    getReservationsByReferenceColor,
-    setProjectReservation,
-    removeProjectReservation
-  } = useNeedleMinder();
+  const { catalog, threadTypes, defaultCatalogFilter } = useCatalog();
+  const { inventory } = useInventory();
+  const { getProjectDetail, getReservationsByReferenceColor, setProjectReservation, removeProjectReservation } = useProjects();
   const [query, setQuery] = useState("");
   const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>("all");
 
   const detail = useMemo(() => (id ? getProjectDetail(id) : null), [getProjectDetail, id]);
   const filterOptions = useMemo(() => buildCatalogFilterOptions(threadTypes), [threadTypes]);
 
-  const visibleColors = useMemo(() => {
-    if (!detail) {
-      return [];
-    }
+  const quantities = useMemo(
+    () => new Map((detail?.reservations ?? []).map((r) => [r.referenceColorId, r.quantity])),
+    [detail]
+  );
 
+  const visibleColors = useMemo(() => {
+    if (!detail) return [];
     return buildVisibleProjectThreadColors({
       catalog,
       inventory,
@@ -46,9 +56,123 @@ export default function ProjectThreadsScreen() {
     });
   }, [catalog, catalogFilter, detail, inventory, query]);
 
+  const rows = useMemo<ThreadColorRow[]>(() => {
+    return visibleColors.map((color) => {
+      const projectQuantity = quantities.get(color.id) ?? 0;
+      const lookup = getReservationsByReferenceColor(color.id);
+      const reserved = lookup
+        .filter((item) => item.project.status !== "finished")
+        .reduce((sum, item) => sum + item.quantity, 0);
+      const stash = inventory
+        .filter((item) => item.referenceColor.id === color.id)
+        .reduce((sum, item) => sum + item.quantity, 0);
+      return { color, projectQuantity, stash, reserved, available: stash - reserved };
+    });
+  }, [visibleColors, quantities, getReservationsByReferenceColor, inventory]);
+
   useEffect(() => {
     setCatalogFilter(defaultCatalogFilter);
   }, [defaultCatalogFilter]);
+
+  const projectId = detail?.project.id;
+
+  const renderRow = useCallback(({ item }: { item: ThreadColorRow }) => (
+    <View style={styles.row}>
+      <View style={styles.rowMeta}>
+        <Text style={styles.rowName}>{item.color.colorName}</Text>
+        <Text style={styles.rowSub}>
+          {item.color.colorCode} · {buildReferenceColorSubtitle(item.color, {
+            filter: catalogFilter,
+            catalog,
+            threadTypes
+          })}
+        </Text>
+        <Text style={[styles.rowHealth, item.available < 0 && styles.rowHealthWarn]}>
+          In stash {item.stash} · Reserved {item.reserved} · Available {item.available}
+        </Text>
+      </View>
+
+      <View style={styles.stepper}>
+        <Pressable
+          style={[styles.stepBtn, styles.stepBtnDark]}
+          onPress={async () => {
+            if (!projectId) return;
+            if (item.projectQuantity <= 1) {
+              await removeProjectReservation(projectId, item.color.id);
+              return;
+            }
+            await setProjectReservation(projectId, item.color.id, item.projectQuantity - 1);
+          }}
+        >
+          <Ionicons name="remove" size={15} color={colors.card} />
+        </Pressable>
+        <Text style={styles.stepValue}>{item.projectQuantity}</Text>
+        <Pressable
+          style={styles.stepBtn}
+          onPress={() => {
+            if (!projectId) return;
+            setProjectReservation(projectId, item.color.id, item.projectQuantity + 1);
+          }}
+        >
+          <Ionicons name="add" size={15} color={colors.ink} />
+        </Pressable>
+      </View>
+    </View>
+  ), [projectId, catalogFilter, catalog, threadTypes, setProjectReservation, removeProjectReservation]);
+
+  const listHeader = useMemo(() => {
+    if (!detail) return undefined;
+    return (
+      <>
+        <View style={styles.appbar}>
+          <Pressable onPress={() => router.back()}>
+            <Text style={styles.back}>Back</Text>
+          </Pressable>
+          <Text style={styles.title}>Reserved threads</Text>
+          <View style={styles.appbarSpacer} />
+        </View>
+
+        <View style={styles.projectBanner}>
+          <View style={styles.projectBannerMeta}>
+            <Text style={styles.projectName}>{detail.project.name}</Text>
+            <Text style={styles.projectSub}>
+              {detail.totalColors} colors · {detail.totalSkeins} needed
+            </Text>
+          </View>
+          <ProjectStatusPill status={detail.project.status} />
+        </View>
+
+        <View style={styles.searchRow}>
+          <Ionicons name="search-outline" size={16} color={colors.ink4} />
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search code, name, or family"
+            placeholderTextColor={colors.ink4}
+            style={styles.searchInput}
+          />
+        </View>
+
+        <PillRow contentContainerStyle={styles.filterRow}>
+          {filterOptions.map((option) => (
+            <PillButton
+              key={option.value}
+              onPress={() => setCatalogFilter(option.value)}
+              active={catalogFilter === option.value}
+              label={option.label}
+            />
+          ))}
+        </PillRow>
+      </>
+    );
+  }, [detail, query, filterOptions, catalogFilter, router]);
+
+  const emptyComponent = useMemo(() => (
+    <View style={styles.emptyCard}>
+      <Text style={styles.emptyTitle}>No colors found</Text>
+      <Text style={styles.emptyBody}>Search the catalog by color number, family, or thread name.</Text>
+    </View>
+  ), []);
 
   if (!detail) {
     return (
@@ -58,108 +182,17 @@ export default function ProjectThreadsScreen() {
     );
   }
 
-  const quantities = new Map(detail.reservations.map((reservation) => [reservation.referenceColorId, reservation.quantity]));
-
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.appbar}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.back}>Back</Text>
-        </Pressable>
-        <Text style={styles.title}>Reserved threads</Text>
-        <View style={styles.appbarSpacer} />
-      </View>
-
-      <View style={styles.projectBanner}>
-        <View style={styles.projectBannerMeta}>
-          <Text style={styles.projectName}>{detail.project.name}</Text>
-          <Text style={styles.projectSub}>
-            {detail.totalColors} colors · {detail.totalSkeins} needed
-          </Text>
-        </View>
-        <ProjectStatusPill status={detail.project.status} />
-      </View>
-
-      <View style={styles.searchRow}>
-        <Ionicons name="search-outline" size={16} color={colors.ink4} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search code, name, or family"
-          placeholderTextColor={colors.ink4}
-          style={styles.searchInput}
-        />
-      </View>
-
-      <PillRow contentContainerStyle={styles.filterRow}>
-        {filterOptions.map((option) => (
-          <PillButton
-            key={option.value}
-            onPress={() => setCatalogFilter(option.value)}
-            active={catalogFilter === option.value}
-            label={option.label}
-          />
-        ))}
-      </PillRow>
-
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
-        {visibleColors.map((color) => {
-          const projectQuantity = quantities.get(color.id) ?? 0;
-          const lookup = getReservationsByReferenceColor(color.id);
-          const reserved = lookup.filter((item) => item.project.status !== "finished").reduce((sum, item) => sum + item.quantity, 0);
-          const stash = inventory
-            .filter((item) => item.referenceColor.id === color.id)
-            .reduce((sum, item) => sum + item.quantity, 0);
-          const available = stash - reserved;
-
-          return (
-            <View key={color.id} style={styles.row}>
-              <View style={styles.rowMeta}>
-                <Text style={styles.rowName}>{color.colorName}</Text>
-                <Text style={styles.rowSub}>
-                  {color.colorCode} · {buildReferenceColorSubtitle(color, {
-                    filter: catalogFilter,
-                    catalog,
-                    threadTypes
-                  })}
-                </Text>
-                <Text style={[styles.rowHealth, available < 0 && styles.rowHealthWarn]}>
-                  In stash {stash} · Reserved {reserved} · Available {available}
-                </Text>
-              </View>
-
-              <View style={styles.stepper}>
-                <Pressable
-                  style={[styles.stepBtn, styles.stepBtnDark]}
-                  onPress={async () => {
-                    if (projectQuantity <= 1) {
-                      await removeProjectReservation(detail.project.id, color.id);
-                      return;
-                    }
-                    await setProjectReservation(detail.project.id, color.id, projectQuantity - 1);
-                  }}
-                >
-                  <Ionicons name="remove" size={15} color={colors.card} />
-                </Pressable>
-                <Text style={styles.stepValue}>{projectQuantity}</Text>
-                <Pressable
-                  style={styles.stepBtn}
-                  onPress={() => setProjectReservation(detail.project.id, color.id, projectQuantity + 1)}
-                >
-                  <Ionicons name="add" size={15} color={colors.ink} />
-                </Pressable>
-              </View>
-            </View>
-          );
-        })}
-
-        {visibleColors.length === 0 ? (
-          <View style={styles.emptyCard}>
-            <Text style={styles.emptyTitle}>No colors found</Text>
-            <Text style={styles.emptyBody}>Search the catalog by color number, family, or thread name.</Text>
-          </View>
-        ) : null}
-      </ScrollView>
+      <FlatList
+        data={rows}
+        keyExtractor={keyExtractor}
+        renderItem={renderRow}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.list}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={emptyComponent}
+      />
     </View>
   );
 }

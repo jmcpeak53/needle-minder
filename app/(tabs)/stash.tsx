@@ -6,7 +6,7 @@ import {
   Dimensions,
   Modal,
   Pressable,
-  ScrollView,
+  SectionList,
   StyleSheet,
   Text,
   TextInput,
@@ -14,7 +14,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useCatalog } from "../../src/state/CatalogContext";
+import { useInventory } from "../../src/state/InventoryContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
@@ -28,8 +29,21 @@ const SWATCH_SIZE = Math.floor((SCREEN_W - SWATCH_PAD - SWATCH_GAP * (SWATCH_COL
 
 type FilterKey = "all" | "low" | string; // threadTypeId
 
+type SwatchRow = InventoryItem[];
+
+type StashSection = {
+  family: string;
+  totalQty: number;
+  data: SwatchRow[];
+};
+
+function keyExtractor(item: SwatchRow, index: number) {
+  return item[0]?.id ?? `row-${index}`;
+}
+
 export default function StashScreen() {
-  const { ready, inventory, updateInventory, getThreadTypeDisplayName } = useNeedleMinder();
+  const { ready, inventory, updateInventory } = useInventory();
+  const { getThreadTypeDisplayName } = useCatalog();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { filter: filterParam } = useLocalSearchParams<{ filter?: string }>();
@@ -51,7 +65,6 @@ export default function StashScreen() {
   const snackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snackAnim = useRef(new Animated.Value(0)).current;
 
-  // Derive filter chips
   const brandFilters = useMemo(() => {
     const map = new Map<string, number>();
     for (const item of inventory) {
@@ -63,7 +76,6 @@ export default function StashScreen() {
 
   const lowCount = useMemo(() => inventory.filter((i) => i.quantity <= 1).length, [inventory]);
 
-  // Apply search + filter
   const filtered = useMemo(() => {
     let items = inventory;
     if (filter === "low") items = items.filter((i) => i.quantity <= 1);
@@ -81,15 +93,26 @@ export default function StashScreen() {
     return items;
   }, [inventory, filter, query]);
 
-  // Group by color family
-  const groups = useMemo(() => {
+  const sections = useMemo<StashSection[]>(() => {
     const map = new Map<string, InventoryItem[]>();
     for (const item of filtered) {
       const fam = item.referenceColor.colorFamily;
       if (!map.has(fam)) map.set(fam, []);
       map.get(fam)!.push(item);
     }
-    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([family, items]) => {
+        const rows: SwatchRow[] = [];
+        for (let i = 0; i < items.length; i += SWATCH_COLS) {
+          rows.push(items.slice(i, i + SWATCH_COLS));
+        }
+        return {
+          family,
+          totalQty: items.reduce((s, item) => s + item.quantity, 0),
+          data: rows
+        };
+      });
   }, [filtered]);
 
   const totalFiltered = useMemo(() => filtered.reduce((s, i) => s + i.quantity, 0), [filtered]);
@@ -143,90 +166,106 @@ export default function StashScreen() {
     dismissSnackbar();
   }, [snackbar, updateInventory, dismissSnackbar]);
 
+  const renderSwatchRow = useCallback(({ item: row }: { item: SwatchRow }) => (
+    <View style={styles.swatchRow}>
+      {row.map((item) => (
+        <SwatchCell
+          key={item.id}
+          item={item}
+          onPress={() => router.push(`/detail/${item.id}` as never)}
+          onLongPress={() => openSheet(item)}
+        />
+      ))}
+      {row.length < SWATCH_COLS && Array.from({ length: SWATCH_COLS - row.length }).map((_, i) => (
+        <View key={`pad-${i}`} style={{ width: SWATCH_SIZE }} />
+      ))}
+    </View>
+  ), [router, openSheet]);
+
+  const renderSectionHeader = useCallback(({ section }: { section: StashSection }) => (
+    <View style={styles.groupHead}>
+      <Text style={styles.groupHeadTitle}>{section.family}</Text>
+      <View style={styles.groupHeadRule} />
+      <Text style={styles.groupHeadCount}>{section.totalQty}</Text>
+    </View>
+  ), []);
+
+  const listHeader = useMemo(() => (
+    <>
+      <View style={styles.appbar}>
+        <View style={styles.appbarGrow}>
+          <Text style={styles.appbarTitle}>My stash</Text>
+          <Text style={styles.appbarSub}>
+            {totalFiltered} skeins · grid · color family
+          </Text>
+        </View>
+        <Pressable style={styles.iconBtn}>
+          <Ionicons name="options-outline" size={18} color={colors.ink2} />
+        </Pressable>
+        <Pressable style={styles.iconBtn}>
+          <Ionicons name="ellipsis-horizontal" size={18} color={colors.ink2} />
+        </Pressable>
+      </View>
+
+      <View style={styles.searchRow}>
+        <Ionicons name="search-outline" size={16} color={colors.ink4} />
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search catalog or code…"
+          placeholderTextColor={colors.ink3}
+          style={styles.searchInput}
+          returnKeyType="search"
+        />
+        {query.length > 0 && (
+          <Pressable onPress={() => setQuery("")}>
+            <Ionicons name="close-circle" size={16} color={colors.ink4} />
+          </Pressable>
+        )}
+      </View>
+
+      <PillRow contentContainerStyle={styles.filterRow}>
+        <PillButton label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
+        {brandFilters.map(({ id, count }) => (
+          <PillButton key={id} label={getThreadTypeDisplayName(id)} count={count} active={filter === id} onPress={() => setFilter(id)} />
+        ))}
+        {lowCount > 0 && (
+          <PillButton label="Low" count={lowCount} active={filter === "low"} onPress={() => setFilter("low")} warn />
+        )}
+      </PillRow>
+    </>
+  ), [totalFiltered, query, inventory, filter, brandFilters, lowCount, getThreadTypeDisplayName]);
+
+  const emptyComponent = useMemo(() => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyTitle}>No matches</Text>
+      <Text style={styles.emptyBody}>Try a different search or filter.</Text>
+    </View>
+  ), []);
+
+  const contentStyle = useMemo(
+    () => [styles.scroll, { paddingBottom: NAV_HEIGHT + 24 }],
+    []
+  );
+
   if (!ready) {
     return <View style={[styles.screen, { paddingTop: insets.top }]} />;
   }
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: NAV_HEIGHT + 24 }]}
-        showsVerticalScrollIndicator={false}
+      <SectionList
+        sections={sections}
+        keyExtractor={keyExtractor}
+        renderItem={renderSwatchRow}
+        renderSectionHeader={renderSectionHeader}
         keyboardShouldPersistTaps="handled"
-      >
-        {/* App bar */}
-        <View style={styles.appbar}>
-          <View style={styles.appbarGrow}>
-            <Text style={styles.appbarTitle}>My stash</Text>
-            <Text style={styles.appbarSub}>
-              {totalFiltered} skeins · grid · color family
-            </Text>
-          </View>
-          <Pressable style={styles.iconBtn}>
-            <Ionicons name="options-outline" size={18} color={colors.ink2} />
-          </Pressable>
-          <Pressable style={styles.iconBtn}>
-            <Ionicons name="ellipsis-horizontal" size={18} color={colors.ink2} />
-          </Pressable>
-        </View>
-
-        {/* Search */}
-        <View style={styles.searchRow}>
-          <Ionicons name="search-outline" size={16} color={colors.ink4} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search catalog or code…"
-            placeholderTextColor={colors.ink3}
-            style={styles.searchInput}
-            returnKeyType="search"
-          />
-          {query.length > 0 && (
-            <Pressable onPress={() => setQuery("")}>
-              <Ionicons name="close-circle" size={16} color={colors.ink4} />
-            </Pressable>
-          )}
-        </View>
-
-        {/* Filter chips */}
-        <PillRow contentContainerStyle={styles.filterRow}>
-          <PillButton label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
-          {brandFilters.map(({ id, count }) => (
-            <PillButton key={id} label={getThreadTypeDisplayName(id)} count={count} active={filter === id} onPress={() => setFilter(id)} />
-          ))}
-          {lowCount > 0 && (
-            <PillButton label="Low" count={lowCount} active={filter === "low"} onPress={() => setFilter("low")} warn />
-          )}
-        </PillRow>
-
-        {/* Swatch groups */}
-        {groups.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No matches</Text>
-            <Text style={styles.emptyBody}>Try a different search or filter.</Text>
-          </View>
-        ) : (
-          groups.map(([family, items]) => (
-            <View key={family}>
-              <View style={styles.groupHead}>
-                <Text style={styles.groupHeadTitle}>{family}</Text>
-                <View style={styles.groupHeadRule} />
-                <Text style={styles.groupHeadCount}>{items.reduce((s, i) => s + i.quantity, 0)}</Text>
-              </View>
-              <View style={styles.swatchGrid}>
-                {items.map((item) => (
-                  <SwatchCell
-                    key={item.id}
-                    item={item}
-                    onPress={() => router.push(`/detail/${item.id}` as never)}
-                    onLongPress={() => openSheet(item)}
-                  />
-                ))}
-              </View>
-            </View>
-          ))
-        )}
-      </ScrollView>
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={contentStyle}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={emptyComponent}
+        stickySectionHeadersEnabled={false}
+      />
 
       {/* Snackbar */}
       {snackbar && (
@@ -428,9 +467,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.ink4
   },
-  swatchGrid: {
+  swatchRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: SWATCH_GAP,
     marginBottom: 4
   },

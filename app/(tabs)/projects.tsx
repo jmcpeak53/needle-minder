@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProjectCard } from "../../src/projects/components/ProjectCard";
 import type { ProjectStatus, ProjectSummary } from "../../src/projects/types";
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useProjects } from "../../src/state/ProjectsContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
@@ -15,7 +15,7 @@ type SortMode = "status" | "start_date";
 type StatusFilter = "all" | ProjectStatus;
 
 export default function ProjectsScreen() {
-  const { ready, projectSummaries, shoppingShortfalls } = useNeedleMinder();
+  const { ready, projectSummaries, shoppingShortfalls } = useProjects();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");

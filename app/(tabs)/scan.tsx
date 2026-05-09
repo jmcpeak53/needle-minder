@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useCatalog } from "../../src/state/CatalogContext";
+import { useInventory } from "../../src/state/InventoryContext";
 import { parseOcrCandidates } from "../../src/ocr/ocrParser";
 import { MlKitOcrProvider } from "../../src/providers/mlKitOcrProvider";
 import { resolveScanCandidate, type ScanCatalogMatch } from "../../src/scan/scanResolution";
@@ -26,14 +27,8 @@ type CatalogChoiceState = {
 };
 
 export default function ScanScreen() {
-  const {
-    catalog,
-    threadTypes,
-    sessionCatalogThreadTypeId,
-    setSessionCatalogThreadTypeId,
-    addInventory,
-    ready
-  } = useNeedleMinder();
+  const { catalog, threadTypes, sessionCatalogThreadTypeId, setSessionCatalogThreadTypeId, ready } = useCatalog();
+  const { addInventory } = useInventory();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const cameraRef = useRef<CameraView>(null);

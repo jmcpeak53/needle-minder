@@ -1,15 +1,17 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import { BackHandler, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { BackHandler, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildCatalogBrowseResults, buildReferenceColorSubtitle } from "../../src/catalog/catalogBrowse";
 import { buildCatalogFilterOptions, type CatalogFilter } from "../../src/catalog/catalogFilter";
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useCatalog } from "../../src/state/CatalogContext";
+import { useInventory } from "../../src/state/InventoryContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
+import type { CatalogFamilySummary } from "../../src/catalog/catalogBrowse";
 import type { ReferenceColor, ThreadCondition } from "../../src/types";
 
 function RainbowBall({ size }: { size: number }) {
@@ -27,8 +29,17 @@ function RainbowBall({ size }: { size: number }) {
   );
 }
 
+function keyExtractorFamily(item: CatalogFamilySummary) {
+  return item.name;
+}
+
+function keyExtractorResult(item: ReferenceColor) {
+  return item.id;
+}
+
 export default function AddScreen() {
-  const { ready, catalog, threadTypes, defaultCatalogFilter, addInventory } = useNeedleMinder();
+  const { ready, catalog, threadTypes, defaultCatalogFilter } = useCatalog();
+  const { addInventory } = useInventory();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
@@ -76,6 +87,128 @@ export default function AddScreen() {
       router.back();
     }
   }
+
+  const handleSave = useCallback(async () => {
+    if (!selectedColor) return;
+    await addInventory({ referenceColorId: selectedColor.id, quantity, condition, notes });
+    setSelectedColor(null);
+    setQuantity(1);
+    setCondition("full");
+    setNotes("");
+    router.back();
+  }, [selectedColor, quantity, condition, notes, addInventory, router]);
+
+  const renderFamilyRow = useCallback(({ item: family }: { item: CatalogFamilySummary }) => (
+    <Pressable
+      style={styles.familyRow}
+      onPress={() => setSelectedFamily(family.name)}
+    >
+      {family.isRainbow
+        ? <RainbowBall size={28} />
+        : <SkeinBall color={family.representativeHex} size={28} />
+      }
+      <Text style={styles.familyName}>{family.name}</Text>
+      <Text style={styles.familyCount}>{family.count}</Text>
+      <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
+    </Pressable>
+  ), []);
+
+  const renderResultRow = useCallback(({ item: color }: { item: ReferenceColor }) => (
+    <Pressable
+      onPress={() => setSelectedColor(color)}
+      style={[
+        styles.resultRow,
+        selectedColor?.id === color.id && styles.resultRowSelected
+      ]}
+    >
+      <SkeinBall color={color.hexRgb} size={40} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.resultName}>
+          {color.colorCode}{" "}
+          <Text style={styles.resultColorName}>{color.colorName}</Text>
+        </Text>
+        {mode === "search" && (
+          <Text style={styles.resultFamily}>
+            {buildReferenceColorSubtitle(color, { filter: catalogFilter, catalog, threadTypes })}
+          </Text>
+        )}
+      </View>
+      <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
+    </Pressable>
+  ), [selectedColor, mode, catalogFilter, catalog, threadTypes]);
+
+  const listHeader = useMemo(() => {
+    if (!selectedColor) return undefined;
+    return (
+      <View style={styles.selectedCard}>
+        <View style={styles.selectedHeader}>
+          <SkeinBall color={selectedColor.hexRgb} size={52} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.selectedName}>{selectedColor.colorName}</Text>
+            <Text style={styles.selectedCode}>
+              {selectedColor.colorCode} · {buildReferenceColorSubtitle(selectedColor, {
+                filter: catalogFilter,
+                catalog,
+                threadTypes
+              })}
+            </Text>
+          </View>
+          <Pressable onPress={() => setSelectedColor(null)} style={styles.iconBtn}>
+            <Ionicons name="close" size={16} color={colors.ink3} />
+          </Pressable>
+        </View>
+
+        <View style={styles.qtyRow}>
+          <Text style={styles.qtyLabel}>Quantity</Text>
+          <View style={styles.stepper}>
+            <Pressable
+              style={[styles.stepBtn, styles.stepBtnPrimary]}
+              onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+            >
+              <Ionicons name="remove" size={14} color={colors.card} />
+            </Pressable>
+            <Text style={styles.stepValue}>{quantity}</Text>
+            <Pressable style={styles.stepBtn} onPress={() => setQuantity((q) => q + 1)}>
+              <Ionicons name="add" size={14} color={colors.ink} />
+            </Pressable>
+          </View>
+        </View>
+
+        <View style={styles.condRow}>
+          {(["full", "partial"] as ThreadCondition[]).map((c) => (
+            <Pressable
+              key={c}
+              onPress={() => setCondition(c)}
+              style={[styles.condBtn, condition === c && styles.condBtnActive]}
+            >
+              <Text style={[styles.condBtnText, condition === c && styles.condBtnTextActive]}>
+                {c.charAt(0).toUpperCase() + c.slice(1)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
+        <TextInput
+          value={notes}
+          onChangeText={setNotes}
+          placeholder="Notes (optional)"
+          placeholderTextColor={colors.ink4}
+          style={styles.notesInput}
+          multiline
+        />
+
+        <Pressable style={styles.saveBtn} onPress={handleSave}>
+          <Text style={styles.saveBtnText}>Save to stash</Text>
+          <Ionicons name="checkmark" size={16} color={colors.card} />
+        </Pressable>
+      </View>
+    );
+  }, [selectedColor, quantity, condition, notes, catalogFilter, catalog, threadTypes, handleSave]);
+
+  const listContentStyle = useMemo(
+    () => [styles.scroll, { paddingBottom: insets.bottom + 24 }],
+    [insets.bottom]
+  );
 
   if (!ready) return <View style={[styles.screen, { paddingTop: insets.top }]} />;
 
@@ -126,139 +259,27 @@ export default function AddScreen() {
         ))}
       </PillRow>
 
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        {/* Selected color form */}
-        {selectedColor && (
-          <View style={styles.selectedCard}>
-            <View style={styles.selectedHeader}>
-              <SkeinBall color={selectedColor.hexRgb} size={52} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.selectedName}>{selectedColor.colorName}</Text>
-                <Text style={styles.selectedCode}>
-                  {selectedColor.colorCode} · {buildReferenceColorSubtitle(selectedColor, {
-                    filter: catalogFilter,
-                    catalog,
-                    threadTypes
-                  })}
-                </Text>
-              </View>
-              <Pressable onPress={() => setSelectedColor(null)} style={styles.iconBtn}>
-                <Ionicons name="close" size={16} color={colors.ink3} />
-              </Pressable>
-            </View>
-
-            {/* Qty stepper */}
-            <View style={styles.qtyRow}>
-              <Text style={styles.qtyLabel}>Quantity</Text>
-              <View style={styles.stepper}>
-                <Pressable
-                  style={[styles.stepBtn, styles.stepBtnPrimary]}
-                  onPress={() => setQuantity((q) => Math.max(1, q - 1))}
-                >
-                  <Ionicons name="remove" size={14} color={colors.card} />
-                </Pressable>
-                <Text style={styles.stepValue}>{quantity}</Text>
-                <Pressable style={styles.stepBtn} onPress={() => setQuantity((q) => q + 1)}>
-                  <Ionicons name="add" size={14} color={colors.ink} />
-                </Pressable>
-              </View>
-            </View>
-
-            {/* Condition */}
-            <View style={styles.condRow}>
-              {(["full", "partial"] as ThreadCondition[]).map((c) => (
-                <Pressable
-                  key={c}
-                  onPress={() => setCondition(c)}
-                  style={[styles.condBtn, condition === c && styles.condBtnActive]}
-                >
-                  <Text style={[styles.condBtnText, condition === c && styles.condBtnTextActive]}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-
-            {/* Notes */}
-            <TextInput
-              value={notes}
-              onChangeText={setNotes}
-              placeholder="Notes (optional)"
-              placeholderTextColor={colors.ink4}
-              style={styles.notesInput}
-              multiline
-            />
-
-            <Pressable
-              style={styles.saveBtn}
-              onPress={async () => {
-                await addInventory({ referenceColorId: selectedColor.id, quantity, condition, notes });
-                setSelectedColor(null);
-                setQuantity(1);
-                setCondition("full");
-                setNotes("");
-                router.back();
-              }}
-            >
-              <Text style={styles.saveBtnText}>Save to stash</Text>
-              <Ionicons name="checkmark" size={16} color={colors.card} />
-            </Pressable>
-          </View>
-        )}
-
-        {/* Browse: family list */}
-        {mode === "browse" &&
-          families.map((family) => (
-            <Pressable
-              key={family.name}
-              style={styles.familyRow}
-              onPress={() => setSelectedFamily(family.name)}
-            >
-              {family.isRainbow
-                ? <RainbowBall size={28} />
-                : <SkeinBall color={family.representativeHex} size={28} />
-              }
-              <Text style={styles.familyName}>{family.name}</Text>
-              <Text style={styles.familyCount}>{family.count}</Text>
-              <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
-            </Pressable>
-          ))}
-
-        {/* Family drill-down or search: flat color list */}
-        {(mode === "family" || mode === "search") &&
-          results.map((color) => (
-            <Pressable
-              key={color.id}
-              onPress={() => setSelectedColor(color)}
-              style={[
-                styles.resultRow,
-                selectedColor?.id === color.id && styles.resultRowSelected
-              ]}
-            >
-              <SkeinBall color={color.hexRgb} size={40} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.resultName}>
-                  {color.colorCode}{" "}
-                  <Text style={styles.resultColorName}>{color.colorName}</Text>
-                </Text>
-                {mode === "search" && (
-                  <Text style={styles.resultFamily}>
-                    {buildReferenceColorSubtitle(color, {
-                      filter: catalogFilter,
-                      catalog,
-                      threadTypes
-                    })}
-                  </Text>
-                )}
-              </View>
-              <Ionicons name="chevron-forward" size={14} color={colors.ink4} />
-            </Pressable>
-          ))}
-      </ScrollView>
+      {mode === "browse" ? (
+        <FlatList
+          data={families}
+          keyExtractor={keyExtractorFamily}
+          renderItem={renderFamilyRow}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={listContentStyle}
+          ListHeaderComponent={listHeader}
+        />
+      ) : (
+        <FlatList
+          data={results}
+          keyExtractor={keyExtractorResult}
+          renderItem={renderResultRow}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={listContentStyle}
+          ListHeaderComponent={listHeader}
+        />
+      )}
     </View>
   );
 }

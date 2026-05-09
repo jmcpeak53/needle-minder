@@ -4,7 +4,9 @@ import { useCallback, useMemo } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useCatalog } from "../../src/state/CatalogContext";
+import { useInventory } from "../../src/state/InventoryContext";
+import { useProjects } from "../../src/state/ProjectsContext";
 import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPill";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
@@ -13,7 +15,9 @@ export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { inventory, decrementInventory, updateInventory, removeInventory, getReservationsByReferenceColor, getThreadTypeDisplayName } = useNeedleMinder();
+  const { inventory, decrementInventory, updateInventory, removeInventory } = useInventory();
+  const { getReservationsByReferenceColor } = useProjects();
+  const { getThreadTypeDisplayName } = useCatalog();
 
   const item = useMemo(() => inventory.find((i) => i.id === id) ?? null, [inventory, id]);
   const projectReservations = useMemo(

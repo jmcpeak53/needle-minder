@@ -7,19 +7,16 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProjectImagePlaceholder } from "../../src/projects/components/ProjectImagePlaceholder";
 import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPill";
 import { ReservationRow } from "../../src/projects/components/ReservationRow";
-import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { useInventory } from "../../src/state/InventoryContext";
+import { useProjects } from "../../src/state/ProjectsContext";
 import { colors, font, spacing, radius } from "../../src/ui/theme";
 
 export default function ProjectDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const {
-    getProjectDetail,
-    updateProject,
-    clearProjectReservations,
-    inventory
-  } = useNeedleMinder();
+  const { getProjectDetail, updateProject, clearProjectReservations } = useProjects();
+  const { inventory } = useInventory();
   const [tab, setTab] = useState<"overview" | "threads">("overview");
 
   const detail = useMemo(() => (id ? getProjectDetail(id) : null), [getProjectDetail, id]);
