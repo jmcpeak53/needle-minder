@@ -18,8 +18,13 @@ export const colors = {
   // Accent
   accent: "#b4472e",
   accentSoft: "#e8c9b9",
+  accentTint: "#f4e1dd",
   warn: "#c98a2a",
+  warnSoft: "#f6e3cb",
   ok: "#5a7a4a",
+  okSoft: "#e1ebdb",
+  info: "#3a5a96",
+  infoSoft: "#d6dee9",
 
   // Legacy aliases (keep for existing code)
   background: "#efe9dd",

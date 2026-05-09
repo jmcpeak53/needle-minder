@@ -44,6 +44,11 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="detail/[id]" options={{ headerShown: false, animation: "slide_from_right" }} />
+        <Stack.Screen name="project/new" options={{ headerShown: false }} />
+        <Stack.Screen name="project/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="project/[id]/edit" options={{ headerShown: false }} />
+        <Stack.Screen name="project/[id]/threads" options={{ headerShown: false }} />
+        <Stack.Screen name="project/shopping" options={{ headerShown: false }} />
       </Stack>
     </NeedleMinderProvider>
   );

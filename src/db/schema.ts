@@ -46,3 +46,40 @@ export const userInventory = sqliteTable("user_inventory", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull()
 });
+
+export const projects = sqliteTable("projects", {
+  id: text("id").primaryKey(),
+  folder: text("folder"),
+  name: text("name").notNull(),
+  author: text("author"),
+  canvasMesh: integer("canvas_mesh"),
+  status: text("status", { enum: ["not_started", "pattern", "wip", "finished"] }).notNull(),
+  startDate: text("start_date"),
+  completedDate: text("completed_date"),
+  imageUri: text("image_uri"),
+  notes: text("notes"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull()
+});
+
+export const projectThreadReservations = sqliteTable(
+  "project_thread_reservations",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id),
+    referenceColorId: text("reference_color_id")
+      .notNull()
+      .references(() => referenceColors.id),
+    quantity: integer("quantity").notNull(),
+    createdAt: text("created_at").notNull(),
+    updatedAt: text("updated_at").notNull()
+  },
+  (table) => ({
+    projectColorUnique: uniqueIndex("project_thread_reservations_project_color_unique").on(
+      table.projectId,
+      table.referenceColorId
+    )
+  })
+);

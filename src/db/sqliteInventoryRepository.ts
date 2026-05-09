@@ -1,5 +1,6 @@
 import type { AddInventoryInput, InventoryRepository, UpdateInventoryInput } from "../inventory/inventoryRepository";
 import type { InventoryItem } from "../types";
+import { createId } from "./createId";
 import type { NeedleMinderDatabase } from "./database";
 import { mapReferenceColor } from "./sqliteReferenceColorRepository";
 
@@ -132,8 +133,4 @@ function mapInventoryItem(row: InventoryRow): InventoryItem {
       upc: row.upc
     })
   };
-}
-
-function createId(): string {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }

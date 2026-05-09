@@ -1,14 +1,14 @@
 # Needle Minder
 
-Needle Minder is an offline mobile app for cross-stitch and embroidery hobbyists to track physical thread inventory. V1 targets Android and iOS with React Native, Expo, local SQLite storage, DMC Six-Strand Embroidery Floss reference data, manual entry, and one-skein-at-a-time label scanning with required confirmation.
+Needle Minder is an offline mobile app for cross-stitch and embroidery hobbyists to track physical thread inventory and plan projects. V1 targets Android and iOS with React Native, Expo, local SQLite storage, DMC Six-Strand Embroidery Floss reference data, manual entry, one-skein-at-a-time label scanning with required confirmation, and project-level thread reservations.
 
 ## Current Status
 
 This repo now contains the first implementation scaffold:
 
 - Expo SDK 55 app with Expo Router tabs.
-- Local SQLite schema and repositories for thread types, reference colors, and user inventory.
-- Manual add, inventory management, scan/confirm, and settings screens.
+- Local SQLite schema and repositories for thread types, reference colors, user inventory, projects, and thread reservations.
+- Manual add, inventory management, project planning, scan/confirm, and settings screens.
 - A small DMC development fixture. The full DMC catalog still needs to be sourced and audited before v1 release.
 
 ## Prerequisites
@@ -105,6 +105,7 @@ eas submit --profile testflight --platform ios
 - `src/db/` - SQLite setup, schema, and repositories.
 - `src/state/` - app-level state and context providers.
 - `src/inventory/` - inventory business rules.
+- `src/projects/` - project business rules, reservation math, and reusable project UI.
 - `src/catalog/` - reference catalog interfaces and validation.
 - `src/ocr/` - OCR candidate parsing.
 - `src/providers/` - device/provider integrations such as ML Kit OCR.

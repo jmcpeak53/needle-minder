@@ -5,6 +5,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-nati
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useNeedleMinder } from "../../src/state/NeedleMinderContext";
+import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPill";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 
@@ -12,9 +13,13 @@ export default function DetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { inventory, decrementInventory, updateInventory, removeInventory } = useNeedleMinder();
+  const { inventory, decrementInventory, updateInventory, removeInventory, getReservationsByReferenceColor } = useNeedleMinder();
 
   const item = useMemo(() => inventory.find((i) => i.id === id) ?? null, [inventory, id]);
+  const projectReservations = useMemo(
+    () => (item ? getReservationsByReferenceColor(item.referenceColor.id) : []),
+    [getReservationsByReferenceColor, item]
+  );
 
   const handleDecrement = useCallback(async () => {
     if (!item) return;
@@ -142,6 +147,40 @@ export default function DetailScreen() {
             </View>
           </View>
         ) : null}
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Projects</Text>
+          <Text style={styles.sectionAction}>
+            {projectReservations.length} reservation{projectReservations.length === 1 ? "" : "s"}
+          </Text>
+        </View>
+
+        {projectReservations.length === 0 ? (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyCardText}>No projects are reserving this color yet.</Text>
+          </View>
+        ) : (
+          projectReservations.map((reservation) => (
+            <Pressable
+              key={reservation.project.id}
+              onPress={() => router.push(`/project/${reservation.project.id}` as never)}
+              style={styles.projectRow}
+            >
+              <View style={styles.projectMeta}>
+                <Text style={styles.projectName}>{reservation.project.name}</Text>
+                <Text style={styles.projectSub}>
+                  Need {reservation.quantity} · In stash {reservation.physicalStash} · Reserved {reservation.reserved}
+                </Text>
+                {reservation.stillNeed > 0 ? (
+                  <Text style={styles.projectWarn}>Still need {reservation.stillNeed}</Text>
+                ) : null}
+              </View>
+              <View style={styles.projectRight}>
+                <ProjectStatusPill status={reservation.project.status} />
+              </View>
+            </Pressable>
+          ))
+        )}
       </ScrollView>
     </View>
   );
@@ -334,5 +373,51 @@ const styles = StyleSheet.create({
     fontFamily: font.mono,
     fontSize: 11,
     color: colors.ink4
+  },
+  emptyCard: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.ruleSoft,
+    borderRadius: radius.lg,
+    padding: spacing.md
+  },
+  emptyCardText: {
+    fontFamily: font.sans,
+    fontSize: 13,
+    color: colors.ink3
+  },
+  projectRow: {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.ruleSoft,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm
+  },
+  projectMeta: {
+    flex: 1
+  },
+  projectName: {
+    fontFamily: font.sansSemiBold,
+    fontSize: 14,
+    color: colors.ink
+  },
+  projectSub: {
+    fontFamily: font.sans,
+    fontSize: 11,
+    color: colors.ink3,
+    marginTop: 2
+  },
+  projectWarn: {
+    fontFamily: font.sansMedium,
+    fontSize: 11,
+    color: colors.accent,
+    marginTop: 6
+  },
+  projectRight: {
+    alignItems: "flex-end"
   }
 });

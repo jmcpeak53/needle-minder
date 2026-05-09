@@ -51,6 +51,34 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS projects (
+      id TEXT PRIMARY KEY NOT NULL,
+      folder TEXT,
+      name TEXT NOT NULL,
+      author TEXT,
+      canvas_mesh INTEGER CHECK(canvas_mesh IS NULL OR canvas_mesh IN (13, 18)),
+      status TEXT NOT NULL CHECK(status IN ('not_started', 'pattern', 'wip', 'finished')),
+      start_date TEXT,
+      completed_date TEXT,
+      image_uri TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      CHECK (completed_date IS NULL OR start_date IS NULL OR completed_date >= start_date)
+    );
+
+    CREATE TABLE IF NOT EXISTS project_thread_reservations (
+      id TEXT PRIMARY KEY NOT NULL,
+      project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+      reference_color_id TEXT NOT NULL REFERENCES reference_colors(id),
+      quantity INTEGER NOT NULL CHECK(quantity > 0),
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS project_thread_reservations_project_color_unique
+      ON project_thread_reservations(project_id, reference_color_id);
   `);
 
   try {
