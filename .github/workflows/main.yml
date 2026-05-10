@@ -1,7 +1,4 @@
-            - name: Jules PR Reviewer
-  # You may pin to the exact commit or the version.
-  # uses: sanjay3290/jules-pr-reviewer@fc66a7c78b499bfa2e16235b55574e458c6551d6
-    steps:
+steps:
       - uses: sanjay3290/jules-pr-reviewer@v1
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
