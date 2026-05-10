@@ -21,6 +21,14 @@ export default function ProjectDetailScreen() {
 
   const detail = useMemo(() => (id ? getProjectDetail(id) : null), [getProjectDetail, id]);
 
+  const inventoryMap = useMemo(() => {
+    const map = new Map();
+    inventory.forEach((item) => {
+      map.set(item.referenceColor.id, item);
+    });
+    return map;
+  }, [inventory]);
+
   if (!detail) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -163,7 +171,7 @@ export default function ProjectDetailScreen() {
               </View>
             ) : (
               detail.reservations.map((reservation) => {
-                const stashItem = inventory.find((item) => item.referenceColor.id === reservation.referenceColorId);
+                const stashItem = inventoryMap.get(reservation.referenceColorId);
                 return (
                   <ReservationRow
                     key={reservation.id}
