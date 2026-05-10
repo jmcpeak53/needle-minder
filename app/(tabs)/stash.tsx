@@ -155,7 +155,7 @@ export default function StashScreen() {
     const diff = oldQty - sheetQty;
     if (diff > 0) {
       showSnackbar(
-        `Used ${diff} Ã— ${pressedItem.referenceColor.colorCode}${sheetQty <= 1 ? " Â· running low" : ""}`,
+        `Used ${diff} × ${pressedItem.referenceColor.colorCode}${sheetQty <= 1 ? " · running low" : ""}`,
         pressedItem,
         oldQty
       );
@@ -199,7 +199,7 @@ export default function StashScreen() {
         <View style={styles.appbarGrow}>
           <Text style={styles.appbarTitle}>My stash</Text>
           <Text style={styles.appbarSub}>
-            {totalFiltered} skeins Â· grid Â· color family
+            {totalFiltered} skeins · grid · color family
           </Text>
         </View>
         <Pressable style={styles.iconBtn}>
@@ -306,14 +306,14 @@ export default function StashScreen() {
                   <View style={styles.sheetMeta}>
                     <Text style={styles.sheetName}>{pressedItem.referenceColor.colorName}</Text>
                     <Text style={styles.sheetSub}>
-                      {pressedItem.referenceColor.colorCode} Â· {getThreadTypeDisplayName(pressedItem.referenceColor.threadTypeId)}
+                      {pressedItem.referenceColor.colorCode} · {getThreadTypeDisplayName(pressedItem.referenceColor.threadTypeId)}
                     </Text>
                     <View style={styles.sheetCondition}>
                       <ThreadConditionPill condition={pressedItem.condition} />
                     </View>
                   </View>
                   <Text style={styles.sheetCurrentQty}>
-                    <Text style={styles.sheetQtyX}>Ã—</Text>
+                    <Text style={styles.sheetQtyX}>×</Text>
                     {pressedItem.quantity}
                   </Text>
                 </View>
