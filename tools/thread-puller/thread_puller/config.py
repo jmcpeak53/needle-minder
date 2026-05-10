@@ -28,6 +28,7 @@ class OutputsConfig(BaseModel):
     normalized_csv: str
     unmatched_csv: str
     reference_csv: str
+    dedupe_report_csv: str
 
 
 class ScrapeConfig(BaseModel):

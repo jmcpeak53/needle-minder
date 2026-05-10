@@ -8,10 +8,11 @@ import typer
 from .config import ThreadPullerConfig, load_config
 from .fetch import FetchSettings, ThrottledFetcher, ensure_allowed_by_robots
 from .models import RawProduct
-from .normalize import load_reference_rows, normalize_products
+from .normalize import load_reference_rows, load_target_reference_rows, normalize_products
 from .shopify import fetch_collection_refs, fetch_product_detail
 from .write_outputs import (
     write_normalized_csv,
+    write_dedupe_report_csv,
     write_raw_jsonl,
     write_reference_csv,
     write_unmatched_csv,
@@ -38,14 +39,17 @@ def normalize(config: Path = typer.Option(..., exists=True, dir_okay=False)) -> 
 
     products = list(_read_raw_jsonl(raw_path))
     canonical = load_reference_rows(_resolve_repo_path(repo_root, cfg.reference_match.existing_csv))
-    result = normalize_products(products, cfg.catalog, canonical)
+    target_reference_path = _resolve_repo_path(repo_root, cfg.outputs.reference_csv)
+    target_reference_rows = load_target_reference_rows(target_reference_path)
+    result = normalize_products(products, cfg.catalog, canonical, target_reference_rows)
 
     write_normalized_csv(_resolve_repo_path(repo_root, cfg.outputs.normalized_csv), result.listings)
     write_unmatched_csv(_resolve_repo_path(repo_root, cfg.outputs.unmatched_csv), result.unmatched_codes)
-    write_reference_csv(_resolve_repo_path(repo_root, cfg.outputs.reference_csv), result.reference_rows)
+    write_reference_csv(target_reference_path, result.reference_rows)
+    write_dedupe_report_csv(_resolve_repo_path(repo_root, cfg.outputs.dedupe_report_csv), result.dedupe_report_rows)
     typer.echo(
         f"Normalized {len(result.listings)} listings, {len(result.reference_rows)} reference rows, "
-        f"{len(result.unmatched_codes)} unmatched codes"
+        f"{len(result.unmatched_codes)} unmatched codes, {len(result.dedupe_report_rows)} dedupe report rows"
     )
 
 

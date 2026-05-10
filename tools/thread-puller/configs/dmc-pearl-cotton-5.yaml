@@ -17,6 +17,7 @@ outputs:
   normalized_csv: data/import/thread-puller/dmc-pearl-cotton-5/normalized-listings.csv
   unmatched_csv: data/import/thread-puller/dmc-pearl-cotton-5/unmatched-codes.csv
   reference_csv: data/reference/dmc-pearl-cotton-5.csv
+  dedupe_report_csv: data/import/thread-puller/dmc-pearl-cotton-5/dedupe-report.csv
 
 scrape:
   user_agent: NeedleMinderThreadPuller/0.1 (+local catalog audit)

@@ -1,6 +1,10 @@
+from pathlib import Path
+
+import pytest
+
 from thread_puller.config import CatalogConfig
 from thread_puller.models import RawProduct
-from thread_puller.normalize import CanonicalRow, normalize_products
+from thread_puller.normalize import CanonicalRow, load_target_reference_rows, normalize_products
 
 
 def _catalog() -> CatalogConfig:
@@ -15,74 +19,113 @@ def _catalog() -> CatalogConfig:
     )
 
 
-def test_normalize_products_matches_by_color_code() -> None:
-    products = [
-        RawProduct(
-            catalog_id="dmc-pearl-cotton-5",
-            source="pennylinn",
-            collection_url="https://pennylinn.com/collections/dmc-5",
-            product_url="https://pennylinn.com/products/dmc-5-pearl-cotton-818-baby-pink",
-            shopify_product_id="1",
-            shopify_variant_id="2",
-            handle="dmc-5-pearl-cotton-818-baby-pink",
-            title="DMC 5 Pearl Cotton 818 Powder Pink",
-            vendor="DMC",
-            product_type="Thread",
-            tags=[],
-            sku="DMC5-818",
-            barcode="077540035632",
-            price_cents=325,
-            currency="USD",
-            available=True,
-            image_url=None,
-            description_text=None,
-            scraped_at="2026-05-09T00:00:00+00:00",
-        )
-    ]
-    canonical = {
-        "818": CanonicalRow(
-            color_code="818",
-            color_name="Baby Pink",
-            color_family="Pink",
-            hex_rgb="#FEDEDD",
-            is_variegated=False,
-            thread_subtype="solid",
-            upc=None,
-        )
+def _product(code: str, name: str, *, sku: str | None = None, barcode: str | None = None) -> RawProduct:
+    return RawProduct(
+        catalog_id="dmc-pearl-cotton-5",
+        source="pennylinn",
+        collection_url="https://pennylinn.com/collections/dmc-5",
+        product_url=f"https://pennylinn.com/products/dmc-5-pearl-cotton-{code.lower()}",
+        shopify_product_id="1",
+        shopify_variant_id="2",
+        handle=f"dmc-5-pearl-cotton-{code.lower()}",
+        title=f"DMC 5 Pearl Cotton {code} {name}",
+        vendor="DMC",
+        product_type="Thread",
+        tags=[],
+        sku=sku,
+        barcode=barcode,
+        price_cents=325,
+        currency="USD",
+        available=True,
+        image_url=None,
+        description_text=None,
+        scraped_at="2026-05-09T00:00:00+00:00",
+    )
+
+
+def _canonical(code: str, name: str, *, upc: str | None = None) -> CanonicalRow:
+    return CanonicalRow(
+        color_code=code,
+        color_name=name,
+        color_family="Pink",
+        hex_rgb="#FEDEDD",
+        is_variegated=False,
+        thread_subtype="solid",
+        upc=upc,
+    )
+
+
+def _reference_row(code: str, name: str) -> dict[str, str]:
+    return {
+        "colorCode": code,
+        "colorName": name,
+        "colorFamily": "Pink",
+        "hexRgb": "#FEDEDD",
+        "isVariegated": "false",
+        "threadSubtype": "solid",
+        "upc": "",
     }
 
-    result = normalize_products(products, _catalog(), canonical)
+
+def test_normalize_products_appends_new_canonical_code() -> None:
+    canonical = {"818": _canonical("818", "Baby Pink")}
+
+    result = normalize_products([_product("818", "Powder Pink", sku="DMC5-818")], _catalog(), canonical, [])
+
     assert len(result.listings) == 1
-    assert result.listings[0].match_status == "matched"
+    assert result.listings[0].match_status == "new"
     assert result.listings[0].canonical_color_name == "Baby Pink"
     assert result.reference_rows[0]["colorCode"] == "818"
+    assert result.dedupe_report_rows[0]["status"] == "new_appended"
 
 
-def test_normalize_products_reports_unmatched_code() -> None:
-    products = [
-        RawProduct(
-            catalog_id="dmc-pearl-cotton-5",
-            source="pennylinn",
-            collection_url="https://pennylinn.com/collections/dmc-5",
-            product_url="https://pennylinn.com/products/dmc-5-pearl-cotton-03",
-            shopify_product_id="1",
-            shopify_variant_id="2",
-            handle="dmc-5-pearl-cotton-03",
-            title="DMC 5 Pearl Cotton 03 Medium Gray",
-            vendor="DMC",
-            product_type="Thread",
-            tags=[],
-            sku="DMC5-03",
-            barcode=None,
-            price_cents=325,
-            currency="USD",
-            available=True,
-            image_url=None,
-            description_text=None,
-            scraped_at="2026-05-09T00:00:00+00:00",
-        )
-    ]
+def test_normalize_products_preserves_existing_code_without_duplicate_append() -> None:
+    canonical = {"818": _canonical("818", "Baby Pink")}
+    existing = [_reference_row("818", "Baby Pink")]
 
-    result = normalize_products(products, _catalog(), {})
+    result = normalize_products([_product("818", "Powder Pink")], _catalog(), canonical, existing)
+
+    assert result.listings[0].match_status == "existing"
+    assert result.reference_rows == existing
+    assert result.dedupe_report_rows[0]["status"] == "existing_skipped"
+
+
+def test_normalize_products_reports_unmatched_code_without_append() -> None:
+    result = normalize_products([_product("03", "Medium Gray")], _catalog(), {}, [])
+
+    assert result.listings[0].match_status == "unmatched"
     assert result.unmatched_codes == ["03"]
     assert result.reference_rows == []
+    assert result.dedupe_report_rows[0]["status"] == "unmatched"
+
+
+def test_normalize_products_skips_duplicate_scrape_rows() -> None:
+    products = [
+        _product("818", "Powder Pink", sku="DMC5-818", barcode="111"),
+        _product("818", "Powder Pink", sku="ALT-818", barcode="222"),
+    ]
+    canonical = {"818": _canonical("818", "Baby Pink")}
+
+    result = normalize_products(products, _catalog(), canonical, [])
+
+    assert [listing.match_status for listing in result.listings] == ["new", "duplicate_skipped"]
+    assert [row["colorCode"] for row in result.reference_rows] == ["818"]
+    assert result.dedupe_report_rows[1]["status"] == "duplicate_skipped"
+    assert result.dedupe_report_rows[1]["sku"] == "ALT-818"
+
+
+def test_load_target_reference_rows_rejects_duplicate_codes(tmp_path: Path) -> None:
+    csv_path = tmp_path / "catalog.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "colorCode,colorName,colorFamily,hexRgb,isVariegated,threadSubtype,upc",
+                "818,Baby Pink,Pink,#FEDEDD,false,solid,",
+                "818,Baby Pink Duplicate,Pink,#FEDEDD,false,solid,",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate colorCode 818"):
+        load_target_reference_rows(csv_path)

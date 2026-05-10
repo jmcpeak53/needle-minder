@@ -31,7 +31,12 @@ Default config writes:
 - `data/import/thread-puller/dmc-pearl-cotton-5/raw-products.jsonl`
 - `data/import/thread-puller/dmc-pearl-cotton-5/normalized-listings.csv`
 - `data/import/thread-puller/dmc-pearl-cotton-5/unmatched-codes.csv`
+- `data/import/thread-puller/dmc-pearl-cotton-5/dedupe-report.csv`
 - `data/reference/dmc-pearl-cotton-5.csv`
+
+Normalization preserves existing reference CSV rows, appends only new scraped
+codes that have canonical metadata, and records skipped duplicates or incomplete
+records in the dedupe report.
 
 ## Validate App Catalog CSVs
 

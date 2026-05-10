@@ -79,5 +79,27 @@ def write_reference_csv(path: Path, rows: list[dict[str, str]]) -> None:
             writer.writerow(row)
 
 
+def write_dedupe_report_csv(path: Path, rows: list[dict[str, str]]) -> None:
+    _ensure_parent(path)
+    fieldnames = [
+        "colorCode",
+        "status",
+        "reason",
+        "source",
+        "sourceColorName",
+        "sku",
+        "barcode",
+        "priceCents",
+        "currency",
+        "available",
+        "productUrl",
+    ]
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+
 def _ensure_parent(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
