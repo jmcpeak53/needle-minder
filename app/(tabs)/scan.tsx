@@ -9,6 +9,7 @@ import { resolveScanCandidate } from "../../src/scan/scanResolution";
 import type { ConfirmState } from "../../src/scan/useScanFlow";
 import { useScanFlow } from "../../src/scan/useScanFlow";
 import { InventoryForm } from "../../src/ui/InventoryForm";
+import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 import type { OcrCandidate, ReferenceColor, ThreadType } from "../../src/types";
@@ -141,9 +142,11 @@ export default function ScanScreen() {
           </Pressable>
         </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.confirmScroll, { paddingBottom: insets.bottom + 120 }]}
-          showsVerticalScrollIndicator={false}
+        <KeyboardAwareBody
+          testID="scan-confirm-keyboard-body"
+          scrollTestID="scan-confirm-keyboard-scroll"
+          contentBottomPadding={120}
+          contentContainerStyle={styles.confirmScroll}
         >
           {/* Preview */}
           <View style={styles.confirmPreview}>
@@ -210,7 +213,7 @@ export default function ScanScreen() {
               }}
             />
           )}
-        </ScrollView>
+        </KeyboardAwareBody>
 
         {/* Bottom action row */}
         <View style={[styles.confirmActions, { bottom: insets.bottom + 16 }]}>

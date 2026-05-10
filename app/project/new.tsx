@@ -1,26 +1,15 @@
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProjectForm } from "../../src/projects/components/ProjectForm";
 import { useProjects } from "../../src/state/ProjectsContext";
-import { colors, font, spacing } from "../../src/ui/theme";
+import { KeyboardAwareFormScreen } from "../../src/ui/KeyboardAwareFormScreen";
 
 export default function NewProjectScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { createProject } = useProjects();
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.appbar}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.back}>Back</Text>
-        </Pressable>
-        <Text style={styles.title}>New project</Text>
-        <View style={styles.appbarSpacer} />
-      </View>
-
+    <KeyboardAwareFormScreen title="New project" onBackPress={() => router.back()}>
       <ProjectForm
         submitLabel="Save project"
         onSubmit={async (input) => {
@@ -28,33 +17,6 @@ export default function NewProjectScreen() {
           router.replace(`/project/${id}`);
         }}
       />
-    </View>
+    </KeyboardAwareFormScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    paddingHorizontal: spacing.lg
-  },
-  appbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: spacing.md
-  },
-  back: {
-    fontFamily: font.sansMedium,
-    fontSize: 13,
-    color: colors.ink2
-  },
-  title: {
-    fontFamily: font.serif,
-    fontSize: 24,
-    color: colors.ink
-  },
-  appbarSpacer: {
-    width: 40
-  }
-});

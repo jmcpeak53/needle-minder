@@ -75,9 +75,12 @@ describe("DetailScreen notes editing", () => {
   });
 
   it("saves note changes when the notes field loses focus", async () => {
-    const { getByPlaceholderText } = render(<DetailScreen />);
+    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
 
     const input = getByPlaceholderText("Notes about this skein...");
+
+    expect(getByTestId("detail-keyboard-body")).toBeTruthy();
+    expect(getByTestId("detail-keyboard-scroll")).toBeTruthy();
 
     fireEvent.changeText(input, "  Updated note  ");
     fireEvent(input, "blur");

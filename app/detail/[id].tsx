@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { InventoryNotesEditor } from "../../src/inventory/components/InventoryNotesEditor";
@@ -9,6 +9,7 @@ import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPi
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { useProjects } from "../../src/state/ProjectsContext";
+import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { ThreadConditionPill } from "../../src/ui/ThreadConditionPill";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
@@ -147,11 +148,11 @@ export default function DetailScreen() {
         </Pressable>
       </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+      <KeyboardAwareBody
+        testID="detail-keyboard-body"
+        scrollTestID="detail-keyboard-scroll"
+        contentBottomPadding={24}
+        contentContainerStyle={styles.scroll}
       >
         <View style={styles.hero}>
           <SkeinBall color={item.referenceColor.hexRgb} size={80} condition={item.condition} showConditionBadge />
@@ -246,7 +247,7 @@ export default function DetailScreen() {
             </Pressable>
           ))
         )}
-      </ScrollView>
+      </KeyboardAwareBody>
     </View>
   );
 }

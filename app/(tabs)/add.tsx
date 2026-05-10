@@ -9,6 +9,7 @@ import { buildCatalogFilterOptions, type CatalogFilter } from "../../src/catalog
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { InventoryForm } from "../../src/ui/InventoryForm";
+import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
@@ -277,27 +278,31 @@ export default function AddScreen() {
         ))}
       </PillRow>
 
-      {mode === "browse" ? (
-        <FlatList
-          data={families}
-          keyExtractor={keyExtractorFamily}
-          renderItem={renderFamilyRow}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={listContentStyle}
-          ListHeaderComponent={listHeader}
-        />
-      ) : (
-        <FlatList
-          data={results}
-          keyExtractor={keyExtractorResult}
-          renderItem={renderResultRow}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={listContentStyle}
-          ListHeaderComponent={listHeader}
-        />
-      )}
+      <KeyboardAwareBody scroll={false} testID="add-keyboard-body">
+        {mode === "browse" ? (
+          <FlatList
+            data={families}
+            keyExtractor={keyExtractorFamily}
+            renderItem={renderFamilyRow}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={listContentStyle}
+            ListHeaderComponent={listHeader}
+          />
+        ) : (
+          <FlatList
+            data={results}
+            keyExtractor={keyExtractorResult}
+            renderItem={renderResultRow}
+            keyboardDismissMode="on-drag"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={listContentStyle}
+            ListHeaderComponent={listHeader}
+          />
+        )}
+      </KeyboardAwareBody>
 
       {savedToast !== null && (
         <Animated.View

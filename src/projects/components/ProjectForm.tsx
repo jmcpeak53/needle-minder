@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -66,7 +65,7 @@ export function ProjectForm({ initialProject, submitLabel, onSubmit }: Props) {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+    <View style={styles.content}>
       <ProjectPhotoPicker imageUri={imageUri} onImageChange={setImageUri} />
 
       <Field label="Project name">
@@ -166,7 +165,7 @@ export function ProjectForm({ initialProject, submitLabel, onSubmit }: Props) {
       >
         {saving ? <ActivityIndicator color={colors.card} /> : <Text style={styles.submitText}>{submitLabel}</Text>}
       </Pressable>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -194,7 +193,6 @@ function statusLabel(status: ProjectStatus): string {
 
 const styles = StyleSheet.create({
   content: {
-    paddingBottom: 32,
     gap: spacing.md
   },
   field: {
