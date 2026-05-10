@@ -128,6 +128,18 @@ describe("keyboard-aware inventory entry screens", () => {
     expect(UNSAFE_getByType(FlatList).props.keyboardDismissMode).toBe("none");
   });
 
+  it("clears the manual add search query through the shared search control", () => {
+    const { getByPlaceholderText, getByTestId, queryByTestId } = render(<AddScreen />);
+
+    fireEvent.changeText(getByPlaceholderText("Search by number, name, or family…"), "31");
+
+    expect(getByTestId("add-search-clear-button")).toBeTruthy();
+    fireEvent.press(getByTestId("add-search-clear-button"));
+
+    expect(getByPlaceholderText("Search by number, name, or family…").props.value).toBe("");
+    expect(queryByTestId("add-search-clear-button")).toBeNull();
+  });
+
   it("wraps the scan confirm form in the shared keyboard-aware body", () => {
     const { getByTestId, getByPlaceholderText, getByText, UNSAFE_getByType } = render(<ScanScreen />);
 

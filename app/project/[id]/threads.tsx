@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildReferenceColorSubtitle } from "../../../src/catalog/catalogBrowse";
@@ -12,6 +12,7 @@ import { useCatalog } from "../../../src/state/CatalogContext";
 import { useInventory } from "../../../src/state/InventoryContext";
 import { useProjects } from "../../../src/state/ProjectsContext";
 import { PillButton, PillRow } from "../../../src/ui/PillButton";
+import { SearchFieldRow } from "../../../src/ui/SearchFieldRow";
 import { colors, font, radius, spacing } from "../../../src/ui/theme";
 import type { ReferenceColor } from "../../../src/types";
 
@@ -142,16 +143,18 @@ export default function ProjectThreadsScreen() {
           <ProjectStatusPill status={detail.project.status} />
         </View>
 
-        <View style={styles.searchRow}>
-          <Ionicons name="search-outline" size={16} color={colors.ink4} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search code, name, or family"
-            placeholderTextColor={colors.ink4}
-            style={styles.searchInput}
-          />
-        </View>
+        <SearchFieldRow
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search code, name, or family"
+          placeholderTextColor={colors.ink4}
+          iconColor={colors.ink4}
+          clearIconColor={colors.ink4}
+          containerStyle={styles.searchRow}
+          inputStyle={styles.searchInput}
+          inputTestID="project-threads-search-input"
+          clearButtonTestID="project-threads-search-clear-button"
+        />
 
         <PillRow contentContainerStyle={styles.filterRow}>
           {filterOptions.map((option) => (
@@ -248,22 +251,13 @@ const styles = StyleSheet.create({
     marginTop: 2
   },
   searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.rule,
-    borderRadius: radius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
     marginTop: spacing.md
   },
   searchInput: {
-    flex: 1,
-    fontFamily: font.sans,
-    fontSize: 14,
-    color: colors.ink
+    fontSize: 14
   },
   filterRow: {
     paddingTop: spacing.sm,

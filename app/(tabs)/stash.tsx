@@ -9,7 +9,6 @@ import {
   SectionList,
   StyleSheet,
   Text,
-  TextInput,
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
+import { SearchFieldRow } from "../../src/ui/SearchFieldRow";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { ThreadConditionPill } from "../../src/ui/ThreadConditionPill";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
@@ -210,22 +210,14 @@ export default function StashScreen() {
         </Pressable>
       </View>
 
-      <View style={styles.searchRow}>
-        <Ionicons name="search-outline" size={16} color={colors.ink4} />
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="Search catalog or code…"
-          placeholderTextColor={colors.ink3}
-          style={styles.searchInput}
-          returnKeyType="search"
-        />
-        {query.length > 0 && (
-          <Pressable onPress={() => setQuery("")}>
-            <Ionicons name="close-circle" size={16} color={colors.ink4} />
-          </Pressable>
-        )}
-      </View>
+      <SearchFieldRow
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search catalog or code…"
+        containerStyle={styles.searchRow}
+        inputTestID="stash-search-input"
+        clearButtonTestID="stash-search-clear-button"
+      />
 
       <PillRow contentContainerStyle={styles.filterRow}>
         <PillButton label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
@@ -444,22 +436,7 @@ const styles = StyleSheet.create({
     justifyContent: "center"
   },
   searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.card2,
-    borderWidth: 1,
-    borderColor: colors.ruleSoft,
-    borderRadius: radius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
     marginBottom: spacing.sm
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: font.sans,
-    fontSize: 13,
-    color: colors.ink
   },
   filterRow: {
     paddingBottom: 12
