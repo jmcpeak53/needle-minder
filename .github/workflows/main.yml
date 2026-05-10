@@ -1,0 +1,20 @@
+            - name: Jules PR Reviewer
+  # You may pin to the exact commit or the version.
+  # uses: sanjay3290/jules-pr-reviewer@fc66a7c78b499bfa2e16235b55574e458c6551d6
+    steps:
+      - uses: sanjay3290/jules-pr-reviewer@v1
+        with:
+          jules_api_key: ${{ secrets.JULES_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
+          # This ensures the "Merge" button stays disabled if Jules finds bugs
+          fail_on: blocking 
+          
+          # Only runs when you are actually ready for the review
+          skip_drafts: true 
+
+          # Helpful for your Android-specific requirements
+          extra_instructions: |
+            Focus heavily on Android performance. 
+            Flag any blocking calls on the main thread.
+            Ensure string resources are not hardcoded.
