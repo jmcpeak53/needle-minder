@@ -107,14 +107,20 @@ async function migrate(database: NeedleMinderDatabase): Promise<void> {
   }
 }
 
-async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> {
+export async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> {
   const now = new Date().toISOString();
 
   for (const threadType of threadTypeFixture) {
     await database.runAsync(
-      `INSERT OR IGNORE INTO thread_types
+      `INSERT INTO thread_types
         (id, manufacturer, product_line, display_name, is_active, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         manufacturer = excluded.manufacturer,
+         product_line = excluded.product_line,
+         display_name = excluded.display_name,
+         is_active = excluded.is_active,
+         updated_at = excluded.updated_at`,
       [
         threadType.id,
         threadType.manufacturer,
@@ -129,9 +135,17 @@ async function seedReferenceData(database: NeedleMinderDatabase): Promise<void> 
 
   for (const color of referenceColorFixture) {
     await database.runAsync(
-      `INSERT OR IGNORE INTO reference_colors
+      `INSERT INTO reference_colors
         (id, thread_type_id, color_code, color_name, color_family, hex_rgb, is_variegated, thread_subtype, upc, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(thread_type_id, color_code) DO UPDATE SET
+         color_name = excluded.color_name,
+         color_family = excluded.color_family,
+         hex_rgb = excluded.hex_rgb,
+         is_variegated = excluded.is_variegated,
+         thread_subtype = excluded.thread_subtype,
+         upc = excluded.upc,
+         updated_at = excluded.updated_at`,
       [
         color.id,
         color.threadTypeId,
