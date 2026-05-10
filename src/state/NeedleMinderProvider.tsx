@@ -13,6 +13,7 @@ import {
 import type { SaveProjectInput } from "../projects/projectRepository";
 import type { Project, ProjectReservationRecord } from "../projects/types";
 import type { InventoryItem, ReferenceColor, ThreadType } from "../types";
+import { BackupContext } from "./BackupContext";
 import { CatalogContext } from "./CatalogContext";
 import { composeNeedleMinderServices } from "./composeServices";
 import type { NeedleMinderServices } from "./composeServices";
@@ -260,13 +261,33 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
     [ready, projects, projectSummaries, shoppingShortfalls, services, refresh, reservations, inventory]
   );
 
+  const backupValue = useMemo(
+    () => ({
+      async exportBackup() {
+        if (!services) throw new Error("Services not ready.");
+        return services.backup.exportToFile();
+      },
+      async importBackup() {
+        if (!services) throw new Error("Services not ready.");
+        const result = await services.backup.importFromFile();
+        if (result.kind === "restored") {
+          await refresh();
+        }
+        return result;
+      }
+    }),
+    [services, refresh]
+  );
+
   return (
-    <InventoryContext.Provider value={inventoryValue}>
-      <CatalogContext.Provider value={catalogValue}>
-        <ProjectsContext.Provider value={projectsValue}>
-          {children}
-        </ProjectsContext.Provider>
-      </CatalogContext.Provider>
-    </InventoryContext.Provider>
+    <BackupContext.Provider value={backupValue}>
+      <InventoryContext.Provider value={inventoryValue}>
+        <CatalogContext.Provider value={catalogValue}>
+          <ProjectsContext.Provider value={projectsValue}>
+            {children}
+          </ProjectsContext.Provider>
+        </CatalogContext.Provider>
+      </InventoryContext.Provider>
+    </BackupContext.Provider>
   );
 }

@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildCatalogFilterOptions } from "../../src/catalog/catalogFilter";
+import { BackupValidationError } from "../../src/backup/envelope";
+import { useBackup } from "../../src/state/BackupContext";
 import { useCatalog } from "../../src/state/CatalogContext";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
@@ -17,7 +19,55 @@ export default function SettingsScreen() {
     clearSessionCatalogThreadTypeId,
     getThreadTypeDisplayName
   } = useCatalog();
+  const { exportBackup, importBackup } = useBackup();
   const [showCatalogOptions, setShowCatalogOptions] = useState(false);
+  const [backupBusy, setBackupBusy] = useState(false);
+
+  async function handleExport() {
+    setBackupBusy(true);
+    try {
+      await exportBackup();
+    } catch (error) {
+      Alert.alert("Export failed", error instanceof Error ? error.message : "Unknown error.");
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
+  function handleImport() {
+    Alert.alert(
+      "Restore from backup",
+      "This will replace all current inventory, projects, and settings with the contents of the backup file. Continue?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Restore",
+          style: "destructive",
+          onPress: async () => {
+            setBackupBusy(true);
+            try {
+              const result = await importBackup();
+              if (result.kind === "canceled") return;
+              const { inserted, warnings } = result.result;
+              const summary = [
+                `Restored ${inserted.user_inventory} skein(s), ${inserted.projects} project(s).`,
+                ...warnings
+              ].join("\n");
+              Alert.alert("Restore complete", summary);
+            } catch (error) {
+              const message =
+                error instanceof BackupValidationError
+                  ? error.message
+                  : "Restore failed. The backup file may be corrupt.";
+              Alert.alert("Restore failed", message);
+            } finally {
+              setBackupBusy(false);
+            }
+          }
+        }
+      ]
+    );
+  }
 
   const filterOptions = useMemo(() => buildCatalogFilterOptions(threadTypes), [threadTypes]);
   const activeCatalogLabel =
@@ -103,13 +153,42 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
 
+        <View style={styles.card}>
+          <Text style={styles.cardHeading}>Backup</Text>
+          <Text style={styles.cardBody}>
+            Export your stash, projects, and settings to a file. Import a backup to restore them after a reinstall.
+          </Text>
+
+          <Pressable
+            style={[styles.buttonRow, backupBusy && styles.buttonRowDisabled]}
+            disabled={backupBusy}
+            onPress={handleExport}
+          >
+            <Ionicons name="share-outline" size={16} color={backupBusy ? colors.ink4 : colors.accent} />
+            <Text style={[styles.buttonText, backupBusy && styles.buttonTextDisabled]}>
+              Export Backup
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[styles.buttonRow, backupBusy && styles.buttonRowDisabled]}
+            disabled={backupBusy}
+            onPress={handleImport}
+          >
+            <Ionicons name="download-outline" size={16} color={backupBusy ? colors.ink4 : colors.accent} />
+            <Text style={[styles.buttonText, backupBusy && styles.buttonTextDisabled]}>
+              Import Backup
+            </Text>
+          </Pressable>
+        </View>
+
         <InfoCard
           heading="Catalog support"
           body="Needle Minder currently includes DMC Six-Strand Embroidery Floss and DMC Pearl Cotton Size 5 reference catalogs."
         />
         <InfoCard
           heading="Offline storage"
-          body="Inventory is stored locally on this device using SQLite. There is no account, backend, or cloud sync in v1."
+          body="Inventory is stored locally on this device using SQLite. Export a backup from this screen to preserve your data across reinstalls."
         />
         <InfoCard
           heading="Scanning"

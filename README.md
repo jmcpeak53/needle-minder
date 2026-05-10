@@ -48,6 +48,8 @@ EAS will print a QR code and download link when the build finishes. Scan the QR 
 - `app.json` fields that affect native output change (permissions, bundle identifier, splash screen, icons, Expo SDK version).
 - The Expo SDK is upgraded.
 
+> **Note for current contributors:** the addition of `expo-file-system`, `expo-sharing`, and `expo-document-picker` (backup feature) requires a fresh development client build. Run `npm run build:dev:android` or `npm run build:dev:ios` and install the new client before testing the Export/Import settings.
+
 For all other changes — new screens, new components, business logic, styles — the development client does not need to be rebuilt.
 
 ### Phase 2 — Daily Development

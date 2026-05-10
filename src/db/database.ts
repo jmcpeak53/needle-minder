@@ -4,6 +4,8 @@ import { referenceColorFixture, threadTypeFixture } from "../data/referenceCatal
 
 export type NeedleMinderDatabase = SQLite.SQLiteDatabase;
 
+export const SCHEMA_VERSION = 2;
+
 export async function openNeedleMinderDatabase(): Promise<NeedleMinderDatabase> {
   const database = await SQLite.openDatabaseAsync("needle-minder.db");
   await migrate(database);
