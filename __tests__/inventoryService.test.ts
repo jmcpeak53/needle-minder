@@ -48,6 +48,26 @@ describe("InventoryService", () => {
     expect(repository.addOrUpdate).not.toHaveBeenCalled();
   });
 
+  it("trims notes during a note-only update", async () => {
+    const repository = createRepository();
+    const service = new InventoryService(repository);
+
+    await service.update("inv-1", { notes: "  keep this note  " });
+
+    expect(repository.update).toHaveBeenCalledWith("inv-1", { notes: "keep this note" });
+  });
+
+  it("rejects inventory notes longer than 255 characters", async () => {
+    const repository = createRepository();
+    const service = new InventoryService(repository);
+
+    await expect(service.update("inv-1", { notes: "x".repeat(256) })).rejects.toThrow(
+      "Notes must be 255 characters or fewer."
+    );
+
+    expect(repository.update).not.toHaveBeenCalled();
+  });
+
   it("decrements an inventory item by one by default", async () => {
     const repository = createRepository(sampleItem);
     const service = new InventoryService(repository);

@@ -1,4 +1,5 @@
 import type { AddInventoryInput, InventoryRepository, UpdateInventoryInput } from "./inventoryRepository";
+import { MAX_INVENTORY_NOTES_LENGTH } from "./inventoryNotes";
 
 export class InventoryService {
   constructor(private readonly repository: InventoryRepository) {}
@@ -11,7 +12,7 @@ export class InventoryService {
     assertPositiveQuantity(input.quantity);
     await this.repository.addOrUpdate({
       ...input,
-      notes: input.notes?.trim() || null
+      notes: normalizeNotes(input.notes)
     });
   }
 
@@ -22,7 +23,7 @@ export class InventoryService {
 
     await this.repository.update(id, {
       ...input,
-      notes: input.notes?.trim() || null
+      notes: normalizeNotes(input.notes)
     });
   }
 
@@ -56,4 +57,26 @@ function assertPositiveQuantity(quantity: number): void {
   if (!Number.isInteger(quantity) || quantity < 1) {
     throw new Error("Quantity must be at least 1.");
   }
+}
+
+function normalizeNotes(notes: string | null | undefined): string | null | undefined {
+  if (notes === undefined) {
+    return undefined;
+  }
+
+  if (notes === null) {
+    return null;
+  }
+
+  const trimmed = notes.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  if (trimmed.length > MAX_INVENTORY_NOTES_LENGTH) {
+    throw new Error(`Notes must be ${MAX_INVENTORY_NOTES_LENGTH} characters or fewer.`);
+  }
+
+  return trimmed;
 }

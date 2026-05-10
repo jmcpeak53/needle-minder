@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { MAX_INVENTORY_NOTES_LENGTH } from "../inventory/inventoryNotes";
 import { colors, font, radius, spacing } from "./theme";
 import type { ThreadCondition } from "../types";
 
@@ -78,6 +79,7 @@ export function InventoryForm({
         placeholderTextColor={colors.ink4}
         style={styles.notesInput}
         multiline
+        maxLength={MAX_INVENTORY_NOTES_LENGTH}
       />
     </View>
   );

@@ -150,7 +150,7 @@ export default function StashScreen() {
 
     if (sheetQty === oldQty) return;
 
-    await updateInventory({ ...pressedItem, quantity: sheetQty });
+    await updateInventory(pressedItem.id, { quantity: sheetQty });
 
     const diff = oldQty - sheetQty;
     if (diff > 0) {
@@ -165,7 +165,7 @@ export default function StashScreen() {
   const undoSnackbar = useCallback(async () => {
     if (!snackbar) return;
     if (snackTimer.current) clearTimeout(snackTimer.current);
-    await updateInventory({ ...snackbar.item, quantity: snackbar.oldQty });
+    await updateInventory(snackbar.item.id, { quantity: snackbar.oldQty });
     dismissSnackbar();
   }, [snackbar, updateInventory, dismissSnackbar]);
 

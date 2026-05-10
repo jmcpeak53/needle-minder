@@ -3,7 +3,7 @@ import type { PropsWithChildren } from "react";
 
 import { normalizeCatalogFilter } from "../catalog/catalogFilter";
 import type { CatalogFilter } from "../catalog/catalogFilter";
-import type { AddInventoryInput } from "../inventory/inventoryRepository";
+import type { AddInventoryInput, UpdateInventoryInput } from "../inventory/inventoryRepository";
 import {
   buildProjectDetail,
   buildProjectReverseLookup,
@@ -144,14 +144,9 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
         await services.inventoryService.addOrUpdate(input);
         await refresh();
       },
-      async updateInventory(item: InventoryItem) {
+      async updateInventory(id: string, input: UpdateInventoryInput) {
         if (!services) return;
-        await services.inventoryService.update(item.id, {
-          quantity: item.quantity,
-          condition: item.condition,
-          favorite: item.favorite,
-          notes: item.notes
-        });
+        await services.inventoryService.update(id, input);
         await refresh();
       },
       async toggleFavorite(id: string) {

@@ -1,13 +1,13 @@
 import { createContext, useContext } from "react";
 
-import type { AddInventoryInput } from "../inventory/inventoryRepository";
+import type { AddInventoryInput, UpdateInventoryInput } from "../inventory/inventoryRepository";
 import type { InventoryItem } from "../types";
 
 export type InventoryContextValue = {
   ready: boolean;
   inventory: InventoryItem[];
   addInventory(input: AddInventoryInput): Promise<void>;
-  updateInventory(item: InventoryItem): Promise<void>;
+  updateInventory(id: string, input: UpdateInventoryInput): Promise<void>;
   toggleFavorite(id: string): Promise<void>;
   decrementInventory(id: string): Promise<void>;
   removeInventory(id: string): Promise<void>;

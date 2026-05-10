@@ -1,13 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { InventoryNotesEditor } from "../../src/inventory/components/InventoryNotesEditor";
+import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPill";
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { useProjects } from "../../src/state/ProjectsContext";
-import { ProjectStatusPill } from "../../src/projects/components/ProjectStatusPill";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { ThreadConditionPill } from "../../src/ui/ThreadConditionPill";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
@@ -20,14 +21,49 @@ export default function DetailScreen() {
   const { getReservationsByReferenceColor } = useProjects();
   const { getThreadTypeDisplayName } = useCatalog();
 
-  const item = useMemo(() => inventory.find((i) => i.id === id) ?? null, [inventory, id]);
+  const item = useMemo(() => inventory.find((inventoryItem) => inventoryItem.id === id) ?? null, [inventory, id]);
+  const [noteDraft, setNoteDraft] = useState("");
+  const lastSavedNoteRef = useRef("");
+  const latestCommitRef = useRef<() => Promise<void>>(async () => undefined);
   const projectReservations = useMemo(
     () => (item ? getReservationsByReferenceColor(item.referenceColor.id) : []),
     [getReservationsByReferenceColor, item]
   );
 
+  useEffect(() => {
+    const nextNote = item?.notes ?? "";
+    setNoteDraft(nextNote);
+    lastSavedNoteRef.current = nextNote;
+  }, [item?.id, item?.notes]);
+
+  const commitNoteIfChanged = useCallback(async () => {
+    if (!item) return;
+    if (noteDraft === lastSavedNoteRef.current) return;
+
+    const previousNote = lastSavedNoteRef.current;
+    const nextNote = noteDraft;
+    lastSavedNoteRef.current = nextNote;
+
+    try {
+      await updateInventory(item.id, { notes: nextNote });
+    } catch (error) {
+      lastSavedNoteRef.current = previousNote;
+      Alert.alert("Could not save note", error instanceof Error ? error.message : "Please try again.");
+    }
+  }, [item, noteDraft, updateInventory]);
+
+  latestCommitRef.current = commitNoteIfChanged;
+
+  useEffect(() => {
+    return () => {
+      void latestCommitRef.current();
+    };
+  }, []);
+
   const handleDecrement = useCallback(async () => {
     if (!item) return;
+    await commitNoteIfChanged();
+
     if (item.quantity <= 1) {
       Alert.alert("Remove skein?", `This is your last ${item.referenceColor.colorName}.`, [
         { text: "Cancel", style: "cancel" },
@@ -42,13 +78,31 @@ export default function DetailScreen() {
       ]);
       return;
     }
+
     await decrementInventory(item.id);
-  }, [item, decrementInventory, removeInventory, router]);
+  }, [item, commitNoteIfChanged, decrementInventory, removeInventory, router]);
 
   const handleIncrement = useCallback(async () => {
     if (!item) return;
-    await updateInventory({ ...item, quantity: item.quantity + 1 });
-  }, [item, updateInventory]);
+    await commitNoteIfChanged();
+    await updateInventory(item.id, { quantity: item.quantity + 1 });
+  }, [item, commitNoteIfChanged, updateInventory]);
+
+  const handleToggleFavorite = useCallback(async () => {
+    if (!item) return;
+    await commitNoteIfChanged();
+    await toggleFavorite(item.id);
+  }, [item, commitNoteIfChanged, toggleFavorite]);
+
+  const handleBack = useCallback(async () => {
+    await commitNoteIfChanged();
+    router.back();
+  }, [commitNoteIfChanged, router]);
+
+  const handleOpenProject = useCallback(async (projectId: string) => {
+    await commitNoteIfChanged();
+    router.push(`/project/${projectId}`);
+  }, [commitNoteIfChanged, router]);
 
   if (!item) {
     return (
@@ -65,9 +119,8 @@ export default function DetailScreen() {
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      {/* App bar */}
       <View style={styles.appbar}>
-        <Pressable onPress={() => router.back()} style={styles.iconBtn}>
+        <Pressable onPress={() => void handleBack()} style={styles.iconBtn}>
           <Ionicons name="chevron-back" size={18} color={colors.ink2} />
         </Pressable>
         <View style={styles.appbarCenter}>
@@ -79,7 +132,14 @@ export default function DetailScreen() {
           onPress={() =>
             Alert.alert("Remove from stash?", `${item.referenceColor.colorName} will be deleted.`, [
               { text: "Cancel", style: "cancel" },
-              { text: "Remove", style: "destructive", onPress: async () => { await removeInventory(item.id); router.back(); } }
+              {
+                text: "Remove",
+                style: "destructive",
+                onPress: async () => {
+                  await removeInventory(item.id);
+                  router.back();
+                }
+              }
             ])
           }
         >
@@ -89,9 +149,10 @@ export default function DetailScreen() {
 
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero */}
         <View style={styles.hero}>
           <SkeinBall color={item.referenceColor.hexRgb} size={80} condition={item.condition} showConditionBadge />
           <View style={styles.heroInfo}>
@@ -104,7 +165,7 @@ export default function DetailScreen() {
                 <Text style={styles.heroCodeText}>{item.referenceColor.colorCode}</Text>
               </View>
               <ThreadConditionPill condition={item.condition} />
-              <Pressable onPress={() => toggleFavorite(item.id)} hitSlop={8}>
+              <Pressable onPress={() => void handleToggleFavorite()} hitSlop={8}>
                 <Ionicons
                   name={item.favorite ? "star" : "star-outline"}
                   size={16}
@@ -115,23 +176,27 @@ export default function DetailScreen() {
           </View>
         </View>
 
-        {/* Count card */}
         <View style={styles.countCard}>
           <Text style={styles.countValue}>
             <Text style={styles.countX}>×</Text>
             {item.quantity}
           </Text>
           <View style={styles.countCtrls}>
-            <Pressable style={[styles.countBtn, styles.countBtnPrimary]} onPress={handleDecrement}>
+            <Pressable style={[styles.countBtn, styles.countBtnPrimary]} onPress={() => void handleDecrement()}>
               <Ionicons name="remove" size={20} color={colors.card} />
             </Pressable>
-            <Pressable style={styles.countBtn} onPress={handleIncrement}>
+            <Pressable style={styles.countBtn} onPress={() => void handleIncrement()}>
               <Ionicons name="add" size={20} color={colors.ink} />
             </Pressable>
           </View>
         </View>
 
-        {/* History section */}
+        <InventoryNotesEditor
+          value={noteDraft}
+          onChangeText={setNoteDraft}
+          onBlur={() => void commitNoteIfChanged()}
+        />
+
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>History</Text>
           <Text style={styles.sectionAction}>All activity</Text>
@@ -148,18 +213,6 @@ export default function DetailScreen() {
           <Text style={styles.histDate}>{formatDate(item.updatedAt)}</Text>
         </View>
 
-        {item.notes ? (
-          <View style={[styles.histRow, { borderBottomWidth: 0 }]}>
-            <View style={styles.histPip}>
-              <Ionicons name="document-text-outline" size={12} color={colors.ink3} />
-            </View>
-            <View style={styles.histMeta}>
-              <Text style={styles.histTitle}>Note</Text>
-              <Text style={styles.histSub}>{item.notes}</Text>
-            </View>
-          </View>
-        ) : null}
-
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Projects</Text>
           <Text style={styles.sectionAction}>
@@ -175,7 +228,7 @@ export default function DetailScreen() {
           projectReservations.map((reservation) => (
             <Pressable
               key={reservation.project.id}
-              onPress={() => router.push(`/project/${reservation.project.id}`)}
+              onPress={() => void handleOpenProject(reservation.project.id)}
               style={styles.projectRow}
             >
               <View style={styles.projectMeta}>
