@@ -36,7 +36,12 @@
       "Bash(git commit *)",
       "Bash(npm ls *)",
       "Bash(node -e \"const er = require\\('expo-router'\\); console.log\\(Object.keys\\(er\\).includes\\('useFocusEffect'\\)\\)\")",
-      "Bash(node -e \"require\\('./src/db/database'\\)\")"
+      "Bash(node -e \"require\\('./src/db/database'\\)\")",
+      "Bash(gh pr *)",
+      "Bash(npm.cmd test *)",
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git pull *)"
     ]
   }
 }
