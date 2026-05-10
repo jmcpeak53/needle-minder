@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Animated, BackHandler, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { Animated, BackHandler, FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildCatalogBrowseResults, buildReferenceColorSubtitle } from "../../src/catalog/catalogBrowse";
@@ -11,6 +11,7 @@ import { useInventory } from "../../src/state/InventoryContext";
 import { InventoryForm } from "../../src/ui/InventoryForm";
 import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
+import { SearchFieldRow } from "../../src/ui/SearchFieldRow";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 import type { CatalogFamilySummary } from "../../src/catalog/catalogBrowse";
@@ -184,8 +185,8 @@ export default function AddScreen() {
     </Pressable>
   ), [selectedColor, mode, catalogFilter, catalog, threadTypes]);
 
-  const listHeader = useMemo(() => {
-    if (!selectedColor) return undefined;
+  const selectedCard = useMemo(() => {
+    if (!selectedColor) return null;
     return (
       <View style={styles.selectedCard}>
         <View style={styles.selectedHeader}>
@@ -224,45 +225,17 @@ export default function AddScreen() {
     );
   }, [selectedColor, quantity, condition, favorite, notes, catalogFilter, catalog, threadTypes, handleSave]);
 
-  const listContentStyle = useMemo(
-    () => [styles.scroll, { paddingBottom: insets.bottom + 24 }],
-    [insets.bottom]
-  );
-  const listKeyboardDismissMode = selectedColor ? "none" : "on-drag";
-
-  if (!ready) return <View style={[styles.screen, { paddingTop: insets.top }]} />;
-
-  return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      {/* App bar */}
-      <View style={styles.appbar}>
-        <Pressable onPress={handleBack} style={styles.iconBtn}>
-          <Ionicons name="chevron-back" size={18} color={colors.ink2} />
-        </Pressable>
-        <Text style={styles.appbarTitle} numberOfLines={1}>
-          {mode === "family" ? selectedFamily : "Add manually"}
-        </Text>
-      </View>
-
-      {/* Search */}
-      <View style={styles.searchWrap}>
-        <View style={styles.searchRow}>
-          <Ionicons name="search-outline" size={16} color={colors.ink4} />
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search by number, name, or family…"
-            placeholderTextColor={colors.ink3}
-            style={styles.searchInput}
-            autoFocus
-          />
-          {query.length > 0 && (
-            <Pressable onPress={() => setQuery("")}>
-              <Ionicons name="close-circle" size={16} color={colors.ink4} />
-            </Pressable>
-          )}
-        </View>
-      </View>
+  const listHeader = useMemo(() => (
+    <>
+      <SearchFieldRow
+        value={query}
+        onChangeText={setQuery}
+        placeholder="Search by number, name, or family…"
+        autoFocus
+        containerStyle={styles.searchRow}
+        inputTestID="add-search-input"
+        clearButtonTestID="add-search-clear-button"
+      />
 
       <PillRow contentContainerStyle={styles.filterRow}>
         {filterOptions.map((option) => (
@@ -278,6 +251,29 @@ export default function AddScreen() {
           />
         ))}
       </PillRow>
+
+      {selectedCard}
+    </>
+  ), [query, filterOptions, catalogFilter, selectedCard]);
+
+  const listContentStyle = useMemo(
+    () => [styles.scroll, { paddingBottom: insets.bottom + 24 }],
+    [insets.bottom]
+  );
+  const listKeyboardDismissMode = selectedColor ? "none" : "on-drag";
+
+  if (!ready) return <View style={[styles.screen, { paddingTop: insets.top }]} />;
+
+  return (
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      <View style={styles.appbar}>
+        <Pressable onPress={handleBack} style={styles.iconBtn}>
+          <Ionicons name="chevron-back" size={18} color={colors.ink2} />
+        </Pressable>
+        <Text style={styles.appbarTitle} numberOfLines={1}>
+          {mode === "family" ? selectedFamily : "Add manually"}
+        </Text>
+      </View>
 
       <KeyboardAwareBody scroll={false} testID="add-keyboard-body">
         {mode === "browse" ? (
@@ -344,30 +340,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  searchWrap: { paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
   searchRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.card2,
-    borderWidth: 1,
-    borderColor: colors.ruleSoft,
-    borderRadius: radius.md,
-    paddingHorizontal: 12,
-    paddingVertical: 9
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: font.sans,
-    fontSize: 13,
-    color: colors.ink
+    marginBottom: spacing.sm
   },
   filterRow: {
-    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm
   },
   scroll: { paddingHorizontal: spacing.lg },
-  // Family browse
   familyRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -387,7 +366,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.ink3
   },
-  // Selected card
   selectedCard: {
     backgroundColor: colors.card,
     borderWidth: 1,
@@ -410,7 +388,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12
   },
   saveBtnText: { fontFamily: font.sansSemiBold, fontSize: 14, color: colors.card },
-  // Color results (family drill-down + search)
   resultRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -423,7 +400,6 @@ const styles = StyleSheet.create({
   resultName: { fontFamily: font.mono, fontSize: 13, color: colors.ink3 },
   resultColorName: { fontFamily: font.sansMedium, fontSize: 14, color: colors.ink },
   resultFamily: { fontFamily: font.sans, fontSize: 12, color: colors.ink3, marginTop: 1 },
-  // Save confirmation toast
   savedToast: {
     position: "absolute",
     left: 14,
