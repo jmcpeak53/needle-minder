@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { BackHandler, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Animated, BackHandler, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { buildCatalogBrowseResults, buildReferenceColorSubtitle } from "../../src/catalog/catalogBrowse";
@@ -39,10 +39,11 @@ function keyExtractorResult(item: ReferenceColor) {
 }
 
 export default function AddScreen() {
-  const { ready, catalog, threadTypes, defaultCatalogFilter } = useCatalog();
+  const { ready, catalog, threadTypes, defaultCatalogFilter, getThreadTypeById } = useCatalog();
   const { addInventory } = useInventory();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+
   const [query, setQuery] = useState("");
   const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>("all");
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
@@ -51,6 +52,9 @@ export default function AddScreen() {
   const [condition, setCondition] = useState<ThreadCondition>("full");
   const [favorite, setFavorite] = useState(false);
   const [notes, setNotes] = useState("");
+  const [savedToast, setSavedToast] = useState<string | null>(null);
+  const toastAnim = useRef(new Animated.Value(0)).current;
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSearching = query.trim().length > 0;
   const mode = isSearching ? "search" : selectedFamily ? "family" : "browse";
@@ -82,6 +86,38 @@ export default function AddScreen() {
     setCatalogFilter(defaultCatalogFilter);
   }, [defaultCatalogFilter]);
 
+  const dismissToast = useCallback(() => {
+    Animated.timing(toastAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() =>
+      setSavedToast(null)
+    );
+  }, [toastAnim]);
+
+  const showToast = useCallback((message: string) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setSavedToast(message);
+    Animated.spring(toastAnim, { toValue: 1, useNativeDriver: true, tension: 80, friction: 10 }).start();
+    toastTimer.current = setTimeout(dismissToast, 2500);
+  }, [toastAnim, dismissToast]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
+
+  const resetSearchState = useCallback(() => {
+    setQuery("");
+    setSelectedFamily(null);
+    setSelectedColor(null);
+    setCatalogFilter(defaultCatalogFilter);
+  }, [defaultCatalogFilter]);
+
+  useFocusEffect(useCallback(() => {
+    return () => {
+      resetSearchState();
+    };
+  }, [resetSearchState]));
+
   function handleBack() {
     if (mode === "family") {
       setSelectedFamily(null);
@@ -92,14 +128,21 @@ export default function AddScreen() {
 
   const handleSave = useCallback(async () => {
     if (!selectedColor) return;
+    const manufacturer = getThreadTypeById(selectedColor.threadTypeId)?.manufacturer ?? "";
+    const label = manufacturer
+      ? `Added ${manufacturer} ${selectedColor.colorCode} · ${selectedColor.colorName}`
+      : `Added ${selectedColor.colorCode} · ${selectedColor.colorName}`;
     await addInventory({ referenceColorId: selectedColor.id, quantity, condition, favorite, notes });
     setSelectedColor(null);
     setQuantity(1);
     setCondition("full");
     setFavorite(false);
     setNotes("");
-    router.back();
-  }, [selectedColor, quantity, condition, favorite, notes, addInventory, router]);
+    setQuery("");
+    setSelectedFamily(null);
+    setCatalogFilter(defaultCatalogFilter);
+    showToast(label);
+  }, [selectedColor, quantity, condition, favorite, notes, addInventory, defaultCatalogFilter, getThreadTypeById, showToast]);
 
   const renderFamilyRow = useCallback(({ item: family }: { item: CatalogFamilySummary }) => (
     <Pressable
@@ -255,6 +298,19 @@ export default function AddScreen() {
           ListHeaderComponent={listHeader}
         />
       )}
+
+      {savedToast !== null && (
+        <Animated.View
+          style={[
+            styles.savedToast,
+            { bottom: insets.bottom + 90 },
+            { opacity: toastAnim, transform: [{ translateY: toastAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }] }
+          ]}
+        >
+          <Ionicons name="checkmark" size={16} color={colors.card} />
+          <Text style={styles.savedToastMsg} numberOfLines={1}>{savedToast}</Text>
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -360,5 +416,29 @@ const styles = StyleSheet.create({
   resultRowSelected: { opacity: 0.5 },
   resultName: { fontFamily: font.mono, fontSize: 13, color: colors.ink3 },
   resultColorName: { fontFamily: font.sansMedium, fontSize: 14, color: colors.ink },
-  resultFamily: { fontFamily: font.sans, fontSize: 12, color: colors.ink3, marginTop: 1 }
+  resultFamily: { fontFamily: font.sans, fontSize: 12, color: colors.ink3, marginTop: 1 },
+  // Save confirmation toast
+  savedToast: {
+    position: "absolute",
+    left: 14,
+    right: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    backgroundColor: colors.ink,
+    borderRadius: radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    elevation: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4
+  },
+  savedToastMsg: {
+    flex: 1,
+    fontFamily: font.sans,
+    fontSize: 13,
+    color: colors.card
+  }
 });

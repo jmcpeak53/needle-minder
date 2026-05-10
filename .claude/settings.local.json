@@ -33,7 +33,9 @@
       "Bash(npx eslint *)",
       "Bash(npm test *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"const er = require\\('expo-router'\\); console.log\\(Object.keys\\(er\\).includes\\('useFocusEffect'\\)\\)\")"
     ]
   }
 }
