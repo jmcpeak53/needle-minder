@@ -228,6 +228,7 @@ export default function AddScreen() {
     () => [styles.scroll, { paddingBottom: insets.bottom + 24 }],
     [insets.bottom]
   );
+  const listKeyboardDismissMode = selectedColor ? "none" : "on-drag";
 
   if (!ready) return <View style={[styles.screen, { paddingTop: insets.top }]} />;
 
@@ -284,7 +285,7 @@ export default function AddScreen() {
             data={families}
             keyExtractor={keyExtractorFamily}
             renderItem={renderFamilyRow}
-            keyboardDismissMode="on-drag"
+            keyboardDismissMode={listKeyboardDismissMode}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={listContentStyle}
@@ -295,7 +296,7 @@ export default function AddScreen() {
             data={results}
             keyExtractor={keyExtractorResult}
             renderItem={renderResultRow}
-            keyboardDismissMode="on-drag"
+            keyboardDismissMode={listKeyboardDismissMode}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={listContentStyle}

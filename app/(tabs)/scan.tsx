@@ -147,6 +147,7 @@ export default function ScanScreen() {
           scrollTestID="scan-confirm-keyboard-scroll"
           contentBottomPadding={120}
           contentContainerStyle={styles.confirmScroll}
+          keyboardDismissMode="none"
         >
           {/* Preview */}
           <View style={styles.confirmPreview}>

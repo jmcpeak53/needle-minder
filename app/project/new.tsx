@@ -9,7 +9,11 @@ export default function NewProjectScreen() {
   const { createProject } = useProjects();
 
   return (
-    <KeyboardAwareFormScreen title="New project" onBackPress={() => router.back()}>
+    <KeyboardAwareFormScreen
+      title="New project"
+      onBackPress={() => router.back()}
+      keyboardDismissMode="none"
+    >
       <ProjectForm
         submitLabel="Save project"
         onSubmit={async (input) => {

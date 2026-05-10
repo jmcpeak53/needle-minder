@@ -5,7 +5,7 @@ import {
   Text,
   View
 } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
+import type { ScrollViewProps, StyleProp, ViewStyle } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { KeyboardAwareBody } from "./KeyboardAwareBody";
@@ -16,6 +16,7 @@ type Props = PropsWithChildren<{
   onBackPress: () => void;
   headerRight?: ReactNode;
   contentContainerStyle?: StyleProp<ViewStyle>;
+  keyboardDismissMode?: ScrollViewProps["keyboardDismissMode"];
 }>;
 
 export function KeyboardAwareFormScreen({
@@ -23,6 +24,7 @@ export function KeyboardAwareFormScreen({
   onBackPress,
   headerRight,
   contentContainerStyle,
+  keyboardDismissMode,
   children
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -46,6 +48,7 @@ export function KeyboardAwareFormScreen({
           testID="keyboard-aware-form-screen"
           scrollTestID="keyboard-aware-form-scroll"
           contentContainerStyle={[styles.content, contentContainerStyle]}
+          keyboardDismissMode={keyboardDismissMode}
         >
           {children}
         </KeyboardAwareBody>

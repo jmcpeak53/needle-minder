@@ -153,6 +153,7 @@ export default function DetailScreen() {
         scrollTestID="detail-keyboard-scroll"
         contentBottomPadding={24}
         contentContainerStyle={styles.scroll}
+        keyboardDismissMode="none"
       >
         <View style={styles.hero}>
           <SkeinBall color={item.referenceColor.hexRgb} size={80} condition={item.condition} showConditionBadge />

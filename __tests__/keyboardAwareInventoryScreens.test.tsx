@@ -1,4 +1,5 @@
 import React from "react";
+import { FlatList, ScrollView } from "react-native";
 import { fireEvent, render } from "@testing-library/react-native";
 
 import AddScreen from "../app/(tabs)/add";
@@ -115,21 +116,25 @@ describe("keyboard-aware inventory entry screens", () => {
   });
 
   it("keeps the add flow list inside the keyboard-aware body when a color is selected", () => {
-    const { getByTestId, getByText, getByPlaceholderText } = render(<AddScreen />);
+    const { getByTestId, getByText, getByPlaceholderText, UNSAFE_getByType } = render(<AddScreen />);
+
+    expect(UNSAFE_getByType(FlatList).props.keyboardDismissMode).toBe("on-drag");
 
     fireEvent.press(getByText("Black and Gray"));
     fireEvent.press(getByText("Black"));
 
     expect(getByTestId("add-keyboard-body")).toBeTruthy();
     expect(getByPlaceholderText("Notes (optional)")).toBeTruthy();
+    expect(UNSAFE_getByType(FlatList).props.keyboardDismissMode).toBe("none");
   });
 
   it("wraps the scan confirm form in the shared keyboard-aware body", () => {
-    const { getByTestId, getByPlaceholderText, getByText } = render(<ScanScreen />);
+    const { getByTestId, getByPlaceholderText, getByText, UNSAFE_getByType } = render(<ScanScreen />);
 
     expect(getByTestId("scan-confirm-keyboard-body")).toBeTruthy();
     expect(getByTestId("scan-confirm-keyboard-scroll")).toBeTruthy();
     expect(getByPlaceholderText("Notes (optional)")).toBeTruthy();
     expect(getByText("Add to stash")).toBeTruthy();
+    expect(UNSAFE_getByType(ScrollView).props.keyboardDismissMode).toBe("none");
   });
 });

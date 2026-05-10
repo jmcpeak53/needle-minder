@@ -42,7 +42,7 @@ export default function HomeScreen() {
         {/* App bar */}
         <View style={styles.appbar}>
           <View style={styles.appbarGrow}>
-            <Text style={styles.appbarTitle}>Good morning</Text>
+            <Text style={styles.appbarTitle}>Welcome back. Ready to stitch?</Text>
             <Text style={styles.appbarSub}>
               {stats.total} skeins · {stats.catalogs} {stats.catalogs === 1 ? "catalog" : "catalogs"} · {stats.unique} unique
             </Text>

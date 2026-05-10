@@ -24,7 +24,11 @@ export default function EditProjectScreen() {
   }
 
   return (
-    <KeyboardAwareFormScreen title="Edit project" onBackPress={() => router.back()}>
+    <KeyboardAwareFormScreen
+      title="Edit project"
+      onBackPress={() => router.back()}
+      keyboardDismissMode="none"
+    >
       <ProjectForm
         initialProject={project}
         submitLabel="Save changes"

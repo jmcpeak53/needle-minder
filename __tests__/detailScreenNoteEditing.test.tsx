@@ -1,4 +1,5 @@
 import React from "react";
+import { ScrollView } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 import DetailScreen from "../app/detail/[id]";
 
@@ -75,12 +76,13 @@ describe("DetailScreen notes editing", () => {
   });
 
   it("saves note changes when the notes field loses focus", async () => {
-    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
+    const { getByPlaceholderText, getByTestId, UNSAFE_getByType } = render(<DetailScreen />);
 
     const input = getByPlaceholderText("Notes about this skein...");
 
     expect(getByTestId("detail-keyboard-body")).toBeTruthy();
     expect(getByTestId("detail-keyboard-scroll")).toBeTruthy();
+    expect(UNSAFE_getByType(ScrollView).props.keyboardDismissMode).toBe("none");
 
     fireEvent.changeText(input, "  Updated note  ");
     fireEvent(input, "blur");

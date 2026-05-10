@@ -14,6 +14,7 @@ type Props = PropsWithChildren<{
   contentBottomPadding?: number;
   contentContainerStyle?: StyleProp<ViewStyle>;
   keyboardAreaStyle?: StyleProp<ViewStyle>;
+  keyboardDismissMode?: ScrollViewProps["keyboardDismissMode"];
   scroll?: boolean;
   testID?: string;
   scrollTestID?: string;
@@ -25,6 +26,7 @@ export function KeyboardAwareBody({
   contentBottomPadding = spacing.xl,
   contentContainerStyle,
   keyboardAreaStyle,
+  keyboardDismissMode = "on-drag",
   scroll = true,
   testID,
   scrollTestID,
@@ -42,7 +44,7 @@ export function KeyboardAwareBody({
         <ScrollView
           testID={scrollTestID}
           contentContainerStyle={[{ paddingBottom: insets.bottom + contentBottomPadding }, contentContainerStyle]}
-          keyboardDismissMode="on-drag"
+          keyboardDismissMode={keyboardDismissMode}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           {...scrollViewProps}

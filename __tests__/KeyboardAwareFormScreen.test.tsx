@@ -37,4 +37,18 @@ describe("KeyboardAwareFormScreen", () => {
       expect.arrayContaining([expect.objectContaining({ paddingBottom: 12 + spacing.xl })])
     );
   });
+
+  it("passes through keyboard dismissal overrides", () => {
+    const { UNSAFE_getByType } = render(
+      <KeyboardAwareFormScreen
+        title="Edit project"
+        onBackPress={() => undefined}
+        keyboardDismissMode="none"
+      >
+        <Text>Body content</Text>
+      </KeyboardAwareFormScreen>
+    );
+
+    expect(UNSAFE_getByType(ScrollView).props.keyboardDismissMode).toBe("none");
+  });
 });

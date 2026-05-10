@@ -30,4 +30,14 @@ describe("KeyboardAwareBody", () => {
       expect.arrayContaining([expect.objectContaining({ paddingBottom: 52 })])
     );
   });
+
+  it("allows screens to override keyboard dismissal behavior", () => {
+    const { UNSAFE_getByType } = render(
+      <KeyboardAwareBody keyboardDismissMode="none">
+        <Text>Body content</Text>
+      </KeyboardAwareBody>
+    );
+
+    expect(UNSAFE_getByType(ScrollView).props.keyboardDismissMode).toBe("none");
+  });
 });

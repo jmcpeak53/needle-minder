@@ -1,4 +1,5 @@
 import React from "react";
+import { ScrollView } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
 
 import EditProjectScreen from "../app/project/[id]/edit";
@@ -60,7 +61,10 @@ describe("project screens", () => {
   it("submits the new project flow and routes to the created project", async () => {
     mockCreateProject.mockResolvedValue("proj-99");
 
-    const { getByPlaceholderText, getByText } = render(<NewProjectScreen />);
+    const { getByPlaceholderText, getByText, getByTestId, UNSAFE_getByType } = render(<NewProjectScreen />);
+
+    expect(getByTestId("keyboard-aware-form-scroll")).toBeTruthy();
+    expect(UNSAFE_getByType(ScrollView).props.keyboardDismissMode).toBe("none");
 
     fireEvent.changeText(getByPlaceholderText("Sampler title"), "Moon Sampler");
     fireEvent.changeText(getByPlaceholderText("Designer name"), "A. Stitcher");
