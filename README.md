@@ -13,7 +13,7 @@ This repo now contains the first implementation scaffold:
 
 ## Prerequisites
 
-- Node.js 20.19.4 or newer. Expo SDK 55 and React Native 0.83 require Node 20; Node 18 will install with engine warnings and may not run the toolchain correctly.
+- Node.js 20.19.4 or newer. Recommended baseline: Node 20 LTS on Windows. React Native 0.83 declares `>= 20.19.4`, but if you hit local toolchain issues on a newer Node major, switch back to Node 20 before debugging anything else.
 - npm.
 - Expo/EAS account for device builds.
 - Android Studio and Xcode only when building locally. EAS cloud builds can handle native builds without local Android/iOS project folders.
@@ -25,6 +25,8 @@ npm install
 ```
 
 On Windows PowerShell, if `npm` is blocked by the local script execution policy, use `npm.cmd` for the same commands.
+
+If you use repo-local helper tools such as Opencode, keep their generated dependency trees out of Metro's crawl. This repo intentionally excludes `.opencode/` from Metro because Windows Node can fail on WSL-style link entries inside `.opencode/node_modules/.bin`.
 
 ## Run In Development
 
@@ -63,6 +65,8 @@ npm run dev
 Open the installed development client on your device. It will discover Metro automatically if the device and development machine are on the same WiFi network. **Fast refresh is active** — code changes appear on the device within one to two seconds of saving a file.
 
 > **Troubleshooting:** If the device cannot find Metro, ensure both are on the same WiFi network. If behind a VPN or guest network, try connecting the device via USB once to let Metro detect it, then disconnect.
+
+> **Windows filesystem troubleshooting:** If `npm.cmd run dev` fails with `EACCES ... lstat ... .opencode/node_modules/.bin/...`, Metro is walking Opencode's local tool dependencies instead of app source. This repo's `metro.config.js` blocks `.opencode/`; if the error persists, remove `.opencode/node_modules` and reinstall those tool dependencies from the same OS you plan to use them from.
 
 ### Simulator / Local Native Build (optional)
 
