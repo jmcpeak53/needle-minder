@@ -1,4 +1,24 @@
-steps:
+name: Jules PR Review
+on:
+  pull_request:
+    # Trigger whenever a PR is opened, updated, or marked as ready
+    types: [opened, synchronize, reopened, ready_for_review]
+
+# Prevents multiple reviews from running at once if you push code rapidly
+concurrency:
+  group: jules-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    # These permissions are required so Jules can post comments on your PR
+    permissions:
+      pull-requests: write
+      contents: read
+      statuses: write
+
+    steps:
       - uses: sanjay3290/jules-pr-reviewer@v1
         with:
           jules_api_key: ${{ secrets.JULES_API_KEY }}
@@ -10,7 +30,7 @@ steps:
           # Only runs when you are actually ready for the review
           skip_drafts: true 
 
-          # Helpful for your Android-specific requirements
+          # Your specific Android instructions
           extra_instructions: |
             Focus heavily on Android performance. 
             Flag any blocking calls on the main thread.
