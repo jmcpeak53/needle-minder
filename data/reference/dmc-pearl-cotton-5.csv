@@ -294,3 +294,45 @@ colorCode,colorName,colorFamily,hexRgb,isVariegated,threadSubtype,upc
 B5200,Snow White,Black and White,#FFFFFF,false,solid,077540281435
 BLANC,White,Black and White,#FCFCFF,false,solid,077540036721
 ECRU,Ecru/off-white,Gray,#FFF7E7,false,solid,077540036738
+01,White Tin,Black and White,#EFEEF0,false,solid,077540975167
+03,Tin - Medium,Black and White,#B0B0B5,false,solid,077540975181
+4010,Variations - Winter Sky,Variations,#87CEEB,true,variegated,077540147021
+4020,Variations - Tropical Waters,Variations,#20B2AA,true,variegated,077540147038
+4025,Variations - Caribbean Bay,Variations,#0099BB,true,variegated,077540148172
+4040,Variations - Water Lillies,Variations,#9ECFC4,true,variegated,077540147052
+4045,Variations - Evergreen Forest,Variations,#2E5C2E,true,variegated,077540148158
+4060,Variations - Weeping Willow,Variations,#8FBC8F,true,variegated,077540147076
+4065,Variations - Morning Meadow,Variations,#A5C77A,true,variegated,077540148165
+4070,Variations - Autumn Leaves,Variations,#C46A25,true,variegated,077540147083
+4075,Variations - Wheat Fields,Variations,#D4A95A,true,variegated,077540148134
+4077,Variations - Morning Sunshine,Variations,#F0C040,true,variegated,077540148141
+4080,Variations - Daffodil Fields,Variations,#FFE135,true,variegated,077540147090
+4100,Variations - Summer Breeze,Variations,#A8C8E8,true,variegated,077540147632
+4110,Variations - Sunrise,Variations,#FF8C42,true,variegated,077540147991
+4120,Variations - Tropical Sunset,Variations,#FF6840,true,variegated,077540148004
+4124,Variations - Bonfire,Variations,#CC3300,true,variegated,077540148240
+4126,Variations - Desert Canyon,Variations,#C1673E,true,variegated,077540148233
+4128,Variations - Gold Coast,Variations,#C8A040,true,variegated,077540148226
+4130,Variations - Chilean Sunset,Variations,#E05538,true,variegated,077540148011
+4140,Variations - Driftwood,Variations,#8B7353,true,variegated,077540148028
+4145,Variations - Sandune,Variations,#C2A87A,true,variegated,077540148219
+4150,Variations - Desert Sand,Variations,#D4B88A,true,variegated,077540148035
+4160,Variations - Glistening Pearl,Variations,#F0EAE0,true,variegated,077540148042
+4170,Variations - Whispering Wind,Variations,#E8E0D0,true,variegated,077540148059
+4180,Variations - Rose Petals,Variations,#E88A9B,true,variegated,077540148066
+4190,Variations - Ocean Coral,Variations,#E87060,true,variegated,077540148073
+4200,Variations - Wild Fire,Variations,#E03030,true,variegated,077540148080
+4210,Variations - Radiant Ruby,Variations,#C01030,true,variegated,077540148097
+4215,Variations - Northern Lights,Variations,#60C0A8,true,variegated,077540148196
+4220,Variations - Lavender Fields,Variations,#B498D0,true,variegated,077540148103
+4230,Variations - Crystal Water,Variations,#78BACE,true,variegated,077540148110
+4235,Variations - Arctic Sea,Variations,#60A8C0,true,variegated,077540148189
+4240,Variations - Mid Summer Night,Variations,#3050A0,true,variegated,077540148127
+504,Blue Green - Very Light,Blue Green,#86C3AB,false,solid,077540034680
+53,Variegated - Steel Grey,Variegated,#A0A0A0,true,variegated,077540033812
+602,Cranberry - Medium,Pink,#D63F68,false,solid,077540034840
+640,Beige Gray - Very Dark,Gray,#817868,false,solid,077540034956
+776,Pink - Medium,Pink,#F9979C,false,solid,077540035397
+781,Topaz - Very Dark,Yellow,#B26923,false,solid,077540035427
+806,Peacock Blue - Dark,Blue,#467293,false,solid,077540035557
+971,Pumpkin,Orange,#FD6F1A,false,solid,077540036417

@@ -32,3 +32,8 @@ sources:
     collection_url: https://pennylinn.com/collections/dmc-5
     platform: shopify
     currency: USD
+  - id: kcneedlepoint
+    base_url: https://www.kcneedlepoint.com
+    collection_url: https://www.kcneedlepoint.com/collections/dmc-5-pearl-cotton
+    platform: shopify
+    currency: USD

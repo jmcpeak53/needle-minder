@@ -31,7 +31,7 @@ class NormalizationResult:
 
 def load_reference_rows(path: Path) -> dict[str, CanonicalRow]:
     rows = _load_reference_row_list(path)
-    return {row.color_code: row for row in rows}
+    return {_lookup_code_key(row.color_code): row for row in rows}
 
 
 def load_target_reference_rows(path: Path) -> list[dict[str, str]]:
@@ -46,10 +46,11 @@ def load_target_reference_rows(path: Path) -> list[dict[str, str]]:
             code = (row.get("colorCode") or "").strip().upper()
             if not code:
                 continue
-            if code in seen_codes:
-                first_row = seen_codes[code]
+            lookup_key = _lookup_code_key(code)
+            if lookup_key in seen_codes:
+                first_row = seen_codes[lookup_key]
                 raise ValueError(f"{path} has duplicate colorCode {code} at rows {first_row} and {index}")
-            seen_codes[code] = index
+            seen_codes[lookup_key] = index
             rows.append(_normalize_reference_dict(row, code))
     return rows
 
@@ -69,9 +70,9 @@ def normalize_products(
     dedupe_report_rows: list[dict[str, str]] = []
     existing_rows = existing_reference_rows or []
     reference_by_code: dict[str, dict[str, str]] = {
-        row["colorCode"].upper(): row for row in existing_rows if row.get("colorCode")
+        _lookup_code_key(row["colorCode"]): row for row in existing_rows if row.get("colorCode")
     }
-    appended_codes: set[str] = set()
+    new_reference_rows: list[dict[str, str]] = []
     seen_scrape_codes: set[str] = set()
 
     for product in products:
@@ -86,13 +87,14 @@ def normalize_products(
             continue
 
         code = parsed.color_code.upper()
-        canonical = canonical_map.get(code)
-        duplicate_scrape = code in seen_scrape_codes
-        seen_scrape_codes.add(code)
+        lookup_key = _lookup_code_key(code)
+        canonical = canonical_map.get(lookup_key)
+        duplicate_scrape = lookup_key in seen_scrape_codes
+        seen_scrape_codes.add(lookup_key)
 
         if duplicate_scrape:
             match_status = "duplicate_skipped"
-        elif code in reference_by_code:
+        elif lookup_key in reference_by_code:
             match_status = "existing"
         elif canonical:
             match_status = "new"
@@ -120,6 +122,9 @@ def normalize_products(
         )
 
         if duplicate_scrape:
+            existing_reference_row = reference_by_code.get(lookup_key)
+            if existing_reference_row and _should_replace_upc(existing_reference_row.get("upc", ""), product.barcode):
+                existing_reference_row["upc"] = product.barcode or ""
             dedupe_report_rows.append(
                 _dedupe_report_row(
                     code=code,
@@ -131,7 +136,7 @@ def normalize_products(
             )
             continue
 
-        if code in reference_by_code:
+        if lookup_key in reference_by_code:
             dedupe_report_rows.append(
                 _dedupe_report_row(
                     code=code,
@@ -157,7 +162,7 @@ def normalize_products(
             )
             continue
 
-        reference_by_code[code] = {
+        reference_row = {
             "colorCode": code,
             "colorName": canonical.color_name,
             "colorFamily": canonical.color_family,
@@ -166,7 +171,8 @@ def normalize_products(
             "threadSubtype": canonical.thread_subtype,
             "upc": product.barcode or canonical.upc or "",
         }
-        appended_codes.add(code)
+        reference_by_code[lookup_key] = reference_row
+        new_reference_rows.append(reference_row)
         dedupe_report_rows.append(
             _dedupe_report_row(
                 code=code,
@@ -177,9 +183,7 @@ def normalize_products(
             )
         )
 
-    existing_codes = [row["colorCode"].upper() for row in existing_rows if row.get("colorCode")]
-    new_codes = sorted(appended_codes)
-    reference_rows = [reference_by_code[code] for code in existing_codes + new_codes]
+    reference_rows = existing_rows + sorted(new_reference_rows, key=lambda row: _lookup_code_key(row["colorCode"]))
     return NormalizationResult(
         listings=listings,
         unmatched_codes=sorted(unmatched_codes),
@@ -220,6 +224,28 @@ def _normalize_reference_dict(row: dict[str, str], code: str) -> dict[str, str]:
         "threadSubtype": (row.get("threadSubtype") or "solid").strip().lower(),
         "upc": (row.get("upc") or "").strip(),
     }
+
+
+def _lookup_code_key(code: str) -> str:
+    normalized = code.strip().upper()
+    if normalized.isdigit():
+        return str(int(normalized))
+    return normalized
+
+
+def _should_replace_upc(current_upc: str, candidate_upc: str | None) -> bool:
+    candidate = (candidate_upc or "").strip()
+    current = current_upc.strip()
+    if not candidate:
+        return False
+    if not current:
+        return True
+    if current.isdigit() and candidate.isdigit():
+        if len(current) != 12 and len(candidate) == 12:
+            return True
+        if len(candidate) > len(current):
+            return True
+    return False
 
 
 def _dedupe_report_row(

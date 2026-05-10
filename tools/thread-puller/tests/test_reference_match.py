@@ -99,6 +99,17 @@ def test_normalize_products_reports_unmatched_code_without_append() -> None:
     assert result.dedupe_report_rows[0]["status"] == "unmatched"
 
 
+def test_normalize_products_matches_unpadded_canonical_code_for_padded_scrape_code() -> None:
+    canonical = {"3": _canonical("3", "Tin - Medium")}
+
+    result = normalize_products([_product("03", "Medium Gray")], _catalog(), canonical, [])
+
+    assert result.listings[0].match_status == "new"
+    assert result.listings[0].canonical_color_name == "Tin - Medium"
+    assert result.reference_rows[0]["colorCode"] == "03"
+    assert result.dedupe_report_rows[0]["status"] == "new_appended"
+
+
 def test_normalize_products_skips_duplicate_scrape_rows() -> None:
     products = [
         _product("818", "Powder Pink", sku="DMC5-818", barcode="111"),
@@ -112,6 +123,19 @@ def test_normalize_products_skips_duplicate_scrape_rows() -> None:
     assert [row["colorCode"] for row in result.reference_rows] == ["818"]
     assert result.dedupe_report_rows[1]["status"] == "duplicate_skipped"
     assert result.dedupe_report_rows[1]["sku"] == "ALT-818"
+
+
+def test_normalize_products_uses_duplicate_with_better_upc_to_enrich_reference_row() -> None:
+    products = [
+        _product("806", "Fjord", sku="DMC5-806", barcode="07754003557"),
+        _product("806", "Dark Peacock Blue", sku="KC-806", barcode="077540035557"),
+    ]
+    canonical = {"806": _canonical("806", "Peacock Blue - Dark")}
+
+    result = normalize_products(products, _catalog(), canonical, [])
+
+    assert [listing.match_status for listing in result.listings] == ["new", "duplicate_skipped"]
+    assert result.reference_rows[0]["upc"] == "077540035557"
 
 
 def test_load_target_reference_rows_rejects_duplicate_codes(tmp_path: Path) -> None:
@@ -128,4 +152,21 @@ def test_load_target_reference_rows_rejects_duplicate_codes(tmp_path: Path) -> N
     )
 
     with pytest.raises(ValueError, match="duplicate colorCode 818"):
+        load_target_reference_rows(csv_path)
+
+
+def test_load_target_reference_rows_rejects_padded_numeric_duplicates(tmp_path: Path) -> None:
+    csv_path = tmp_path / "catalog.csv"
+    csv_path.write_text(
+        "\n".join(
+            [
+                "colorCode,colorName,colorFamily,hexRgb,isVariegated,threadSubtype,upc",
+                "1,White Tin,Gray,#FEDEDD,false,solid,",
+                "01,White Tin Duplicate,Gray,#FEDEDD,false,solid,",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate colorCode 01"):
         load_target_reference_rows(csv_path)

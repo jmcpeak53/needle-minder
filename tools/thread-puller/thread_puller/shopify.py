@@ -20,6 +20,7 @@ class ShopifyProductRef:
 def fetch_collection_refs(fetcher: ThrottledFetcher, source: SourceConfig) -> list[ShopifyProductRef]:
     parsed = urlparse(str(source.collection_url))
     base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}/products.json?limit=250&page="
+    source_base_url = str(source.base_url).rstrip("/")
     refs: list[ShopifyProductRef] = []
     seen_handles: set[str] = set()
     page = 1
@@ -38,7 +39,7 @@ def fetch_collection_refs(fetcher: ThrottledFetcher, source: SourceConfig) -> li
             refs.append(
                 ShopifyProductRef(
                     handle=handle,
-                    product_url=f"{source.base_url}/products/{handle}",
+                    product_url=f"{source_base_url}/products/{handle}",
                 )
             )
             seen_handles.add(handle)
@@ -57,7 +58,8 @@ def fetch_product_detail(
     source: SourceConfig,
     ref: ShopifyProductRef,
 ) -> RawProduct:
-    product_json_url = f"{source.base_url}/products/{ref.handle}.js"
+    source_base_url = str(source.base_url).rstrip("/")
+    product_json_url = f"{source_base_url}/products/{ref.handle}.js"
     product_json = fetcher.get_json(product_json_url)
 
     variant = _choose_variant(product_json)
