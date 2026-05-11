@@ -8,6 +8,7 @@ import type { ScanResolution } from "../../src/scan/scanResolution";
 import { resolveScanCandidate } from "../../src/scan/scanResolution";
 import type { ConfirmState } from "../../src/scan/useScanFlow";
 import { useScanFlow } from "../../src/scan/useScanFlow";
+import { AppBar, AppBarAction } from "../../src/ui/AppBar";
 import { InventoryForm } from "../../src/ui/InventoryForm";
 import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
 import { SkeinBall } from "../../src/ui/SkeinBall";
@@ -72,18 +73,12 @@ export default function ScanScreen() {
   if (catalogChoice) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <View style={styles.confirmBar}>
-          <Pressable onPress={reset} style={styles.iconBtn}>
-            <Ionicons name="chevron-back" size={18} color={colors.ink2} />
-          </Pressable>
-          <View style={styles.confirmBarCenter}>
-            <Text style={styles.confirmBarTitle}>Choose catalog</Text>
-            <Text style={styles.confirmBarSub}>Code {catalogChoice.candidate.colorCode} appears in more than one catalog</Text>
-          </View>
-          <Pressable onPress={reset} style={styles.iconBtn}>
-            <Ionicons name="close" size={18} color={colors.ink2} />
-          </Pressable>
-        </View>
+        <AppBar
+          title="Choose catalog"
+          subtitle={`Code ${catalogChoice.candidate.colorCode} appears in more than one catalog`}
+          onBack={reset}
+          trailing={<AppBarAction icon="close" onPress={reset} />}
+        />
 
         <ScrollView
           contentContainerStyle={[styles.confirmScroll, { paddingBottom: insets.bottom + 40 }]}
@@ -129,18 +124,12 @@ export default function ScanScreen() {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         {/* Confirm app bar */}
-        <View style={styles.confirmBar}>
-          <Pressable onPress={reset} style={styles.iconBtn}>
-            <Ionicons name="chevron-back" size={18} color={colors.ink2} />
-          </Pressable>
-          <View style={styles.confirmBarCenter}>
-            <Text style={styles.confirmBarTitle}>Confirm skein</Text>
-            <Text style={styles.confirmBarSub}>Label read · 4 of 4 fields</Text>
-          </View>
-          <Pressable onPress={reset} style={styles.iconBtn}>
-            <Ionicons name="close" size={18} color={colors.ink2} />
-          </Pressable>
-        </View>
+        <AppBar
+          title="Confirm skein"
+          subtitle="Label read · 4 of 4 fields"
+          onBack={reset}
+          trailing={<AppBarAction icon="close" onPress={reset} />}
+        />
 
         <KeyboardAwareBody
           testID="scan-confirm-keyboard-body"
@@ -611,37 +600,6 @@ const styles = StyleSheet.create({
   sessionCheckboxChecked: {
     backgroundColor: colors.ink,
     borderColor: colors.ink
-  },
-  // Confirm screen
-  confirmBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md
-  },
-  confirmBarCenter: {
-    flex: 1
-  },
-  confirmBarTitle: {
-    fontFamily: font.serif,
-    fontSize: 22,
-    color: colors.ink,
-    lineHeight: 24
-  },
-  confirmBarSub: {
-    fontFamily: font.sans,
-    fontSize: 11,
-    color: colors.ink3,
-    marginTop: 2
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center"
   },
   confirmScroll: {
     paddingHorizontal: spacing.lg
