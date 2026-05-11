@@ -8,6 +8,7 @@ import { buildCatalogBrowseResults, buildReferenceColorSubtitle } from "../../sr
 import { buildCatalogFilterOptions, type CatalogFilter } from "../../src/catalog/catalogFilter";
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
+import { AppBar, AppBarAction } from "../../src/ui/AppBar";
 import { InventoryForm } from "../../src/ui/InventoryForm";
 import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
@@ -201,9 +202,7 @@ export default function AddScreen() {
               })}
             </Text>
           </View>
-          <Pressable onPress={() => setSelectedColor(null)} style={styles.iconBtn}>
-            <Ionicons name="close" size={16} color={colors.ink3} />
-          </Pressable>
+          <AppBarAction icon="close" onPress={() => setSelectedColor(null)} size={16} color={colors.ink3} />
         </View>
 
         <InventoryForm
@@ -266,14 +265,10 @@ export default function AddScreen() {
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.appbar}>
-        <Pressable onPress={handleBack} style={styles.iconBtn}>
-          <Ionicons name="chevron-back" size={18} color={colors.ink2} />
-        </Pressable>
-        <Text style={styles.appbarTitle} numberOfLines={1}>
-          {mode === "family" ? selectedFamily : "Add manually"}
-        </Text>
-      </View>
+      <AppBar
+        title={mode === "family" ? selectedFamily ?? "Add manually" : "Add manually"}
+        onBack={handleBack}
+      />
 
       <KeyboardAwareBody scroll={false} testID="add-keyboard-body">
         {mode === "browse" ? (
@@ -319,27 +314,6 @@ export default function AddScreen() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.bg },
-  appbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md
-  },
-  appbarTitle: {
-    fontFamily: font.serif,
-    fontSize: 22,
-    color: colors.ink,
-    flex: 1
-  },
-  iconBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: radius.md,
-    alignItems: "center",
-    justifyContent: "center"
-  },
   searchRow: {
     marginBottom: spacing.sm
   },
