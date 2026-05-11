@@ -8,12 +8,13 @@ import { colors, font, radius, spacing } from "./theme";
 export interface AppBarProps {
   title: string;
   subtitle?: React.ReactNode;
+  center?: React.ReactNode;
   onBack?: () => void;
   trailing?: React.ReactNode;
   style?: ViewStyle;
 }
 
-export function AppBar({ title, subtitle, onBack, trailing, style }: AppBarProps) {
+export function AppBar({ title, subtitle, center, onBack, trailing, style }: AppBarProps) {
   return (
     <View style={[styles.container, style]}>
       {onBack ? (
@@ -22,18 +23,22 @@ export function AppBar({ title, subtitle, onBack, trailing, style }: AppBarProps
         </Pressable>
       ) : null}
       <View style={styles.center}>
-        <Text style={styles.title} numberOfLines={1}>
-          {title}
-        </Text>
-        {subtitle !== undefined && subtitle !== null ? (
-          typeof subtitle === "string" || typeof subtitle === "number" ? (
-            <Text style={styles.subtitle} numberOfLines={1}>
-              {subtitle}
+        {center ?? (
+          <>
+            <Text style={styles.title} numberOfLines={1}>
+              {title}
             </Text>
-          ) : (
-            subtitle
-          )
-        ) : null}
+            {subtitle !== undefined && subtitle !== null ? (
+              typeof subtitle === "string" || typeof subtitle === "number" ? (
+                <Text style={styles.subtitle} numberOfLines={1}>
+                  {subtitle}
+                </Text>
+              ) : (
+                subtitle
+              )
+            ) : null}
+          </>
+        )}
       </View>
       {trailing}
     </View>
