@@ -1,7 +1,10 @@
 import React from "react";
 import { ScrollView } from "react-native";
 import { fireEvent, render, waitFor } from "@testing-library/react-native";
+
 import DetailScreen from "../app/detail/[id]";
+import type { ProjectLookupReservation } from "../src/projects/types";
+import type { InventoryItem } from "../src/types";
 
 const mockUpdateInventory = jest.fn();
 const mockDecrementInventory = jest.fn();
@@ -10,7 +13,7 @@ const mockRemoveInventory = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
-const sampleItem = {
+const sampleItem: InventoryItem = {
   id: "inv-1",
   updatedAt: "2025-01-01T00:00:00.000Z",
   referenceColor: {
@@ -25,9 +28,35 @@ const sampleItem = {
     upc: null
   },
   quantity: 2,
-  condition: "full" as const,
+  condition: "full",
   favorite: false,
   notes: "Existing note"
+};
+
+let mockInventoryItems: InventoryItem[] = [sampleItem];
+let mockProjectReservations: ProjectLookupReservation[] = [];
+
+const reservedProject: ProjectLookupReservation = {
+  project: {
+    id: "project-1",
+    folder: null,
+    name: "Autumn Sampler",
+    author: null,
+    canvasMesh: null,
+    status: "wip",
+    startDate: null,
+    completedDate: null,
+    imageUri: null,
+    notes: null,
+    createdAt: "2025-01-01T00:00:00.000Z",
+    updatedAt: "2025-01-01T00:00:00.000Z"
+  },
+  referenceColor: sampleItem.referenceColor,
+  quantity: 3,
+  physicalStash: 2,
+  reserved: 1,
+  available: 1,
+  stillNeed: 1
 };
 
 jest.mock("expo-router", () => ({
@@ -45,7 +74,7 @@ jest.mock("react-native-safe-area-context", () => ({
 
 jest.mock("../src/state/InventoryContext", () => ({
   useInventory: () => ({
-    inventory: [sampleItem],
+    inventory: mockInventoryItems,
     decrementInventory: mockDecrementInventory,
     updateInventory: mockUpdateInventory,
     toggleFavorite: mockToggleFavorite,
@@ -55,7 +84,7 @@ jest.mock("../src/state/InventoryContext", () => ({
 
 jest.mock("../src/state/ProjectsContext", () => ({
   useProjects: () => ({
-    getReservationsByReferenceColor: () => []
+    getReservationsByReferenceColor: () => mockProjectReservations
   })
 }));
 
@@ -67,6 +96,8 @@ jest.mock("../src/state/CatalogContext", () => ({
 
 describe("DetailScreen notes editing", () => {
   beforeEach(() => {
+    mockInventoryItems = [sampleItem];
+    mockProjectReservations = [];
     mockUpdateInventory.mockClear();
     mockDecrementInventory.mockClear();
     mockToggleFavorite.mockClear();
@@ -90,5 +121,73 @@ describe("DetailScreen notes editing", () => {
     await waitFor(() => {
       expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "  Updated note  " });
     });
+  });
+
+  it("commits note edits before incrementing quantity", async () => {
+    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
+
+    fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before increment");
+    fireEvent.press(getByTestId("detail-increment-button"));
+
+    await waitFor(() => {
+      expect(mockUpdateInventory).toHaveBeenNthCalledWith(1, "inv-1", { notes: "Before increment" });
+      expect(mockUpdateInventory).toHaveBeenNthCalledWith(2, "inv-1", { quantity: 3 });
+    });
+  });
+
+  it("commits note edits before decrementing quantity", async () => {
+    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
+
+    fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before decrement");
+    fireEvent.press(getByTestId("detail-decrement-button"));
+
+    await waitFor(() => {
+      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before decrement" });
+      expect(mockDecrementInventory).toHaveBeenCalledWith("inv-1");
+    });
+
+    expect(mockUpdateInventory.mock.invocationCallOrder[0]).toBeLessThan(
+      mockDecrementInventory.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("commits note edits before toggling favorite", async () => {
+    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
+
+    fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before favorite");
+    fireEvent.press(getByTestId("detail-favorite-toggle"));
+
+    await waitFor(() => {
+      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before favorite" });
+      expect(mockToggleFavorite).toHaveBeenCalledWith("inv-1");
+    });
+
+    expect(mockUpdateInventory.mock.invocationCallOrder[0]).toBeLessThan(
+      mockToggleFavorite.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("renders project reservations and commits note edits before opening a project", async () => {
+    mockProjectReservations = [reservedProject];
+    const { getByPlaceholderText, getByTestId, getByText } = render(<DetailScreen />);
+
+    expect(getByText("Autumn Sampler")).toBeTruthy();
+    expect(getByText("Still need 1")).toBeTruthy();
+
+    fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before project");
+    fireEvent.press(getByTestId("detail-project-project-1"));
+
+    await waitFor(() => {
+      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before project" });
+      expect(mockPush).toHaveBeenCalledWith("/project/project-1");
+    });
+
+    expect(mockUpdateInventory.mock.invocationCallOrder[0]).toBeLessThan(mockPush.mock.invocationCallOrder[0]);
+  });
+
+  it("renders an empty state when no projects reserve the color", () => {
+    const { getByText } = render(<DetailScreen />);
+
+    expect(getByText("No projects are reserving this color yet.")).toBeTruthy();
   });
 });
