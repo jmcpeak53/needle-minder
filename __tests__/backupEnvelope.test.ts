@@ -83,8 +83,19 @@ describe("buildEnvelope + serializeEnvelope + parseEnvelope (round-trip)", () =>
 });
 
 describe("parseEnvelope validation", () => {
-  it("rejects non-JSON input", () => {
-    expect(() => parseEnvelope("not json")).toThrow(BackupValidationError);
+  it("rejects non-JSON input with specific error message", () => {
+    expect(() => parseEnvelope("not json")).toThrow(
+      new BackupValidationError("File is not valid JSON.")
+    );
+  });
+
+  it("rejects valid JSON that is not an object", () => {
+    expect(() => parseEnvelope("null")).toThrow(
+      new BackupValidationError("File does not contain a backup object.")
+    );
+    expect(() => parseEnvelope("123")).toThrow(
+      new BackupValidationError("File does not contain a backup object.")
+    );
   });
 
   it("rejects JSON that is not a Needle Minder backup", () => {
