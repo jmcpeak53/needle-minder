@@ -13,21 +13,41 @@ export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  const stats = useMemo(() => {
-    if (!inventory.length) return { total: 0, unique: 0, catalogs: 0, lowStock: 0 };
-    const total = inventory.reduce((sum, item) => sum + item.quantity, 0);
-    const unique = inventory.length;
-    const catalogs = new Set(inventory.map((i) => i.referenceColor.threadTypeId)).size;
-    const lowStock = inventory.filter((i) => i.favorite && i.quantity <= 2).length;
-    return { total, unique, catalogs, lowStock };
+  const { stats, lowStockItems } = useMemo(() => {
+    if (!inventory.length) {
+      return {
+        stats: { total: 0, unique: 0, catalogs: 0, lowStock: 0 },
+        lowStockItems: []
+      };
+    }
+
+    let total = 0;
+    const catalogsSet = new Set<string>();
+    const lowStockItemsArr = [];
+
+    for (const item of inventory) {
+      total += item.quantity;
+      catalogsSet.add(item.referenceColor.threadTypeId);
+      if (item.favorite && item.quantity <= 2) {
+        lowStockItemsArr.push(item);
+      }
+    }
+
+    return {
+      stats: {
+        total,
+        unique: inventory.length,
+        catalogs: catalogsSet.size,
+        lowStock: lowStockItemsArr.length
+      },
+      lowStockItems: lowStockItemsArr
+    };
   }, [inventory]);
 
   const recentItems = useMemo(
     () => [...inventory].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 5),
     [inventory]
   );
-
-  const lowStockItems = useMemo(() => inventory.filter((i) => i.favorite && i.quantity <= 2), [inventory]);
 
   if (!ready) {
     return <View style={[styles.screen, { backgroundColor: colors.bg }]} />;
