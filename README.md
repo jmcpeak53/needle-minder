@@ -84,6 +84,7 @@ npm test -- --runInBand
 npm run typecheck
 npm run lint
 npm run validate:catalog
+npm run catalog:audit
 ```
 
 Validate specific catalog files only:
@@ -123,9 +124,24 @@ eas submit --profile testflight --platform ios
 - `src/providers/` - device/provider integrations such as ML Kit OCR.
 - `data/reference/` - importable reference catalog CSV data.
 - `scripts/` - project maintenance scripts.
+- `tools/catalog-family-audit/` - local web tool for reviewing and patching thread `colorFamily` assignments.
 
 ## Thread Puller (Standalone Tool)
 
 `tools/thread-puller/` contains a standalone Python scraper + normalizer for generating importable thread catalog CSVs. V1 is configured for Penny Linn DMC Pearl Cotton Size 5.
 
 Tool setup and usage are documented in [tools/thread-puller/README.md](tools/thread-puller/README.md).
+
+## Catalog Family Audit Tool
+
+Use the local catalog audit UI when you need to review or backfill `colorFamily` assignments across the DMC catalogs:
+
+```bash
+npm run catalog:audit
+```
+
+The browser workflow stores review state in `data/import/catalog-family-audit/` and can patch the canonical CSVs after review. To apply reviewed changes from the terminal instead:
+
+```bash
+npm run catalog:audit:apply
+```

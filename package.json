@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "npx expo start --dev-client --host lan",
     "start": "expo start",
+    "catalog:audit": "tsx scripts/catalogFamilyAuditServer.ts",
+    "catalog:audit:apply": "tsx scripts/applyCatalogFamilyAudit.ts",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "build:dev:android": "eas build --profile development --platform android",
