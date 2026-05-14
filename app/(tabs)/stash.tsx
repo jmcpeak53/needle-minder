@@ -20,6 +20,7 @@ import { useInventory } from "../../src/state/InventoryContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SearchFieldRow } from "../../src/ui/SearchFieldRow";
 import { SkeinBall } from "../../src/ui/SkeinBall";
+import { LoadingScreen } from "../../src/ui/LoadingScreen";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
 const SCREEN_W = Dimensions.get("window").width;
@@ -167,12 +168,8 @@ export default function StashScreen() {
       nextPartial: number,
       inherited?: { favorite?: boolean; notes?: string | null }
     ) => {
-      if (nextFull !== item.fullQuantity) {
-        await setConditionQuantity(item.referenceColorId, "full", nextFull, inherited);
-      }
-      if (nextPartial !== item.partialQuantity) {
-        await setConditionQuantity(item.referenceColorId, "partial", nextPartial, inherited);
-      }
+      await setConditionQuantity(item.referenceColorId, "full", nextFull, inherited);
+      await setConditionQuantity(item.referenceColorId, "partial", nextPartial, inherited);
     },
     [setConditionQuantity]
   );
@@ -324,9 +321,7 @@ export default function StashScreen() {
     []
   );
 
-  if (!ready) {
-    return <View style={[styles.screen, { paddingTop: insets.top }]} />;
-  }
+  if (!ready) return <LoadingScreen />;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>

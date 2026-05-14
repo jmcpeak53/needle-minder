@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useInventory } from "../../src/state/InventoryContext";
+import { LoadingScreen } from "../../src/ui/LoadingScreen";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
@@ -49,9 +50,7 @@ export default function HomeScreen() {
     [inventory]
   );
 
-  if (!ready) {
-    return <View style={[styles.screen, { backgroundColor: colors.bg }]} />;
-  }
+  if (!ready) return <LoadingScreen />;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>

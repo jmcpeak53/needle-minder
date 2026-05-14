@@ -14,6 +14,7 @@ import { MergedInventoryForm } from "../../src/ui/MergedInventoryForm";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SearchFieldRow } from "../../src/ui/SearchFieldRow";
 import { SkeinBall } from "../../src/ui/SkeinBall";
+import { LoadingScreen } from "../../src/ui/LoadingScreen";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 import type { CatalogFamilySummary } from "../../src/catalog/catalogBrowse";
 import type { ReferenceColor } from "../../src/types";
@@ -285,7 +286,7 @@ export default function AddScreen() {
   );
   const listKeyboardDismissMode = selectedColor ? "none" : "on-drag";
 
-  if (!ready) return <View style={[styles.screen, { paddingTop: insets.top }]} />;
+  if (!ready) return <LoadingScreen />;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>

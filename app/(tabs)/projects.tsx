@@ -8,6 +8,7 @@ import { ProjectCard } from "../../src/projects/components/ProjectCard";
 import type { ProjectStatus, ProjectSummary } from "../../src/projects/types";
 import { useProjects } from "../../src/state/ProjectsContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
+import { LoadingScreen } from "../../src/ui/LoadingScreen";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
 type ViewMode = "grid" | "list";
@@ -49,9 +50,7 @@ export default function ProjectsScreen() {
     [projectSummaries]
   );
 
-  if (!ready) {
-    return <View style={[styles.screen, { backgroundColor: colors.bg }]} />;
-  }
+  if (!ready) return <LoadingScreen />;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
