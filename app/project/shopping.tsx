@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ShoppingShortfallCard } from "../../src/projects/components/ShoppingShortfallCard";
 import { useProjects } from "../../src/state/ProjectsContext";
-import { colors, font, radius, spacing } from "../../src/ui/theme";
+import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 
 export default function ProjectShoppingScreen() {
   const router = useRouter();
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   list: {
     paddingVertical: spacing.md,
     gap: spacing.md,
-    paddingBottom: 32
+    paddingBottom: NAV_HEIGHT + spacing.lg
   },
   emptyCard: {
     backgroundColor: colors.card,

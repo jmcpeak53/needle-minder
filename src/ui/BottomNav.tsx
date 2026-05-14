@@ -14,6 +14,14 @@ type NavItem = {
   match?: (path: string) => boolean;
 };
 
+const NAV_VISIBLE_PATHS = new Set<string>([
+  "/",
+  "/stash",
+  "/projects",
+  "/settings",
+  "/project/shopping"
+]);
+
 const NAV_ITEMS: NavItem[] = [
   {
     label: "Home",
@@ -50,13 +58,7 @@ export function BottomNav() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
-  // Hide on detail and other full-screen routes
-  if (
-    pathname.startsWith("/detail") ||
-    pathname.startsWith("/add") ||
-    pathname.startsWith("/project") ||
-    pathname === "/scan"
-  ) {
+  if (!NAV_VISIBLE_PATHS.has(pathname)) {
     return null;
   }
 
