@@ -82,8 +82,17 @@ export default function StashScreen() {
     return Array.from(map.entries()).map(([id, count]) => ({ id, count }));
   }, [merged]);
 
-  const lowCount = useMemo(() => merged.filter((m) => m.totalQuantity <= 2).length, [merged]);
-  const favoritesCount = useMemo(() => merged.filter((m) => m.favorite).length, [merged]);
+  const { lowCount, favoritesCount, totalAll } = useMemo(() => {
+    let lowCount = 0;
+    let favoritesCount = 0;
+    let totalAll = 0;
+    for (const m of merged) {
+      if (m.totalQuantity <= 2) lowCount++;
+      if (m.favorite) favoritesCount++;
+      totalAll += m.totalQuantity;
+    }
+    return { lowCount, favoritesCount, totalAll };
+  }, [merged]);
 
   const filtered = useMemo(() => {
     let items = merged;
@@ -103,33 +112,34 @@ export default function StashScreen() {
     return items;
   }, [merged, filter, query]);
 
-  const sections = useMemo<StashSection[]>(() => {
-    const map = new Map<string, MergedInventoryItem[]>();
+  const { sections, totalFiltered } = useMemo<{
+    sections: StashSection[];
+    totalFiltered: number;
+  }>(() => {
+    const map = new Map<string, { items: MergedInventoryItem[]; totalQty: number }>();
+    let totalFiltered = 0;
     for (const item of filtered) {
+      totalFiltered += item.totalQuantity;
       const fam = item.referenceColor.colorFamily;
-      if (!map.has(fam)) map.set(fam, []);
-      map.get(fam)!.push(item);
+      let bucket = map.get(fam);
+      if (!bucket) {
+        bucket = { items: [], totalQty: 0 };
+        map.set(fam, bucket);
+      }
+      bucket.items.push(item);
+      bucket.totalQty += item.totalQuantity;
     }
-    return Array.from(map.entries())
+    const sections = Array.from(map.entries())
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([family, items]) => {
+      .map(([family, { items, totalQty }]) => {
         const rows: SwatchRow[] = [];
         for (let i = 0; i < items.length; i += SWATCH_COLS) {
           rows.push(items.slice(i, i + SWATCH_COLS));
         }
-        return {
-          family,
-          totalQty: items.reduce((s, item) => s + item.totalQuantity, 0),
-          data: rows
-        };
+        return { family, totalQty, data: rows };
       });
+    return { sections, totalFiltered };
   }, [filtered]);
-
-  const totalFiltered = useMemo(
-    () => filtered.reduce((s, m) => s + m.totalQuantity, 0),
-    [filtered]
-  );
-  const totalAll = useMemo(() => merged.reduce((s, m) => s + m.totalQuantity, 0), [merged]);
 
   const openSheet = useCallback((item: MergedInventoryItem) => {
     setPressedMerged(item);
