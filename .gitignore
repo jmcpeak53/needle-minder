@@ -7,7 +7,6 @@ coverage/
 *.log
 android/
 ios/
-AGENTS.md
 CLAUDE.md
 /.claude/*
 dev-worktree/
