@@ -7,9 +7,11 @@ import type { ProjectLookupReservation } from "../src/projects/types";
 import type { InventoryItem } from "../src/types";
 
 const mockUpdateInventory = jest.fn();
-const mockDecrementInventory = jest.fn();
+const mockSetConditionQuantity = jest.fn();
 const mockToggleFavorite = jest.fn();
 const mockRemoveInventory = jest.fn();
+const mockDecrementInventory = jest.fn();
+const mockAddInventory = jest.fn();
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
@@ -60,7 +62,7 @@ const reservedProject: ProjectLookupReservation = {
 };
 
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "inv-1" }),
+  useLocalSearchParams: () => ({ id: "color-310" }),
   useRouter: () => ({ back: mockBack, push: mockPush })
 }));
 
@@ -75,10 +77,12 @@ jest.mock("react-native-safe-area-context", () => ({
 jest.mock("../src/state/InventoryContext", () => ({
   useInventory: () => ({
     inventory: mockInventoryItems,
+    addInventory: mockAddInventory,
     decrementInventory: mockDecrementInventory,
     updateInventory: mockUpdateInventory,
     toggleFavorite: mockToggleFavorite,
-    removeInventory: mockRemoveInventory
+    removeInventory: mockRemoveInventory,
+    setConditionQuantity: mockSetConditionQuantity
   })
 }));
 
@@ -99,14 +103,16 @@ describe("DetailScreen notes editing", () => {
     mockInventoryItems = [sampleItem];
     mockProjectReservations = [];
     mockUpdateInventory.mockClear();
-    mockDecrementInventory.mockClear();
+    mockSetConditionQuantity.mockClear();
     mockToggleFavorite.mockClear();
     mockRemoveInventory.mockClear();
+    mockDecrementInventory.mockClear();
+    mockAddInventory.mockClear();
     mockPush.mockClear();
     mockBack.mockClear();
   });
 
-  it("saves note changes when the notes field loses focus", async () => {
+  it("saves note changes to the full row when the notes field loses focus", async () => {
     const { getByPlaceholderText, getByTestId, UNSAFE_getByType } = render(<DetailScreen />);
 
     const input = getByPlaceholderText("Notes about this skein...");
@@ -123,31 +129,40 @@ describe("DetailScreen notes editing", () => {
     });
   });
 
-  it("commits note edits before incrementing quantity", async () => {
+  it("commits note edits before incrementing full quantity", async () => {
     const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
 
     fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before increment");
-    fireEvent.press(getByTestId("detail-increment-button"));
+    fireEvent.press(getByTestId("detail-full-increment-button"));
 
     await waitFor(() => {
-      expect(mockUpdateInventory).toHaveBeenNthCalledWith(1, "inv-1", { notes: "Before increment" });
-      expect(mockUpdateInventory).toHaveBeenNthCalledWith(2, "inv-1", { quantity: 3 });
-    });
-  });
-
-  it("commits note edits before decrementing quantity", async () => {
-    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
-
-    fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before decrement");
-    fireEvent.press(getByTestId("detail-decrement-button"));
-
-    await waitFor(() => {
-      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before decrement" });
-      expect(mockDecrementInventory).toHaveBeenCalledWith("inv-1");
+      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before increment" });
+      expect(mockSetConditionQuantity).toHaveBeenCalledWith(
+        "color-310",
+        "full",
+        3,
+        expect.objectContaining({ notes: "Before increment" })
+      );
     });
 
     expect(mockUpdateInventory.mock.invocationCallOrder[0]).toBeLessThan(
-      mockDecrementInventory.mock.invocationCallOrder[0]
+      mockSetConditionQuantity.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("commits note edits before decrementing full quantity", async () => {
+    const { getByPlaceholderText, getByTestId } = render(<DetailScreen />);
+
+    fireEvent.changeText(getByPlaceholderText("Notes about this skein..."), "Before decrement");
+    fireEvent.press(getByTestId("detail-full-decrement-button"));
+
+    await waitFor(() => {
+      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before decrement" });
+      expect(mockSetConditionQuantity).toHaveBeenCalledWith("color-310", "full", 1);
+    });
+
+    expect(mockUpdateInventory.mock.invocationCallOrder[0]).toBeLessThan(
+      mockSetConditionQuantity.mock.invocationCallOrder[0]
     );
   });
 
@@ -159,12 +174,12 @@ describe("DetailScreen notes editing", () => {
 
     await waitFor(() => {
       expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { notes: "Before favorite" });
-      expect(mockToggleFavorite).toHaveBeenCalledWith("inv-1");
+      expect(mockUpdateInventory).toHaveBeenCalledWith("inv-1", { favorite: true });
     });
 
-    expect(mockUpdateInventory.mock.invocationCallOrder[0]).toBeLessThan(
-      mockToggleFavorite.mock.invocationCallOrder[0]
-    );
+    const noteCallOrder = mockUpdateInventory.mock.invocationCallOrder[0];
+    const favoriteCallOrder = mockUpdateInventory.mock.invocationCallOrder[1];
+    expect(noteCallOrder).toBeLessThan(favoriteCallOrder);
   });
 
   it("renders project reservations and commits note edits before opening a project", async () => {

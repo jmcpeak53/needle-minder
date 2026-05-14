@@ -13,14 +13,14 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { mergeInventory } from "../../src/inventory/mergedInventoryView";
+import type { MergedInventoryItem } from "../../src/inventory/mergedInventoryView";
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SearchFieldRow } from "../../src/ui/SearchFieldRow";
 import { SkeinBall } from "../../src/ui/SkeinBall";
-import { ThreadConditionPill } from "../../src/ui/ThreadConditionPill";
 import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
-import type { InventoryItem } from "../../src/types";
 
 const SCREEN_W = Dimensions.get("window").width;
 const SWATCH_GAP = 8;
@@ -28,9 +28,9 @@ const SWATCH_COLS = 4;
 const SWATCH_PAD = spacing.lg * 2;
 const SWATCH_SIZE = Math.floor((SCREEN_W - SWATCH_PAD - SWATCH_GAP * (SWATCH_COLS - 1)) / SWATCH_COLS);
 
-type FilterKey = "all" | "low" | "favorites" | string; // threadTypeId
+type FilterKey = "all" | "low" | "favorites" | string;
 
-type SwatchRow = InventoryItem[];
+type SwatchRow = MergedInventoryItem[];
 
 type StashSection = {
   family: string;
@@ -38,12 +38,19 @@ type StashSection = {
   data: SwatchRow[];
 };
 
+type SnackbarState = {
+  message: string;
+  merged: MergedInventoryItem;
+  oldFull: number;
+  oldPartial: number;
+};
+
 function keyExtractor(item: SwatchRow, index: number) {
-  return item[0]?.id ?? `row-${index}`;
+  return item[0]?.referenceColorId ?? `row-${index}`;
 }
 
 export default function StashScreen() {
-  const { ready, inventory, updateInventory } = useInventory();
+  const { ready, inventory, setConditionQuantity } = useInventory();
   const { getThreadTypeDisplayName } = useCatalog();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -55,49 +62,49 @@ export default function StashScreen() {
   useEffect(() => {
     if (filterParam) setFilter(filterParam as FilterKey);
   }, [filterParam]);
-  const [pressedItem, setPressedItem] = useState<InventoryItem | null>(null);
-  const [sheetQty, setSheetQty] = useState(0);
-  const [snackbar, setSnackbar] = useState<{
-    message: string;
-    item: InventoryItem;
-    oldQty: number;
-  } | null>(null);
+
+  const [pressedMerged, setPressedMerged] = useState<MergedInventoryItem | null>(null);
+  const [sheetFull, setSheetFull] = useState(0);
+  const [sheetPartial, setSheetPartial] = useState(0);
+  const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
 
   const snackTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snackAnim = useRef(new Animated.Value(0)).current;
 
+  const merged = useMemo(() => mergeInventory(inventory), [inventory]);
+
   const brandFilters = useMemo(() => {
     const map = new Map<string, number>();
-    for (const item of inventory) {
+    for (const item of merged) {
       const key = item.referenceColor.threadTypeId;
-      map.set(key, (map.get(key) ?? 0) + item.quantity);
+      map.set(key, (map.get(key) ?? 0) + item.totalQuantity);
     }
     return Array.from(map.entries()).map(([id, count]) => ({ id, count }));
-  }, [inventory]);
+  }, [merged]);
 
-  const lowCount = useMemo(() => inventory.filter((i) => i.quantity <= 2).length, [inventory]);
-  const favoritesCount = useMemo(() => inventory.filter((i) => i.favorite).length, [inventory]);
+  const lowCount = useMemo(() => merged.filter((m) => m.totalQuantity <= 2).length, [merged]);
+  const favoritesCount = useMemo(() => merged.filter((m) => m.favorite).length, [merged]);
 
   const filtered = useMemo(() => {
-    let items = inventory;
-    if (filter === "low") items = items.filter((i) => i.quantity <= 2);
-    else if (filter === "favorites") items = items.filter((i) => i.favorite);
-    else if (filter !== "all") items = items.filter((i) => i.referenceColor.threadTypeId === filter);
+    let items = merged;
+    if (filter === "low") items = items.filter((m) => m.totalQuantity <= 2);
+    else if (filter === "favorites") items = items.filter((m) => m.favorite);
+    else if (filter !== "all") items = items.filter((m) => m.referenceColor.threadTypeId === filter);
 
     if (query.trim()) {
       const q = query.trim().toLowerCase();
       items = items.filter(
-        (i) =>
-          i.referenceColor.colorCode.toLowerCase().includes(q) ||
-          i.referenceColor.colorName.toLowerCase().includes(q) ||
-          i.referenceColor.colorFamily.toLowerCase().includes(q)
+        (m) =>
+          m.referenceColor.colorCode.toLowerCase().includes(q) ||
+          m.referenceColor.colorName.toLowerCase().includes(q) ||
+          m.referenceColor.colorFamily.toLowerCase().includes(q)
       );
     }
     return items;
-  }, [inventory, filter, query]);
+  }, [merged, filter, query]);
 
   const sections = useMemo<StashSection[]>(() => {
-    const map = new Map<string, InventoryItem[]>();
+    const map = new Map<string, MergedInventoryItem[]>();
     for (const item of filtered) {
       const fam = item.referenceColor.colorFamily;
       if (!map.has(fam)) map.set(fam, []);
@@ -112,20 +119,25 @@ export default function StashScreen() {
         }
         return {
           family,
-          totalQty: items.reduce((s, item) => s + item.quantity, 0),
+          totalQty: items.reduce((s, item) => s + item.totalQuantity, 0),
           data: rows
         };
       });
   }, [filtered]);
 
-  const totalFiltered = useMemo(() => filtered.reduce((s, i) => s + i.quantity, 0), [filtered]);
+  const totalFiltered = useMemo(
+    () => filtered.reduce((s, m) => s + m.totalQuantity, 0),
+    [filtered]
+  );
+  const totalAll = useMemo(() => merged.reduce((s, m) => s + m.totalQuantity, 0), [merged]);
 
-  const openSheet = useCallback((item: InventoryItem) => {
-    setPressedItem(item);
-    setSheetQty(item.quantity);
+  const openSheet = useCallback((item: MergedInventoryItem) => {
+    setPressedMerged(item);
+    setSheetFull(item.fullQuantity);
+    setSheetPartial(item.partialQuantity);
   }, []);
 
-  const closeSheet = useCallback(() => setPressedItem(null), []);
+  const closeSheet = useCallback(() => setPressedMerged(null), []);
 
   const dismissSnackbar = useCallback(() => {
     Animated.timing(snackAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() =>
@@ -134,112 +146,178 @@ export default function StashScreen() {
   }, [snackAnim]);
 
   const showSnackbar = useCallback(
-    (message: string, item: InventoryItem, oldQty: number) => {
+    (state: SnackbarState) => {
       if (snackTimer.current) clearTimeout(snackTimer.current);
-      setSnackbar({ message, item, oldQty });
-      Animated.spring(snackAnim, { toValue: 1, useNativeDriver: true, tension: 80, friction: 10 }).start();
+      setSnackbar(state);
+      Animated.spring(snackAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 80,
+        friction: 10
+      }).start();
       snackTimer.current = setTimeout(dismissSnackbar, 5000);
     },
     [snackAnim, dismissSnackbar]
   );
 
+  const applyMergedQuantities = useCallback(
+    async (
+      item: MergedInventoryItem,
+      nextFull: number,
+      nextPartial: number,
+      inherited?: { favorite?: boolean; notes?: string | null }
+    ) => {
+      if (nextFull !== item.fullQuantity) {
+        await setConditionQuantity(item.referenceColorId, "full", nextFull, inherited);
+      }
+      if (nextPartial !== item.partialQuantity) {
+        await setConditionQuantity(item.referenceColorId, "partial", nextPartial, inherited);
+      }
+    },
+    [setConditionQuantity]
+  );
+
   const saveSheet = useCallback(async () => {
-    if (!pressedItem) return;
-    const oldQty = pressedItem.quantity;
+    if (!pressedMerged) return;
+    const oldFull = pressedMerged.fullQuantity;
+    const oldPartial = pressedMerged.partialQuantity;
+    const nextFull = sheetFull;
+    const nextPartial = sheetPartial;
     closeSheet();
 
-    if (sheetQty === oldQty) return;
+    if (nextFull === oldFull && nextPartial === oldPartial) return;
 
-    await updateInventory(pressedItem.id, { quantity: sheetQty });
+    await applyMergedQuantities(pressedMerged, nextFull, nextPartial, {
+      favorite: pressedMerged.favorite,
+      notes: pressedMerged.notes
+    });
 
-    const diff = oldQty - sheetQty;
-    if (diff > 0) {
-      showSnackbar(
-        `Used ${diff} × ${pressedItem.referenceColor.colorCode}${sheetQty <= 1 ? " · running low" : ""}`,
-        pressedItem,
-        oldQty
-      );
+    const totalDiff = oldFull + oldPartial - (nextFull + nextPartial);
+    if (totalDiff > 0) {
+      const lowSuffix = nextFull + nextPartial <= 1 ? " · running low" : "";
+      showSnackbar({
+        message: `Used ${totalDiff} × ${pressedMerged.referenceColor.colorCode}${lowSuffix}`,
+        merged: pressedMerged,
+        oldFull,
+        oldPartial
+      });
     }
-  }, [pressedItem, sheetQty, updateInventory, closeSheet, showSnackbar]);
+  }, [pressedMerged, sheetFull, sheetPartial, applyMergedQuantities, closeSheet, showSnackbar]);
 
   const undoSnackbar = useCallback(async () => {
     if (!snackbar) return;
     if (snackTimer.current) clearTimeout(snackTimer.current);
-    await updateInventory(snackbar.item.id, { quantity: snackbar.oldQty });
+    await applyMergedQuantities(snackbar.merged, snackbar.oldFull, snackbar.oldPartial, {
+      favorite: snackbar.merged.favorite,
+      notes: snackbar.merged.notes
+    });
     dismissSnackbar();
-  }, [snackbar, updateInventory, dismissSnackbar]);
+  }, [snackbar, applyMergedQuantities, dismissSnackbar]);
 
-  const renderSwatchRow = useCallback(({ item: row }: { item: SwatchRow }) => (
-    <View style={styles.swatchRow}>
-      {row.map((item) => (
-        <SwatchCell
-          key={item.id}
-          item={item}
-          onPress={() => router.push(`/detail/${item.id}`)}
-          onLongPress={() => openSheet(item)}
-        />
-      ))}
-      {row.length < SWATCH_COLS && Array.from({ length: SWATCH_COLS - row.length }).map((_, i) => (
-        <View key={`pad-${i}`} style={{ width: SWATCH_SIZE }} />
-      ))}
-    </View>
-  ), [router, openSheet]);
-
-  const renderSectionHeader = useCallback(({ section }: { section: StashSection }) => (
-    <View style={styles.groupHead}>
-      <Text style={styles.groupHeadTitle}>{section.family}</Text>
-      <View style={styles.groupHeadRule} />
-      <Text style={styles.groupHeadCount}>{section.totalQty}</Text>
-    </View>
-  ), []);
-
-  const listHeader = useMemo(() => (
-    <>
-      <View style={styles.appbar}>
-        <View style={styles.appbarGrow}>
-          <Text style={styles.appbarTitle}>My stash</Text>
-          <Text style={styles.appbarSub}>
-            {totalFiltered} skeins · grid · color family
-          </Text>
-        </View>
-        <Pressable style={styles.iconBtn}>
-          <Ionicons name="options-outline" size={18} color={colors.ink2} />
-        </Pressable>
-        <Pressable style={styles.iconBtn}>
-          <Ionicons name="ellipsis-horizontal" size={18} color={colors.ink2} />
-        </Pressable>
-      </View>
-
-      <SearchFieldRow
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Search catalog or code…"
-        containerStyle={styles.searchRow}
-        inputTestID="stash-search-input"
-        clearButtonTestID="stash-search-clear-button"
-      />
-
-      <PillRow contentContainerStyle={styles.filterRow}>
-        <PillButton label="All" count={inventory.reduce((s, i) => s + i.quantity, 0)} active={filter === "all"} onPress={() => setFilter("all")} />
-        {favoritesCount > 0 && (
-          <PillButton label="Favorites" count={favoritesCount} active={filter === "favorites"} onPress={() => setFilter("favorites")} />
-        )}
-        {brandFilters.map(({ id, count }) => (
-          <PillButton key={id} label={getThreadTypeDisplayName(id)} count={count} active={filter === id} onPress={() => setFilter(id)} />
+  const renderSwatchRow = useCallback(
+    ({ item: row }: { item: SwatchRow }) => (
+      <View style={styles.swatchRow}>
+        {row.map((item) => (
+          <SwatchCell
+            key={item.referenceColorId}
+            item={item}
+            onPress={() => router.push(`/detail/${item.referenceColorId}`)}
+            onLongPress={() => openSheet(item)}
+          />
         ))}
-        {lowCount > 0 && (
-          <PillButton label="Low" count={lowCount} active={filter === "low"} onPress={() => setFilter("low")} warn />
-        )}
-      </PillRow>
-    </>
-  ), [totalFiltered, query, inventory, filter, brandFilters, lowCount, favoritesCount, getThreadTypeDisplayName]);
+        {row.length < SWATCH_COLS &&
+          Array.from({ length: SWATCH_COLS - row.length }).map((_, i) => (
+            <View key={`pad-${i}`} style={{ width: SWATCH_SIZE }} />
+          ))}
+      </View>
+    ),
+    [router, openSheet]
+  );
 
-  const emptyComponent = useMemo(() => (
-    <View style={styles.emptyState}>
-      <Text style={styles.emptyTitle}>No matches</Text>
-      <Text style={styles.emptyBody}>Try a different search or filter.</Text>
-    </View>
-  ), []);
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: StashSection }) => (
+      <View style={styles.groupHead}>
+        <Text style={styles.groupHeadTitle}>{section.family}</Text>
+        <View style={styles.groupHeadRule} />
+        <Text style={styles.groupHeadCount}>{section.totalQty}</Text>
+      </View>
+    ),
+    []
+  );
+
+  const listHeader = useMemo(
+    () => (
+      <>
+        <View style={styles.appbar}>
+          <View style={styles.appbarGrow}>
+            <Text style={styles.appbarTitle}>My stash</Text>
+            <Text style={styles.appbarSub}>{totalFiltered} skeins · grid · color family</Text>
+          </View>
+          <Pressable style={styles.iconBtn}>
+            <Ionicons name="options-outline" size={18} color={colors.ink2} />
+          </Pressable>
+          <Pressable style={styles.iconBtn}>
+            <Ionicons name="ellipsis-horizontal" size={18} color={colors.ink2} />
+          </Pressable>
+        </View>
+
+        <SearchFieldRow
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Search catalog or code…"
+          containerStyle={styles.searchRow}
+          inputTestID="stash-search-input"
+          clearButtonTestID="stash-search-clear-button"
+        />
+
+        <PillRow contentContainerStyle={styles.filterRow}>
+          <PillButton
+            label="All"
+            count={totalAll}
+            active={filter === "all"}
+            onPress={() => setFilter("all")}
+          />
+          {favoritesCount > 0 && (
+            <PillButton
+              label="Favorites"
+              count={favoritesCount}
+              active={filter === "favorites"}
+              onPress={() => setFilter("favorites")}
+            />
+          )}
+          {brandFilters.map(({ id, count }) => (
+            <PillButton
+              key={id}
+              label={getThreadTypeDisplayName(id)}
+              count={count}
+              active={filter === id}
+              onPress={() => setFilter(id)}
+            />
+          ))}
+          {lowCount > 0 && (
+            <PillButton
+              label="Low"
+              count={lowCount}
+              active={filter === "low"}
+              onPress={() => setFilter("low")}
+              warn
+            />
+          )}
+        </PillRow>
+      </>
+    ),
+    [totalFiltered, totalAll, query, filter, brandFilters, lowCount, favoritesCount, getThreadTypeDisplayName]
+  );
+
+  const emptyComponent = useMemo(
+    () => (
+      <View style={styles.emptyState}>
+        <Text style={styles.emptyTitle}>No matches</Text>
+        <Text style={styles.emptyBody}>Try a different search or filter.</Text>
+      </View>
+    ),
+    []
+  );
 
   const contentStyle = useMemo(
     () => [styles.scroll, { paddingBottom: NAV_HEIGHT + 24 }],
@@ -273,12 +351,18 @@ export default function StashScreen() {
             { bottom: NAV_HEIGHT + 12 },
             {
               opacity: snackAnim,
-              transform: [{ translateY: snackAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }]
+              transform: [
+                {
+                  translateY: snackAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] })
+                }
+              ]
             }
           ]}
         >
           <Ionicons name="checkmark" size={18} color={colors.card} />
-          <Text style={styles.snackbarMsg} numberOfLines={1}>{snackbar.message}</Text>
+          <Text style={styles.snackbarMsg} numberOfLines={1}>
+            {snackbar.message}
+          </Text>
           <Pressable onPress={undoSnackbar}>
             <Text style={styles.snackbarUndo}>UNDO</Text>
           </Pressable>
@@ -287,67 +371,61 @@ export default function StashScreen() {
 
       {/* Long-press sheet */}
       <Modal
-        visible={pressedItem !== null}
+        visible={pressedMerged !== null}
         transparent
         animationType="fade"
         onRequestClose={closeSheet}
       >
         <Pressable style={styles.sheetOverlay} onPress={closeSheet}>
-          <Pressable style={[styles.sheetCard, { bottom: NAV_HEIGHT + 12 + insets.bottom }]} onPress={() => {}}>
-            {pressedItem && (
+          <Pressable
+            style={[styles.sheetCard, { bottom: NAV_HEIGHT + 12 + insets.bottom }]}
+            onPress={() => {}}
+          >
+            {pressedMerged && (
               <>
                 <View style={styles.sheetTop}>
-                  <SkeinBall
-                    color={pressedItem.referenceColor.hexRgb}
-                    size={48}
-                    condition={pressedItem.condition}
-                    showConditionBadge
-                  />
+                  <SkeinBall color={pressedMerged.referenceColor.hexRgb} size={48} />
                   <View style={styles.sheetMeta}>
-                    <Text style={styles.sheetName}>{pressedItem.referenceColor.colorName}</Text>
+                    <Text style={styles.sheetName}>{pressedMerged.referenceColor.colorName}</Text>
                     <Text style={styles.sheetSub}>
-                      {pressedItem.referenceColor.colorCode} · {getThreadTypeDisplayName(pressedItem.referenceColor.threadTypeId)}
+                      {pressedMerged.referenceColor.colorCode} ·{" "}
+                      {getThreadTypeDisplayName(pressedMerged.referenceColor.threadTypeId)}
                     </Text>
-                    <View style={styles.sheetCondition}>
-                      <ThreadConditionPill condition={pressedItem.condition} />
-                    </View>
                   </View>
                   <Text style={styles.sheetCurrentQty}>
                     <Text style={styles.sheetQtyX}>×</Text>
-                    {pressedItem.quantity}
+                    {sheetFull + sheetPartial}
                   </Text>
                 </View>
 
-                <View style={styles.sheetQtyRow}>
-                  <Text style={styles.sheetQtyLabel}>Adjust quantity</Text>
-                  <View style={styles.stepper}>
-                    <Pressable
-                      style={[styles.stepBtn, styles.stepBtnPrimary]}
-                      onPress={() => setSheetQty((q) => Math.max(1, q - 1))}
-                    >
-                      <Ionicons name="remove" size={14} color={colors.card} />
-                    </Pressable>
-                    <Text style={styles.stepValue}>{sheetQty}</Text>
-                    <Pressable
-                      style={styles.stepBtn}
-                      onPress={() => setSheetQty((q) => q + 1)}
-                    >
-                      <Ionicons name="add" size={14} color={colors.ink} />
-                    </Pressable>
-                  </View>
-                </View>
+                <SheetStepper
+                  label="Full skeins"
+                  kind="full"
+                  value={sheetFull}
+                  onChange={setSheetFull}
+                />
+                <SheetStepper
+                  label="Partial skeins"
+                  kind="partial"
+                  value={sheetPartial}
+                  onChange={setSheetPartial}
+                />
 
                 <View style={styles.sheetActions}>
                   <Pressable
                     style={[styles.actionBtn, styles.actionBtnGhost]}
                     onPress={() => {
+                      const id = pressedMerged.referenceColorId;
                       closeSheet();
-                      router.push(`/detail/${pressedItem.id}`);
+                      router.push(`/detail/${id}`);
                     }}
                   >
                     <Text style={styles.actionBtnTextGhost}>Open detail</Text>
                   </Pressable>
-                  <Pressable style={[styles.actionBtn, styles.actionBtnPrimary]} onPress={saveSheet}>
+                  <Pressable
+                    style={[styles.actionBtn, styles.actionBtnPrimary]}
+                    onPress={saveSheet}
+                  >
                     <Text style={styles.actionBtnTextPrimary}>Save</Text>
                   </Pressable>
                 </View>
@@ -360,16 +438,57 @@ export default function StashScreen() {
   );
 }
 
+function SheetStepper({
+  label,
+  kind,
+  value,
+  onChange
+}: {
+  label: string;
+  kind: "full" | "partial";
+  value: number;
+  onChange: (next: number) => void;
+}) {
+  const decDisabled = value <= 0;
+  return (
+    <View style={styles.sheetQtyRow}>
+      <View style={styles.sheetLabelWrap}>
+        {kind === "full" ? (
+          <View style={styles.dotFull} />
+        ) : (
+          <View style={styles.dotPartial}>
+            <View style={styles.dotPartialFill} />
+          </View>
+        )}
+        <Text style={styles.sheetQtyLabel}>{label}</Text>
+      </View>
+      <View style={styles.stepper}>
+        <Pressable
+          style={[styles.stepBtn, styles.stepBtnPrimary, decDisabled && styles.stepBtnDisabled]}
+          onPress={() => onChange(Math.max(0, value - 1))}
+          disabled={decDisabled}
+        >
+          <Ionicons name="remove" size={14} color={colors.card} />
+        </Pressable>
+        <Text style={styles.stepValue}>{value}</Text>
+        <Pressable style={styles.stepBtn} onPress={() => onChange(value + 1)}>
+          <Ionicons name="add" size={14} color={colors.ink} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
 function SwatchCell({
   item,
   onPress,
   onLongPress
 }: {
-  item: InventoryItem;
+  item: MergedInventoryItem;
   onPress: () => void;
   onLongPress: () => void;
 }) {
-  const isLow = item.quantity <= 1;
+  const isLow = item.totalQuantity <= 1;
   return (
     <Pressable
       onPress={onPress}
@@ -378,24 +497,23 @@ function SwatchCell({
       style={[styles.swatch, { width: SWATCH_SIZE, height: SWATCH_SIZE }]}
     >
       <View style={styles.swatchBallWrap}>
-        <SkeinBall
-          color={item.referenceColor.hexRgb}
-          size={Math.floor(SWATCH_SIZE * 0.55)}
-          condition={item.condition}
-          showConditionBadge
-        />
+        <SkeinBall color={item.referenceColor.hexRgb} size={Math.floor(SWATCH_SIZE * 0.55)} />
       </View>
       <View style={[styles.swatchQtyBadge, isLow && styles.swatchQtyBadgeLow]}>
         <Text style={[styles.swatchQtyText, isLow && styles.swatchQtyTextLow]}>
-          {item.quantity}
+          {item.totalQuantity}
         </Text>
       </View>
       <View style={styles.swatchLabel}>
-        <Text style={styles.swatchCode} numberOfLines={1}>{item.referenceColor.colorCode}</Text>
+        <Text style={styles.swatchCode} numberOfLines={1}>
+          {item.referenceColor.colorCode}
+        </Text>
       </View>
     </Pressable>
   );
 }
+
+const dotSize = 10;
 
 const styles = StyleSheet.create({
   screen: {
@@ -535,7 +653,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.ink3
   },
-  // Snackbar
   snackbar: {
     position: "absolute",
     left: 14,
@@ -565,7 +682,6 @@ const styles = StyleSheet.create({
     color: "#e8c9a3",
     letterSpacing: 0.3
   },
-  // Long-press sheet
   sheetOverlay: {
     flex: 1,
     backgroundColor: "rgba(29,26,22,0.22)"
@@ -607,9 +723,6 @@ const styles = StyleSheet.create({
     color: colors.ink3,
     marginTop: 1
   },
-  sheetCondition: {
-    marginTop: 8
-  },
   sheetCurrentQty: {
     fontFamily: font.serif,
     fontSize: 26,
@@ -624,12 +737,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingVertical: 12
+    paddingVertical: 8
+  },
+  sheetLabelWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm
   },
   sheetQtyLabel: {
-    fontFamily: font.sans,
-    fontSize: 12,
-    color: colors.ink3
+    fontFamily: font.sansMedium,
+    fontSize: 13,
+    color: colors.ink
+  },
+  dotFull: {
+    width: dotSize,
+    height: dotSize,
+    borderRadius: dotSize / 2,
+    backgroundColor: colors.ok
+  },
+  dotPartial: {
+    width: dotSize,
+    height: dotSize,
+    borderRadius: dotSize / 2,
+    borderWidth: 1.2,
+    borderColor: colors.warn,
+    overflow: "hidden",
+    backgroundColor: colors.card
+  },
+  dotPartialFill: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: "50%",
+    backgroundColor: colors.warn
   },
   stepper: {
     flexDirection: "row",
@@ -650,6 +791,9 @@ const styles = StyleSheet.create({
   },
   stepBtnPrimary: {
     backgroundColor: colors.ink
+  },
+  stepBtnDisabled: {
+    opacity: 0.35
   },
   stepValue: {
     minWidth: 34,
