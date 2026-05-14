@@ -176,7 +176,7 @@ export default function ProjectDetailScreen() {
                   <ReservationRow
                     key={reservation.id}
                     reservation={reservation}
-                    onPress={stashItem ? () => router.push(`/detail/${stashItem.id}`) : undefined}
+                    onPress={stashItem ? () => router.push(`/detail/${stashItem.referenceColor.id}`) : undefined}
                   />
                 );
               })

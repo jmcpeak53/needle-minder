@@ -121,7 +121,7 @@ export default function HomeScreen() {
               return (
                 <Pressable
                   key={item.id}
-                  onPress={() => router.push(`/detail/${item.id}`)}
+                  onPress={() => router.push(`/detail/${item.referenceColor.id}`)}
                   style={styles.recentRow}
                 >
                   <SkeinBall color={item.referenceColor.hexRgb} size={44} />

@@ -2,36 +2,41 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { SkeinBall } from "../../../ui/SkeinBall";
-import { ThreadConditionPill } from "../../../ui/ThreadConditionPill";
 import { colors, font, spacing } from "../../../ui/theme";
-import type { InventoryItem } from "../../../types";
+import type { ReferenceColor } from "../../../types";
 
 type Props = {
-  item: InventoryItem;
+  referenceColor: ReferenceColor;
   threadTypeDisplayName: string;
   formattedUpdatedAt: string;
+  favorite: boolean;
   onToggleFavorite: () => void;
 };
 
-export function DetailHero({ item, threadTypeDisplayName, formattedUpdatedAt, onToggleFavorite }: Props) {
+export function DetailHero({
+  referenceColor,
+  threadTypeDisplayName,
+  formattedUpdatedAt,
+  favorite,
+  onToggleFavorite
+}: Props) {
   return (
     <View style={styles.hero}>
-      <SkeinBall color={item.referenceColor.hexRgb} size={80} condition={item.condition} showConditionBadge />
+      <SkeinBall color={referenceColor.hexRgb} size={80} />
       <View style={styles.info}>
         <Text style={styles.type}>{threadTypeDisplayName}</Text>
         <Text style={styles.meta}>
-          Added {formattedUpdatedAt} · {item.referenceColor.colorFamily}
+          Added {formattedUpdatedAt} · {referenceColor.colorFamily}
         </Text>
         <View style={styles.tags}>
           <View style={styles.code}>
-            <Text style={styles.codeText}>{item.referenceColor.colorCode}</Text>
+            <Text style={styles.codeText}>{referenceColor.colorCode}</Text>
           </View>
-          <ThreadConditionPill condition={item.condition} />
           <Pressable onPress={onToggleFavorite} hitSlop={8} testID="detail-favorite-toggle">
             <Ionicons
-              name={item.favorite ? "star" : "star-outline"}
+              name={favorite ? "star" : "star-outline"}
               size={16}
-              color={item.favorite ? "#e6a817" : colors.ink3}
+              color={favorite ? "#e6a817" : colors.ink3}
             />
           </Pressable>
         </View>

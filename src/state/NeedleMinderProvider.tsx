@@ -12,7 +12,7 @@ import {
 } from "../projects/projectMath";
 import type { SaveProjectInput } from "../projects/projectRepository";
 import type { Project, ProjectReservationRecord } from "../projects/types";
-import type { InventoryItem, ReferenceColor, ThreadType } from "../types";
+import type { InventoryItem, ReferenceColor, ThreadCondition, ThreadType } from "../types";
 import { BackupContext } from "./BackupContext";
 import { CatalogContext } from "./CatalogContext";
 import { composeNeedleMinderServices } from "./composeServices";
@@ -164,6 +164,38 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
       async removeInventory(id: string) {
         if (!services) return;
         await services.inventoryService.remove(id);
+        await refresh();
+      },
+      async setConditionQuantity(
+        referenceColorId: string,
+        condition: ThreadCondition,
+        targetQuantity: number,
+        inherited?: { favorite?: boolean; notes?: string | null }
+      ) {
+        if (!services) return;
+        const existing = inventory.find(
+          (i) => i.referenceColor.id === referenceColorId && i.condition === condition
+        );
+
+        if (targetQuantity <= 0) {
+          if (existing) {
+            await services.inventoryService.remove(existing.id);
+            await refresh();
+          }
+          return;
+        }
+
+        if (existing) {
+          await services.inventoryService.update(existing.id, { quantity: targetQuantity });
+        } else {
+          await services.inventoryService.addOrUpdate({
+            referenceColorId,
+            quantity: targetQuantity,
+            condition,
+            favorite: inherited?.favorite ?? false,
+            notes: inherited?.notes ?? null
+          });
+        }
         await refresh();
       }
     }),

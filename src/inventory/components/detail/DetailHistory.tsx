@@ -1,14 +1,22 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { colors, font } from "../../../ui/theme";
-import type { InventoryItem } from "../../../types";
 
 type Props = {
-  item: InventoryItem;
+  fullQuantity: number;
+  partialQuantity: number;
   formattedUpdatedAt: string;
 };
 
-export function DetailHistory({ item, formattedUpdatedAt }: Props) {
+export function DetailHistory({ fullQuantity, partialQuantity, formattedUpdatedAt }: Props) {
+  const total = fullQuantity + partialQuantity;
+  const breakdown = [
+    fullQuantity > 0 ? `${fullQuantity} full` : null,
+    partialQuantity > 0 ? `${partialQuantity} partial` : null
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
   return (
     <>
       <View style={styles.sectionHeader}>
@@ -18,11 +26,11 @@ export function DetailHistory({ item, formattedUpdatedAt }: Props) {
 
       <View style={styles.row}>
         <View style={[styles.pip, styles.pipPlus]}>
-          <Text style={[styles.pipText, styles.pipTextPlus]}>+{item.quantity}</Text>
+          <Text style={[styles.pipText, styles.pipTextPlus]}>×{total}</Text>
         </View>
         <View style={styles.meta}>
-          <Text style={styles.title}>Added to stash</Text>
-          <Text style={styles.sub}>{item.condition === "full" ? "Full skeins" : "Partial"}</Text>
+          <Text style={styles.title}>In stash</Text>
+          <Text style={styles.sub}>{breakdown || "No skeins"}</Text>
         </View>
         <Text style={styles.date}>{formattedUpdatedAt}</Text>
       </View>
@@ -58,7 +66,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.ruleSoft
   },
   pip: {
-    width: 24,
+    width: 28,
     height: 24,
     borderRadius: 8,
     backgroundColor: colors.card2,

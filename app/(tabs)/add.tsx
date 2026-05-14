@@ -9,14 +9,14 @@ import { buildCatalogFilterOptions, type CatalogFilter } from "../../src/catalog
 import { useCatalog } from "../../src/state/CatalogContext";
 import { useInventory } from "../../src/state/InventoryContext";
 import { AppBar, AppBarAction } from "../../src/ui/AppBar";
-import { InventoryForm } from "../../src/ui/InventoryForm";
 import { KeyboardAwareBody } from "../../src/ui/KeyboardAwareBody";
+import { MergedInventoryForm } from "../../src/ui/MergedInventoryForm";
 import { PillButton, PillRow } from "../../src/ui/PillButton";
 import { SearchFieldRow } from "../../src/ui/SearchFieldRow";
 import { SkeinBall } from "../../src/ui/SkeinBall";
 import { colors, font, radius, spacing } from "../../src/ui/theme";
 import type { CatalogFamilySummary } from "../../src/catalog/catalogBrowse";
-import type { ReferenceColor, ThreadCondition } from "../../src/types";
+import type { ReferenceColor } from "../../src/types";
 
 function RainbowBall({ size }: { size: number }) {
   const stripes = ["#E53935", "#FB8C00", "#FDD835", "#43A047", "#1E88E5", "#8E24AA"];
@@ -51,8 +51,8 @@ export default function AddScreen() {
   const [catalogFilter, setCatalogFilter] = useState<CatalogFilter>("all");
   const [selectedFamily, setSelectedFamily] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<ReferenceColor | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [condition, setCondition] = useState<ThreadCondition>("full");
+  const [fullQuantity, setFullQuantity] = useState(1);
+  const [partialQuantity, setPartialQuantity] = useState(0);
   const [favorite, setFavorite] = useState(false);
   const [notes, setNotes] = useState("");
   const [savedToast, setSavedToast] = useState<string | null>(null);
@@ -131,21 +131,41 @@ export default function AddScreen() {
 
   const handleSave = useCallback(async () => {
     if (!selectedColor) return;
+    if (fullQuantity <= 0 && partialQuantity <= 0) return;
     const manufacturer = getThreadTypeById(selectedColor.threadTypeId)?.manufacturer ?? "";
     const label = manufacturer
       ? `Added ${manufacturer} ${selectedColor.colorCode} · ${selectedColor.colorName}`
       : `Added ${selectedColor.colorCode} · ${selectedColor.colorName}`;
-    await addInventory({ referenceColorId: selectedColor.id, quantity, condition, favorite, notes });
+
+    if (fullQuantity > 0) {
+      await addInventory({
+        referenceColorId: selectedColor.id,
+        quantity: fullQuantity,
+        condition: "full",
+        favorite,
+        notes
+      });
+    }
+    if (partialQuantity > 0) {
+      await addInventory({
+        referenceColorId: selectedColor.id,
+        quantity: partialQuantity,
+        condition: "partial",
+        favorite,
+        notes
+      });
+    }
+
     setSelectedColor(null);
-    setQuantity(1);
-    setCondition("full");
+    setFullQuantity(1);
+    setPartialQuantity(0);
     setFavorite(false);
     setNotes("");
     setQuery("");
     setSelectedFamily(null);
     setCatalogFilter(defaultCatalogFilter);
     showToast(label);
-  }, [selectedColor, quantity, condition, favorite, notes, addInventory, defaultCatalogFilter, getThreadTypeById, showToast]);
+  }, [selectedColor, fullQuantity, partialQuantity, favorite, notes, addInventory, defaultCatalogFilter, getThreadTypeById, showToast]);
 
   const renderFamilyRow = useCallback(({ item: family }: { item: CatalogFamilySummary }) => (
     <Pressable
@@ -205,24 +225,28 @@ export default function AddScreen() {
           <AppBarAction icon="close" onPress={() => setSelectedColor(null)} size={16} color={colors.ink3} />
         </View>
 
-        <InventoryForm
-          quantity={quantity}
-          onQuantityChange={setQuantity}
-          condition={condition}
-          onConditionChange={setCondition}
+        <MergedInventoryForm
+          fullQuantity={fullQuantity}
+          onFullQuantityChange={setFullQuantity}
+          partialQuantity={partialQuantity}
+          onPartialQuantityChange={setPartialQuantity}
           favorite={favorite}
           onFavoriteChange={setFavorite}
           notes={notes}
           onNotesChange={setNotes}
         />
 
-        <Pressable style={styles.saveBtn} onPress={handleSave}>
+        <Pressable
+          style={[styles.saveBtn, fullQuantity + partialQuantity <= 0 && styles.saveBtnDisabled]}
+          onPress={handleSave}
+          disabled={fullQuantity + partialQuantity <= 0}
+        >
           <Text style={styles.saveBtnText}>Save to stash</Text>
           <Ionicons name="checkmark" size={16} color={colors.card} />
         </Pressable>
       </View>
     );
-  }, [selectedColor, quantity, condition, favorite, notes, catalogFilter, catalog, threadTypes, handleSave]);
+  }, [selectedColor, fullQuantity, partialQuantity, favorite, notes, catalogFilter, catalog, threadTypes, handleSave]);
 
   const listHeader = useMemo(() => (
     <>
@@ -360,6 +384,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ink,
     borderRadius: radius.md,
     paddingVertical: 12
+  },
+  saveBtnDisabled: {
+    opacity: 0.4
   },
   saveBtnText: { fontFamily: font.sansSemiBold, fontSize: 14, color: colors.card },
   resultRow: {

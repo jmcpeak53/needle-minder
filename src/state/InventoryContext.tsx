@@ -1,7 +1,12 @@
 import { createContext, useContext } from "react";
 
 import type { AddInventoryInput, UpdateInventoryInput } from "../inventory/inventoryRepository";
-import type { InventoryItem } from "../types";
+import type { InventoryItem, ThreadCondition } from "../types";
+
+export type SetConditionQuantityInherited = {
+  favorite?: boolean;
+  notes?: string | null;
+};
 
 export type InventoryContextValue = {
   ready: boolean;
@@ -11,6 +16,12 @@ export type InventoryContextValue = {
   toggleFavorite(id: string): Promise<void>;
   decrementInventory(id: string): Promise<void>;
   removeInventory(id: string): Promise<void>;
+  setConditionQuantity(
+    referenceColorId: string,
+    condition: ThreadCondition,
+    targetQuantity: number,
+    inherited?: SetConditionQuantityInherited
+  ): Promise<void>;
 };
 
 export const InventoryContext = createContext<InventoryContextValue | null>(null);
