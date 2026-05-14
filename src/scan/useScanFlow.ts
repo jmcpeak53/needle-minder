@@ -1,8 +1,7 @@
 import { CameraView } from "expo-camera";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { parseOcrCandidates } from "../ocr/ocrParser";
-import { MlKitOcrProvider } from "../providers/mlKitOcrProvider";
 import { useCatalog } from "../state/CatalogContext";
 import { useInventory } from "../state/InventoryContext";
 import type { OcrCandidate, ReferenceColor, ThreadCondition } from "../types";
@@ -24,7 +23,7 @@ export type CatalogChoiceState = {
 };
 
 export function useScanFlow() {
-  const { catalog, threadTypes, sessionCatalogThreadTypeId, setSessionCatalogThreadTypeId, ready } = useCatalog();
+  const { catalog, threadTypes, sessionCatalogThreadTypeId, setSessionCatalogThreadTypeId, ready, ocr } = useCatalog();
   const { addInventory } = useInventory();
 
   const cameraRef = useRef<CameraView>(null);
@@ -37,7 +36,6 @@ export function useScanFlow() {
   const [saveForSession, setSaveForSession] = useState(false);
   const [selectionToast, setSelectionToast] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
-  const ocrProvider = useMemo(() => new MlKitOcrProvider(), []);
 
   useEffect(() => {
     if (!selectionToast) return;
@@ -79,7 +77,7 @@ export function useScanFlow() {
     setSaved(false);
     try {
       const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
-      const recognized = await ocrProvider.recognizeImage(photo.uri);
+      const recognized = await ocr.recognizeImage(photo.uri);
       if (recognized.length === 0) {
         setScanError("No text detected — move closer to the label and try again.");
         return;
