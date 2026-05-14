@@ -348,7 +348,7 @@ export default function StashScreen() {
         <Animated.View
           style={[
             styles.snackbar,
-            { bottom: NAV_HEIGHT + 12 },
+            { bottom: NAV_HEIGHT + 12 + insets.bottom },
             {
               opacity: snackAnim,
               transform: [
