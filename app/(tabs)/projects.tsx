@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,6 +14,8 @@ import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 type ViewMode = "grid" | "list";
 type SortMode = "status" | "start_date";
 type StatusFilter = "all" | ProjectStatus;
+
+const ItemSeparator = () => <View style={styles.itemSeparator} />;
 
 export default function ProjectsScreen() {
   const { ready, projectSummaries, shoppingShortfalls } = useProjects();
@@ -50,6 +52,17 @@ export default function ProjectsScreen() {
     [projectSummaries]
   );
 
+  const renderItem = useCallback(
+    ({ item: summary }: { item: ProjectSummary }) => (
+      <ProjectCard
+        summary={summary}
+        variant={viewMode}
+        onPress={() => router.push(`/project/${summary.project.id}`)}
+      />
+    ),
+    [viewMode, router]
+  );
+
   if (!ready) return <LoadingScreen />;
 
   return (
@@ -59,13 +72,7 @@ export default function ProjectsScreen() {
         data={filteredProjects}
         keyExtractor={(item) => item.project.id}
         numColumns={viewMode === "grid" ? 2 : 1}
-        renderItem={({ item: summary }) => (
-          <ProjectCard
-            summary={summary}
-            variant={viewMode}
-            onPress={() => router.push(`/project/${summary.project.id}`)}
-          />
-        )}
+        renderItem={renderItem}
         ListHeaderComponent={
           <>
             <View style={styles.appbar}>
@@ -115,7 +122,7 @@ export default function ProjectsScreen() {
           </View>
         }
         columnWrapperStyle={viewMode === "grid" ? styles.gridRow : undefined}
-        ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
+        ItemSeparatorComponent={ItemSeparator}
         contentContainerStyle={[styles.scroll, { paddingBottom: NAV_HEIGHT + 24 }]}
         showsVerticalScrollIndicator={false}
       />
