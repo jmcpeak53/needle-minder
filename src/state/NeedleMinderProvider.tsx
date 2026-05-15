@@ -20,6 +20,50 @@ import type { NeedleMinderServices } from "./composeServices";
 import { InventoryContext } from "./InventoryContext";
 import { ProjectsContext } from "./ProjectsContext";
 
+type LoadedData = {
+  catalog: ReferenceColor[];
+  threadTypes: ThreadType[];
+  normalizedFilter: CatalogFilter;
+  normalizedSessionId: string | null;
+  inventory: InventoryItem[];
+  projects: Project[];
+  reservations: ProjectReservationRecord[];
+};
+
+async function loadAllData(svc: NeedleMinderServices): Promise<LoadedData> {
+  const [
+    catalog,
+    threadTypes,
+    savedFilter,
+    savedSessionId,
+    inventory,
+    projects,
+    reservations
+  ] = await Promise.all([
+    svc.referenceColors.list(),
+    svc.threadTypes.list(),
+    svc.preferences.getDefaultCatalogFilter(),
+    svc.preferences.getSessionCatalogThreadTypeId(),
+    svc.inventoryService.list(),
+    svc.projectService.listProjects(),
+    svc.projectService.listReservations()
+  ]);
+
+  const normalizedFilter = normalizeCatalogFilter(savedFilter, threadTypes);
+  const normalizedSessionId = threadTypes.some((t) => t.id === savedSessionId)
+    ? savedSessionId
+    : null;
+
+  if (normalizedFilter !== savedFilter) {
+    await svc.preferences.setDefaultCatalogFilter(normalizedFilter);
+  }
+  if (savedSessionId && !normalizedSessionId) {
+    await svc.preferences.clearSessionCatalogThreadTypeId();
+  }
+
+  return { catalog, threadTypes, normalizedFilter, normalizedSessionId, inventory, projects, reservations };
+}
+
 export function NeedleMinderProvider({ children }: PropsWithChildren) {
   const [ready, setReady] = useState(false);
   const [services, setServices] = useState<NeedleMinderServices | null>(null);
@@ -37,44 +81,16 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
     composeNeedleMinderServices().then(async (svc) => {
       if (!mounted) return;
 
-      const [
-        loadedCatalog,
-        loadedThreadTypes,
-        savedDefaultFilter,
-        savedSessionId,
-        loadedInventory,
-        loadedProjects,
-        loadedReservations
-      ] = await Promise.all([
-        svc.referenceColors.list(),
-        svc.threadTypes.list(),
-        svc.preferences.getDefaultCatalogFilter(),
-        svc.preferences.getSessionCatalogThreadTypeId(),
-        svc.inventoryService.list(),
-        svc.projectService.listProjects(),
-        svc.projectService.listReservations()
-      ]);
-
-      const normalizedFilter = normalizeCatalogFilter(savedDefaultFilter, loadedThreadTypes);
-      const normalizedSessionId = loadedThreadTypes.some((t) => t.id === savedSessionId)
-        ? savedSessionId
-        : null;
-
-      if (normalizedFilter !== savedDefaultFilter) {
-        await svc.preferences.setDefaultCatalogFilter(normalizedFilter);
-      }
-      if (savedSessionId && !normalizedSessionId) {
-        await svc.preferences.clearSessionCatalogThreadTypeId();
-      }
+      const data = await loadAllData(svc);
 
       setServices(svc);
-      setCatalog(loadedCatalog);
-      setThreadTypes(loadedThreadTypes);
-      setDefaultCatalogFilterState(normalizedFilter);
-      setSessionCatalogThreadTypeIdState(normalizedSessionId);
-      setInventory(loadedInventory);
-      setProjects(loadedProjects);
-      setReservations(loadedReservations);
+      setCatalog(data.catalog);
+      setThreadTypes(data.threadTypes);
+      setDefaultCatalogFilterState(data.normalizedFilter);
+      setSessionCatalogThreadTypeIdState(data.normalizedSessionId);
+      setInventory(data.inventory);
+      setProjects(data.projects);
+      setReservations(data.reservations);
       setReady(true);
     });
 
@@ -86,43 +102,15 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
   const refresh = useCallback(async () => {
     if (!services) return;
 
-    const [
-      nextCatalog,
-      nextThreadTypes,
-      savedFilter,
-      savedSessionId,
-      nextInventory,
-      nextProjects,
-      nextReservations
-    ] = await Promise.all([
-      services.referenceColors.list(),
-      services.threadTypes.list(),
-      services.preferences.getDefaultCatalogFilter(),
-      services.preferences.getSessionCatalogThreadTypeId(),
-      services.inventoryService.list(),
-      services.projectService.listProjects(),
-      services.projectService.listReservations()
-    ]);
+    const data = await loadAllData(services);
 
-    const normalizedFilter = normalizeCatalogFilter(savedFilter, nextThreadTypes);
-    const normalizedSessionId = nextThreadTypes.some((t) => t.id === savedSessionId)
-      ? savedSessionId
-      : null;
-
-    if (normalizedFilter !== savedFilter) {
-      await services.preferences.setDefaultCatalogFilter(normalizedFilter);
-    }
-    if (savedSessionId && !normalizedSessionId) {
-      await services.preferences.clearSessionCatalogThreadTypeId();
-    }
-
-    setCatalog(nextCatalog);
-    setThreadTypes(nextThreadTypes);
-    setDefaultCatalogFilterState(normalizedFilter);
-    setSessionCatalogThreadTypeIdState(normalizedSessionId);
-    setInventory(nextInventory);
-    setProjects(nextProjects);
-    setReservations(nextReservations);
+    setCatalog(data.catalog);
+    setThreadTypes(data.threadTypes);
+    setDefaultCatalogFilterState(data.normalizedFilter);
+    setSessionCatalogThreadTypeIdState(data.normalizedSessionId);
+    setInventory(data.inventory);
+    setProjects(data.projects);
+    setReservations(data.reservations);
   }, [services]);
 
   const projectSummaries = useMemo(
