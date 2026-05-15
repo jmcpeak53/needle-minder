@@ -13,6 +13,7 @@ import {
 import type { SaveProjectInput } from "../projects/projectRepository";
 import type { Project, ProjectReservationRecord } from "../projects/types";
 import type { InventoryItem, ReferenceColor, ThreadCondition, ThreadType } from "../types";
+import type { OcrProvider } from "../providers/ocrProvider";
 import { BackupContext } from "./BackupContext";
 import { CatalogContext } from "./CatalogContext";
 import { composeNeedleMinderServices } from "./composeServices";
@@ -63,6 +64,8 @@ async function loadAllData(svc: NeedleMinderServices): Promise<LoadedData> {
 
   return { catalog, threadTypes, normalizedFilter, normalizedSessionId, inventory, projects, reservations };
 }
+
+const noopOcr: OcrProvider = { recognizeImage: async () => [] };
 
 export function NeedleMinderProvider({ children }: PropsWithChildren) {
   const [ready, setReady] = useState(false);
@@ -197,6 +200,7 @@ export function NeedleMinderProvider({ children }: PropsWithChildren) {
       threadTypes,
       defaultCatalogFilter,
       sessionCatalogThreadTypeId,
+      ocr: services?.ocr ?? noopOcr,
       async searchCatalog(query: string) {
         if (!services) return [];
         return services.referenceColors.search(query);

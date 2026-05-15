@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 
 import type { CatalogFilter } from "../catalog/catalogFilter";
+import type { OcrProvider } from "../providers/ocrProvider";
 import type { ReferenceColor, ThreadType } from "../types";
 
 export type CatalogContextValue = {
@@ -9,6 +10,7 @@ export type CatalogContextValue = {
   threadTypes: ThreadType[];
   defaultCatalogFilter: CatalogFilter;
   sessionCatalogThreadTypeId: string | null;
+  ocr: OcrProvider;
   searchCatalog(query: string): Promise<ReferenceColor[]>;
   setDefaultCatalogFilter(filter: CatalogFilter): Promise<void>;
   setSessionCatalogThreadTypeId(threadTypeId: string): Promise<void>;

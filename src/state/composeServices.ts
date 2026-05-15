@@ -11,6 +11,8 @@ import { SqliteReferenceColorRepository } from "../db/sqliteReferenceColorReposi
 import { SqliteThreadTypeRepository } from "../db/sqliteThreadTypeRepository";
 import { InventoryService } from "../inventory/inventoryService";
 import { ProjectService } from "../projects/projectService";
+import type { OcrProvider } from "../providers/ocrProvider";
+import { MlKitOcrProvider } from "../providers/mlKitOcrProvider";
 import type { PreferencesRepository } from "../settings/preferencesRepository";
 
 export type NeedleMinderServices = {
@@ -20,6 +22,7 @@ export type NeedleMinderServices = {
   inventoryService: InventoryService;
   projectService: ProjectService;
   backup: BackupService;
+  ocr: OcrProvider;
 };
 
 export async function composeNeedleMinderServices(): Promise<NeedleMinderServices> {
@@ -31,6 +34,7 @@ export async function composeNeedleMinderServices(): Promise<NeedleMinderService
     preferences: new SqlitePreferencesRepository(database),
     inventoryService: new InventoryService(new SqliteInventoryRepository(database)),
     projectService: new ProjectService(new SqliteProjectRepository(database)),
-    backup: new BackupService(database, appVersion)
+    backup: new BackupService(database, appVersion),
+    ocr: new MlKitOcrProvider()
   };
 }
