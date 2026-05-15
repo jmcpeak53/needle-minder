@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ProjectCard } from "../../src/projects/components/ProjectCard";
@@ -14,6 +14,8 @@ import { colors, font, NAV_HEIGHT, radius, spacing } from "../../src/ui/theme";
 type ViewMode = "grid" | "list";
 type SortMode = "status" | "start_date";
 type StatusFilter = "all" | ProjectStatus;
+
+const ItemSeparator = () => <View style={styles.itemSeparator} />;
 
 export default function ProjectsScreen() {
   const { ready, projectSummaries, shoppingShortfalls } = useProjects();
@@ -50,49 +52,65 @@ export default function ProjectsScreen() {
     [projectSummaries]
   );
 
+  const renderItem = useCallback(
+    ({ item: summary }: { item: ProjectSummary }) => (
+      <ProjectCard
+        summary={summary}
+        variant={viewMode}
+        onPress={() => router.push(`/project/${summary.project.id}`)}
+      />
+    ),
+    [viewMode, router]
+  );
+
   if (!ready) return <LoadingScreen />;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: NAV_HEIGHT + 24 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.appbar}>
-          <View style={styles.appbarGrow}>
-            <Text style={styles.title}>Projects</Text>
-            <Text style={styles.subtitle}>
-              {projectSummaries.length} project{projectSummaries.length === 1 ? "" : "s"} · {shoppingShortfalls.length} shopping color{shoppingShortfalls.length === 1 ? "" : "s"}
-            </Text>
-          </View>
-          <Pressable style={styles.iconBtn} onPress={() => router.push("/project/shopping")}>
-            <Ionicons name="bag-handle-outline" size={18} color={colors.ink2} />
-          </Pressable>
-          <Pressable style={styles.iconBtn} onPress={() => router.push("/project/new")}>
-            <Ionicons name="add" size={18} color={colors.ink2} />
-          </Pressable>
-        </View>
+      <FlatList
+        key={viewMode}
+        data={filteredProjects}
+        keyExtractor={(item) => item.project.id}
+        numColumns={viewMode === "grid" ? 2 : 1}
+        renderItem={renderItem}
+        ListHeaderComponent={
+          <>
+            <View style={styles.appbar}>
+              <View style={styles.appbarGrow}>
+                <Text style={styles.title}>Projects</Text>
+                <Text style={styles.subtitle}>
+                  {projectSummaries.length} project{projectSummaries.length === 1 ? "" : "s"} · {shoppingShortfalls.length} shopping color{shoppingShortfalls.length === 1 ? "" : "s"}
+                </Text>
+              </View>
+              <Pressable style={styles.iconBtn} onPress={() => router.push("/project/shopping")}>
+                <Ionicons name="bag-handle-outline" size={18} color={colors.ink2} />
+              </Pressable>
+              <Pressable style={styles.iconBtn} onPress={() => router.push("/project/new")}>
+                <Ionicons name="add" size={18} color={colors.ink2} />
+              </Pressable>
+            </View>
 
-        <PillRow contentContainerStyle={styles.filterRow}>
-          <PillButton label="All" count={filterCounts.all} active={filter === "all"} onPress={() => setFilter("all")} />
-          <PillButton label="WIP" count={filterCounts.wip} active={filter === "wip"} onPress={() => setFilter("wip")} />
-          <PillButton label="Pattern" count={filterCounts.pattern} active={filter === "pattern"} onPress={() => setFilter("pattern")} />
-          <PillButton label="Not started" count={filterCounts.not_started} active={filter === "not_started"} onPress={() => setFilter("not_started")} />
-          <PillButton label="Finished" count={filterCounts.finished} active={filter === "finished"} onPress={() => setFilter("finished")} />
-        </PillRow>
+            <PillRow contentContainerStyle={styles.filterRow}>
+              <PillButton label="All" count={filterCounts.all} active={filter === "all"} onPress={() => setFilter("all")} />
+              <PillButton label="WIP" count={filterCounts.wip} active={filter === "wip"} onPress={() => setFilter("wip")} />
+              <PillButton label="Pattern" count={filterCounts.pattern} active={filter === "pattern"} onPress={() => setFilter("pattern")} />
+              <PillButton label="Not started" count={filterCounts.not_started} active={filter === "not_started"} onPress={() => setFilter("not_started")} />
+              <PillButton label="Finished" count={filterCounts.finished} active={filter === "finished"} onPress={() => setFilter("finished")} />
+            </PillRow>
 
-        <View style={styles.controls}>
-          <View style={styles.segment}>
-            <SegmentButton label="Status" active={sortMode === "status"} onPress={() => setSortMode("status")} />
-            <SegmentButton label="Start date" active={sortMode === "start_date"} onPress={() => setSortMode("start_date")} />
-          </View>
-          <View style={styles.segment}>
-            <IconSegmentButton icon="grid-outline" active={viewMode === "grid"} onPress={() => setViewMode("grid")} />
-            <IconSegmentButton icon="list-outline" active={viewMode === "list"} onPress={() => setViewMode("list")} />
-          </View>
-        </View>
-
-        {filteredProjects.length === 0 ? (
+            <View style={styles.controls}>
+              <View style={styles.segment}>
+                <SegmentButton label="Status" active={sortMode === "status"} onPress={() => setSortMode("status")} />
+                <SegmentButton label="Start date" active={sortMode === "start_date"} onPress={() => setSortMode("start_date")} />
+              </View>
+              <View style={styles.segment}>
+                <IconSegmentButton icon="grid-outline" active={viewMode === "grid"} onPress={() => setViewMode("grid")} />
+                <IconSegmentButton icon="list-outline" active={viewMode === "list"} onPress={() => setViewMode("list")} />
+              </View>
+            </View>
+          </>
+        }
+        ListEmptyComponent={
           <View style={styles.emptyCard}>
             <Text style={styles.emptyTitle}>No projects yet</Text>
             <Text style={styles.emptyBody}>
@@ -102,30 +120,12 @@ export default function ProjectsScreen() {
               <Text style={styles.emptyButtonText}>New project</Text>
             </Pressable>
           </View>
-        ) : viewMode === "grid" ? (
-          <View style={styles.grid}>
-            {filteredProjects.map((summary) => (
-              <ProjectCard
-                key={summary.project.id}
-                summary={summary}
-                variant="grid"
-                onPress={() => router.push(`/project/${summary.project.id}`)}
-              />
-            ))}
-          </View>
-        ) : (
-          <View style={styles.list}>
-            {filteredProjects.map((summary) => (
-              <ProjectCard
-                key={summary.project.id}
-                summary={summary}
-                variant="list"
-                onPress={() => router.push(`/project/${summary.project.id}`)}
-              />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+        }
+        columnWrapperStyle={viewMode === "grid" ? styles.gridRow : undefined}
+        ItemSeparatorComponent={ItemSeparator}
+        contentContainerStyle={[styles.scroll, { paddingBottom: NAV_HEIGHT + 24 }]}
+        showsVerticalScrollIndicator={false}
+      />
     </View>
   );
 }
@@ -251,14 +251,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center"
   },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    gap: spacing.md
+  gridRow: {
+    justifyContent: "space-between"
   },
-  list: {
-    gap: spacing.md
+  itemSeparator: {
+    height: spacing.md
   },
   emptyCard: {
     backgroundColor: colors.card,
