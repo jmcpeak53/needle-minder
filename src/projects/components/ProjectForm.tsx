@@ -53,6 +53,13 @@ export function ProjectForm({ initialProject, submitLabel, onSubmit }: Props) {
     [author, completedDate, folder, imageUri, name, notes, startDate, status]
   );
 
+  const handleStatusChange = (option: ProjectStatus) => {
+    setStatus(option);
+    if (option === "wip" && !startDate) {
+      setStartDate(new Date().toISOString().slice(0, 10));
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       setSaving(true);
@@ -106,7 +113,7 @@ export function ProjectForm({ initialProject, submitLabel, onSubmit }: Props) {
             return (
               <Pressable
                 key={option}
-                onPress={() => !disabled && setStatus(option)}
+                onPress={() => !disabled && handleStatusChange(option)}
                 style={[styles.statusOption, active && styles.statusOptionActive, disabled && styles.statusOptionDisabled]}
               >
                 <Text style={[styles.statusOptionText, active && styles.statusOptionTextActive]}>
