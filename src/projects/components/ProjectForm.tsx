@@ -9,6 +9,7 @@ import {
   View
 } from "react-native";
 
+import { DateField } from "./DateField";
 import { ProjectPhotoPicker } from "./ProjectPhotoPicker";
 import type { SaveProjectInput } from "../projectRepository";
 import type { Project, ProjectStatus } from "../types";
@@ -127,26 +128,20 @@ export function ProjectForm({ initialProject, submitLabel, onSubmit }: Props) {
 
       {showStartDate ? (
         <Field label="Start date">
-          <TextInput
-            value={startDate}
-            onChangeText={setStartDate}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.ink4}
-            autoCapitalize="none"
-            style={styles.input}
+          <DateField
+            value={startDate || null}
+            onChange={(next) => setStartDate(next ?? "")}
+            placeholder="Pick start date"
           />
         </Field>
       ) : null}
 
       {showCompletedDate ? (
         <Field label="Completed date">
-          <TextInput
-            value={completedDate}
-            onChangeText={setCompletedDate}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor={colors.ink4}
-            autoCapitalize="none"
-            style={styles.input}
+          <DateField
+            value={completedDate || null}
+            onChange={(next) => setCompletedDate(next ?? "")}
+            placeholder="Pick completed date"
           />
         </Field>
       ) : null}

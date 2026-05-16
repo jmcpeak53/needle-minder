@@ -47,6 +47,23 @@ This environment provides an `llm-caller` tool family for delegating subtasks to
 - **`llm-caller` (CLI)** — Use for general one-shot LLM invocations from the shell when neither of the above fits, such as generating boilerplate, reformatting data, or producing alternative phrasings.
 Do not use `llm-caller` to bypass product decisions or as a substitute for asking the product owner. If a question requires product-level judgment, ask in chat instead.
 
+## llm-caller Sandbox Handling
+
+When using `llm-ask` or `llm-write`, request elevated execution up front
+with the narrow command prefix rule for that tool. These commands make
+outbound model API calls and will fail inside the Windows sandbox with a
+socket-permission error. Do not first run them sandboxed unless the task is
+explicitly testing sandbox behavior.
+
+- For `llm-ask`, use `sandbox_permissions="require_escalated"` and
+  `prefix_rule=["llm-ask"]`.
+- For `llm-write`, use `sandbox_permissions="require_escalated"` and
+  `prefix_rule=["llm-write"]`.
+- `llm-extract` is local-only and does not require escalation.
+
+The persisted approval rules are intentionally narrow. Do not request broad
+PowerShell, Python, or unrestricted network approval for llm-caller work.
+
 ## Testing
 
 - Jest with `jest-expo` preset and `babel-jest` transform
